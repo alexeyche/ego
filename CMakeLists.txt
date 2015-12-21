@@ -20,8 +20,11 @@ option(PROFILE "Compile with profiling information" OFF)
 #  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 #endif(CMAKE_COMPILER_IS_GNUCC)
 include(FindProtobuf)
+
 find_package(Protobuf REQUIRED)
-find_package (Threads)
+find_package(Eigen3 REQUIRED)
+find_package (Threads REQUIRED)
+
 
 # Debugging CFLAGS.  Turn optimizations off; turn debugging symbols on.
 if(DEBUG)
@@ -61,5 +64,5 @@ include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 
 # Recurse into the rest of the project.
-add_subdirectory(lib)
+add_subdirectory(ego)
 #add_subdirectory(tools)
