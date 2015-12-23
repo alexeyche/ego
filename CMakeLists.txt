@@ -22,7 +22,7 @@ option(PROFILE "Compile with profiling information" OFF)
 include(FindProtobuf)
 
 find_package(Protobuf REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Armadillo REQUIRED)
 find_package (Threads REQUIRED)
 
 

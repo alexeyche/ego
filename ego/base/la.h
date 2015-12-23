@@ -1,15 +1,19 @@
 #pragma once
 
-#include <Eigen/Core>
+#include <armadillo>
 
 namespace NEgo {
     namespace NLa {
-        using TMatrixD = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-        using TVectorD = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+        using TMatrixD = arma::Mat<double>;
+        using TVectorD = arma::Col<double>;
 
         TMatrixD Exp(const TMatrixD &m);
 
-        TMatrixD Constant(size_t rows, size_t cols, double val);
+        TMatrixD MatrixFromConstant(size_t r, size_t c, double val);
+
+        double GetLastElem(const TVectorD &m);
+
+        TMatrixD SquareDist(const TMatrixD &m);
 
     } // namespace NLa
 

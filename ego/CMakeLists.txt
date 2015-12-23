@@ -26,13 +26,15 @@ foreach(dir ${DIRS})
 endforeach()
 
 add_library(ego SHARED ${EGO_SRCS})
-include_directories(${CMAKE_BINARY_DIR}/protos ${EIGEN3_INCLUDE_DIR})
+
+include_directories(${CMAKE_BINARY_DIR}/protos)
+include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 SET_TARGET_PROPERTIES(ego PROPERTIES COMPILE_FLAGS "-fPIC")
 
 target_link_libraries(ego
 #    ego_protos
-    ${Eigen_LIBRARIES}
+    ${ARMADILLO_LIBRARIES}
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     m

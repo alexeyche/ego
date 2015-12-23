@@ -31,7 +31,7 @@ namespace NEgo {
 
 
     #define ENSURE(cond, str) \
-        if(!cond) { \
+        if(!(cond)) { \
             throw TEgoException() << str; \
         }\
 
