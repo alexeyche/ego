@@ -3,6 +3,7 @@
 #include "cov.h"
 
 #include <ego/base/errors.h>
+#include <ego/base/factory.h>
 
 #include <numeric>
 #include <functional>
@@ -12,13 +13,9 @@ namespace NEgo {
 
         using TMaternFunSpec = TMatrixD(*)(const TMatrixD&);
 
-        TMatrixD Matern1(const TMatrixD &K) {
-            return NLa::MatrixFromConstant(K.n_rows, K.n_rows, 1.0);
-        }
+        TMatrixD Matern1(const TMatrixD &K);
 
-        TMatrixD MaternDeriv1(const TMatrixD &K) {
-            return 1.0/K;
-        }
+        TMatrixD MaternDeriv1(const TMatrixD &K);
 
     } // namespace NMaternFuncs
 
@@ -37,9 +34,9 @@ namespace NEgo {
         }
 
         TMatrixD CalculateKernel(const TMatrixD &left, const TMatrixD &right) override final {
-            TMatrixD K = SqDist(
-                Trans(Dot(Diag(sqrt(Power)/Params), left)),
-                Trans(Dot(Diag(sqrt(Power)/Params), right))
+            TMatrixD K = NLa::SquareDist(
+                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * left),
+                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * right)
             );
             K = NLa::Sqrt(K);
             return SignalVariance * MaternFun(K) * NLa::Exp(-K);
@@ -60,5 +57,8 @@ namespace NEgo {
 
 
     using TMaternCov1 = TMaternCov<1, NMaternFuncs::Matern1, NMaternFuncs::MaternDeriv1>;
+
+
+    REGISTER_COV(TMaternCov1);
 
 } //namespace NEgo

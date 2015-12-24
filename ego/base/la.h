@@ -25,6 +25,8 @@ namespace NEgo {
 
         TMatrixD Trans(const TMatrixD &m);
 
+        TMatrixD Trans(const TMatrixD &&m);
+
         TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col);
 
         TVectorD ColSum(const TMatrixD &m);
@@ -38,8 +40,6 @@ namespace NEgo {
 
     using NLa::TMatrixD;
     using NLa::TVectorD;
-
-    #define Dot(A, B) arma::dot(A, B)
 
 
 } //namespace NEgo

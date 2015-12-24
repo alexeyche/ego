@@ -33,7 +33,7 @@ namespace NEgo {
             TMatrixD rightM = right - RepMat(mu, right.n_rows, 1);
             return RepMat(ColSum(leftM * leftM), right.n_rows, 1) +
                    RepMat(ColSum(rightM * rightM), left.n_rows, 1) -
-                   2.0 * Dot(leftM, Trans(rightM));
+                   2.0 * leftM * Trans(rightM);
         }
 
         TMatrixD Diag(const TVectorD &v) {
@@ -55,6 +55,10 @@ namespace NEgo {
         }
 
         TMatrixD Trans(const TMatrixD &m) {
+            return arma::trans(m);
+        }
+
+        TMatrixD Trans(const TMatrixD &&m) {
             return arma::trans(m);
         }
 

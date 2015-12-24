@@ -65,4 +65,4 @@ include_directories(${CMAKE_BINARY_DIR})
 
 # Recurse into the rest of the project.
 add_subdirectory(ego)
-#add_subdirectory(tools)
+add_subdirectory(tools)

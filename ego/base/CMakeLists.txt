@@ -4,6 +4,8 @@ set(SOURCES
     base.cpp
     la.cpp
     errors.cpp
+    factory.cpp
+    entities.cpp
 )
 
 set(DIR_SRCS)

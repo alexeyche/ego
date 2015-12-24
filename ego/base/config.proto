@@ -1,0 +1,8 @@
+package NEgoProto;
+
+message TEgoConfig {
+	optional string KernelName = 1;
+	optional string InputFile = 2;
+}
+
+
