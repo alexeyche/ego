@@ -13,11 +13,33 @@ namespace NEgo {
 
         double GetLastElem(const TVectorD &m);
 
-        TMatrixD SquareDist(const TMatrixD &m);
+        TMatrixD SquareDist(const TMatrixD &left, const TMatrixD &right);
 
+        TMatrixD Diag(const TVectorD &v);
+
+        TMatrixD Diag(double v, size_t size);
+
+        TVectorD ColMean(const TMatrixD &m);
+
+        TVectorD RowMean(const TMatrixD &m);
+
+        TMatrixD Trans(const TMatrixD &m);
+
+        TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col);
+
+        TVectorD ColSum(const TMatrixD &m);
+
+        TVectorD RowSum(const TMatrixD &m);
+
+        TMatrixD Sqrt(const TMatrixD &m);
+
+        double Exp(double v);
     } // namespace NLa
 
     using NLa::TMatrixD;
     using NLa::TVectorD;
+
+    #define Dot(A, B) arma::dot(A, B)
+
 
 } //namespace NEgo
