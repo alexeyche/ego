@@ -1,8 +1,10 @@
+import "extension.proto";
+
 package NEgoProto;
 
 message TEgoConfig {
-	optional string KernelName = 1;
-	optional string InputFile = 2;
-}
+	optional string KernelName = 1 [(description) = "Kernel name to specify covariance function"];
+	optional string InputFile = 2 [(description) = "Input file name *.ssv supported"];
+};
 
 

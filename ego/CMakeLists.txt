@@ -19,6 +19,8 @@ set(EGO_SRCS ${DIR_SRCS})
 set(DIRS
     base
     cov
+    util
+    protos
 )
 
 foreach(dir ${DIRS})
@@ -28,12 +30,13 @@ endforeach()
 add_library(ego SHARED ${EGO_SRCS})
 
 include_directories(${CMAKE_BINARY_DIR}/protos)
-include_directories(${ARMADILLO_INCLUDE_DIRS})
+include_directories(${ARMADILLO_INCLUDE_DIRS} PARENT_SCOPE)
+include_directories(${PROTOBUF_INCLUDE_DIRS} PARENT_SCOPE)
 
 SET_TARGET_PROPERTIES(ego PROPERTIES COMPILE_FLAGS "-fPIC")
 
 target_link_libraries(ego
-#    ego_protos
+    ego_protos
     ${ARMADILLO_LIBRARIES}
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}

@@ -1,0 +1,9 @@
+import "google/protobuf/descriptor.proto";
+
+package NEgoProto;
+
+extend google.protobuf.FieldOptions
+{
+    optional string description = 61111;
+    optional string short_option = 61112;
+}
