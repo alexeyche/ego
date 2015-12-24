@@ -78,6 +78,19 @@ namespace NEgo {
             return arma::sqrt(m);
         }
 
+        TMatrixD ReadCsv(TString fname) {
+            TMatrixD res;
+            ENSURE(res.load(fname), "Failed to read csv file: " << fname);
+            return res;
+        }
+
+        TMatrixD HeadCols(const TMatrixD& m, size_t num) {
+            return m.head_cols(num);
+        }
+
+        TMatrixD TailCols(const TMatrixD& m, size_t num) {
+            return m.tail_cols(num);
+        }
 
     } // namespace NLa
 } //namespace NEgo

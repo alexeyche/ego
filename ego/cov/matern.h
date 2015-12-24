@@ -21,9 +21,9 @@ namespace NEgo {
 
 
     template <size_t Power, NMaternFuncs::TMaternFunSpec MaternFun, NMaternFuncs::TMaternFunSpec MaternFunDeriv>
-    class TMaternCov : public ICov {
+    class TCovMaternARD : public ICov {
     public:
-        TMaternCov(size_t dim_size)
+        TCovMaternARD(size_t dim_size)
             : ICov(dim_size)
         {
         }
@@ -56,9 +56,9 @@ namespace NEgo {
     };
 
 
-    using TMaternCov1 = TMaternCov<1, NMaternFuncs::Matern1, NMaternFuncs::MaternDeriv1>;
+    using TCovMaternARD1 = TCovMaternARD<1, NMaternFuncs::Matern1, NMaternFuncs::MaternDeriv1>;
 
 
-    REGISTER_COV(TMaternCov1);
+    REGISTER_COV(TCovMaternARD1);
 
 } //namespace NEgo

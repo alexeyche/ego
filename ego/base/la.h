@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ego/base/base.h>
+
 #include <armadillo>
 
 namespace NEgo {
@@ -36,6 +38,13 @@ namespace NEgo {
         TMatrixD Sqrt(const TMatrixD &m);
 
         double Exp(double v);
+
+        TMatrixD ReadCsv(TString fname);
+
+        TMatrixD HeadCols(const TMatrixD& m, size_t num);
+
+        TMatrixD TailCols(const TMatrixD& m, size_t num);
+
     } // namespace NLa
 
     using NLa::TMatrixD;

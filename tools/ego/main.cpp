@@ -7,17 +7,26 @@
 #include <ego/util/proto_options.h>
 #include <ego/util/string.h>
 
+#include <ego/model/model.h>
+
 using namespace NEgo;
 
 int main(int argc, const char** argv) {
-	auto cov = Factory.CreateCov("MaternCov1", 10);
-    TProtoOptions<NEgoProto::TEgoConfig> opts(argc, argv, "Ego main binary");
 
-    NEgoProto::TEgoConfig config;
+    TProtoOptions<NEgoProto::TModelConfig> opts(argc, argv, "Ego main binary");
+
+    NEgoProto::TModelConfig config;
     if(!opts.Parse(config)) {
         return 0;
     }
-    std::cout << config.DebugString() << "\n";
-
+    if(config.listentities()) {
+        Factory.PrintEntities();
+        return 0;
+    }
+    if(config.verbose()) {
+        TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
+    }
+    L_DEBUG << "Got model config: \n\n" << config.DebugString();
+    TModel model(config);
 	return 0;
 }

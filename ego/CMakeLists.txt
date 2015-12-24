@@ -18,9 +18,11 @@ set(EGO_SRCS ${DIR_SRCS})
 
 set(DIRS
     base
+    contrib
     cov
     util
     protos
+    model
 )
 
 foreach(dir ${DIRS})

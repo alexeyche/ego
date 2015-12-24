@@ -23,6 +23,7 @@ namespace NEgo {
 
 	    static TFactory& Instance();
 
+	    void PrintEntities();
 	private:
 		TCovCreateMap CovMap;
 	};

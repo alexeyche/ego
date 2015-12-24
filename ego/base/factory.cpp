@@ -7,9 +7,9 @@ namespace NEgo {
 
 	TFactory& TFactory::Instance() {
 		static TFactory _inst;
-		return _inst;	
+		return _inst;
 	}
-	
+
 
 	UPtr<ICov> TFactory::CreateCov(TString name, size_t dim_size) {
 		auto cbPtr = CovMap.find(name);
@@ -17,6 +17,12 @@ namespace NEgo {
 		return CovMap[name](dim_size);
 	}
 
+	void TFactory::PrintEntities() {
+		std::cout << "Covariances: \n";
+		for(const auto& c: CovMap) {
+			std::cout << "\t" << c.first << "\n";
+		}
+
+	}
 
 } // namespace NEgo
-	

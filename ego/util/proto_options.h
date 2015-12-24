@@ -47,6 +47,7 @@ namespace NEgo {
                     return false;
                 }
             }
+            std::vector<TString> extraOpts;
             for(auto iter=Opts.begin(); iter != Opts.end(); ++iter) {
                 {
                     auto ptr = NamedFields.find(*iter);
@@ -62,8 +63,15 @@ namespace NEgo {
                         continue;
                     }
                 }
+                extraOpts.push_back(*iter);
             }
-
+            if(extraOpts.size()>0) {
+                TString extraOptsStr;
+                for(const auto& o: extraOpts) {
+                    extraOptsStr += o + ", ";
+                }
+                throw TEgoException() << "Got unknown options: " << extraOptsStr;
+            }
             return true;
         }
 
@@ -106,9 +114,9 @@ namespace NEgo {
 
                 TString desc = fieldDesc->options().GetExtension(NEgoProto::description);
                 if(!desc.empty()) {
-                    std::cout << "\t" << desc;
+                    std::cout << "\n\t\t" << desc;
                 }
-                std::cout << "\n";
+                std::cout << "\n\n";
             }
         }
 
