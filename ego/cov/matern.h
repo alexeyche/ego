@@ -28,25 +28,28 @@ namespace NEgo {
         {
         }
 
-        TMatrixD CalculateDerivative(const TMatrixD &left, const TMatrixD &right, size_t param_idx) override final {
+        TMatrixD CalculateDerivative(const TMatrixD &left, const TMatrixD &right) override final {
             TMatrixD K(left.n_rows, right.n_rows);
-            return MaternFunDeriv(K) * NLa::Exp(-K);
+            return MaternFunDeriv(K) % NLa::Exp(-K);
         }
 
         TMatrixD CalculateKernel(const TMatrixD &left, const TMatrixD &right) override final {
+            ENSURE(Params.size() > 0, "Need hyperparameters be set");
+
             TMatrixD K = NLa::SquareDist(
-                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * left),
-                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * right)
+                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(left)),
+                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(right))
             );
+            NLa::Print(K);
             K = NLa::Sqrt(K);
-            return SignalVariance * MaternFun(K) * NLa::Exp(-K);
+            return SignalVariance * MaternFun(K) % NLa::Exp(-K);
         }
 
         void SetHyperParameters(const TVectorD &params) override final {
             ENSURE(params.size() == DimSize + 1, "Need DimSize + 1 parameters for kernel");
 
             Params = NLa::Exp(params.head(params.size()-1));
-            SignalVariance = 2.0 * NLa::Exp(NLa::GetLastElem(params));
+            SignalVariance = NLa::Exp(2.0 * NLa::GetLastElem(params));
         }
 
     private:

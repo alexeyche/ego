@@ -1,6 +1,6 @@
 #include "factory.h"
 
-#include <ego/cov/matern.h>
+#include <ego/base/entities.h>
 
 
 namespace NEgo {
@@ -11,17 +11,25 @@ namespace NEgo {
 	}
 
 
-	UPtr<ICov> TFactory::CreateCov(TString name, size_t dim_size) {
-		auto cbPtr = CovMap.find(name);
-		ENSURE(cbPtr != CovMap.end(), "Can't find  entity with name " << name);
-		return CovMap[name](dim_size);
-	}
+    UPtr<ICov> TFactory::CreateCov(TString name, size_t dim_size) {
+    	return CreateEntity<ICov>(name, dim_size, CovMap);
+    }
+    UPtr<IMean> TFactory::CreateMean(TString name, size_t dim_size) {
+    	return CreateEntity<IMean>(name, dim_size, MeanMap);
+    }
+
 
 	void TFactory::PrintEntities() {
 		std::cout << "Covariances: \n";
 		for(const auto& c: CovMap) {
 			std::cout << "\t" << c.first << "\n";
 		}
+
+		std::cout << "Mean functions: \n";
+		for(const auto& m: MeanMap) {
+			std::cout << "\t" << m.first << "\n";
+		}
+
 
 	}
 

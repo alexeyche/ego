@@ -3,12 +3,36 @@ import "extension.proto";
 package NEgoProto;
 
 message TModelConfig {
-    optional string Cov = 1 [(description) = "Covariance kernel name", (short_option) = "-c"];
-    optional string InputFile = 2 [(description) = "Input file name *.csv supported", (short_option) = "-i"];
+    optional string Cov = 1 [
+        (description) = "Covariance kernel name",
+        (short_option) = "-c",
+        (default_value) = "cMaternARD1"
+    ];
+    optional string Mean = 2 [
+        (description) = "Mean function name",
+        (short_option) = "-m",
+        (default_value) = "mLinear"
+    ];
 
-    optional bool ListEntities = 3 [(description) = "List available entities in system and quit", (short_option) = "-l"];
+    optional string Input = 3 [
+        (description) = "Input file name *.csv supported",
+        (short_option) = "-i"
+    ];
 
-    optional bool Verbose = 4 [(description) = "Turn on extra logging", (short_option) = "-v"];
+    optional string Output = 4 [
+        (description) = "Output file name",
+        (short_option) = "-o"
+    ];
+
+    optional bool ListEntities = 5 [
+        (description) = "List available entities in system and quit",
+        (short_option) = "-l"
+    ];
+
+    optional bool Verbose = 6 [
+        (description) = "Turn on extra logging",
+        (short_option) = "-v"
+    ];
 };
 
 

@@ -32,6 +32,10 @@ namespace NEgo {
                 if(!short_option.empty()) {
                     ShortNamedFields.insert(std::make_pair(short_option, fieldDesc));
                 }
+                TString default_value = fieldDesc->options().GetExtension(NEgoProto::default_value);
+                if(!default_value.empty()) {
+                    Defaults.push_back(std::make_pair(fieldDesc, default_value));
+                }
             }
         }
 
@@ -71,6 +75,14 @@ namespace NEgo {
                     extraOptsStr += o + ", ";
                 }
                 throw TEgoException() << "Got unknown options: " << extraOptsStr;
+            }
+            for(const auto &defs: Defaults) {
+                const google::protobuf::Reflection* reflection = message.GetReflection();
+                if(!reflection->HasField(message, defs.first)) {
+                    std::vector<TString> v = {defs.first->name(), defs.second};
+                    auto vIter = v.cbegin();
+                    SetMessageValue(message, defs.first, vIter, v.end());
+                }
             }
             return true;
         }
@@ -116,6 +128,10 @@ namespace NEgo {
                 if(!desc.empty()) {
                     std::cout << "\n\t\t" << desc;
                 }
+                TString def = fieldDesc->options().GetExtension(NEgoProto::default_value);
+                if(!def.empty()) {
+                    std::cout << ", default: " << def;
+                }
                 std::cout << "\n\n";
             }
         }
@@ -125,6 +141,7 @@ namespace NEgo {
 
         std::map<TString, const google::protobuf::FieldDescriptor*> NamedFields;
         std::map<TString, const google::protobuf::FieldDescriptor*> ShortNamedFields;
+        std::vector<std::pair<const google::protobuf::FieldDescriptor*, TString>> Defaults;
 
         std::string Description;
     };

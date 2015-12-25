@@ -21,9 +21,9 @@ namespace NEgo {
 
         TMatrixD Diag(double v, size_t size);
 
-        TVectorD ColMean(const TMatrixD &m);
+        TMatrixD ColMean(const TMatrixD &m);
 
-        TVectorD RowMean(const TMatrixD &m);
+        TMatrixD RowMean(const TMatrixD &m);
 
         TMatrixD Trans(const TMatrixD &m);
 
@@ -31,9 +31,9 @@ namespace NEgo {
 
         TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col);
 
-        TVectorD ColSum(const TMatrixD &m);
+        TMatrixD ColSum(const TMatrixD &m);
 
-        TVectorD RowSum(const TMatrixD &m);
+        TMatrixD RowSum(const TMatrixD &m);
 
         TMatrixD Sqrt(const TMatrixD &m);
 
@@ -41,9 +41,13 @@ namespace NEgo {
 
         TMatrixD ReadCsv(TString fname);
 
+        void WriteCsv(const TMatrixD &m, TString fname);
+
         TMatrixD HeadCols(const TMatrixD& m, size_t num);
 
         TMatrixD TailCols(const TMatrixD& m, size_t num);
+
+        void Print(const TMatrixD &m);
 
     } // namespace NLa
 

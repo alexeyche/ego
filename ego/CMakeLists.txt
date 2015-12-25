@@ -23,6 +23,7 @@ set(DIRS
     util
     protos
     model
+    mean
 )
 
 foreach(dir ${DIRS})
