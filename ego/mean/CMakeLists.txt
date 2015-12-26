@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(SOURCES
     mean.cpp
     linear.cpp
+    const.cpp
 )
 
 set(DIR_SRCS)

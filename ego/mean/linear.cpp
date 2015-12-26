@@ -13,11 +13,13 @@ namespace NEgo {
 
     TVectorD TMeanLinear::CalculateMean(const TMatrixD &m) {
         ENSURE(Params.size() > 0, "Need hyperparameters be set");
-        return Params;
+        ENSURE(m.n_cols ==  DimSize, "Col size of input matrix are not satisfy to mean function params: " << DimSize);
+
+        return m * Params;
     }
 
     void TMeanLinear::SetHyperParameters(const TVectorD &params) {
-        ENSURE(params.size() == DimSize, "Need DimSize parameters for kernel");
+        ENSURE(params.size() == DimSize, "Need DimSize parameters for mean function");
 
         Params = params;
     }

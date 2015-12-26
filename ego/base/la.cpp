@@ -102,5 +102,8 @@ namespace NEgo {
             std::cout << "====\n";
         }
 
+        TVectorD Ones(size_t n) {
+            return arma::ones(n);
+        }
     } // namespace NLa
 } //namespace NEgo

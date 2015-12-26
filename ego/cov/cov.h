@@ -11,7 +11,7 @@ namespace NEgo {
         {
         }
 
-        virtual TMatrixD CalculateDerivative(const TMatrixD &left, const TMatrixD &right) = 0;
+        virtual TCubeD CalculateDerivative(const TMatrixD &left, const TMatrixD &right) = 0;
         virtual TMatrixD CalculateKernel(const TMatrixD &left, const TMatrixD &right) = 0;
 
     };

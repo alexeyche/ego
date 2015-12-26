@@ -6,6 +6,7 @@
 
 namespace NEgo {
     namespace NLa {
+        using TCubeD = arma::Cube<double>;
         using TMatrixD = arma::Mat<double>;
         using TVectorD = arma::Col<double>;
 
@@ -49,10 +50,13 @@ namespace NEgo {
 
         void Print(const TMatrixD &m);
 
+        TVectorD Ones(size_t n);
+
     } // namespace NLa
 
     using NLa::TMatrixD;
     using NLa::TVectorD;
+    using NLa::TCubeD;
 
 
 } //namespace NEgo

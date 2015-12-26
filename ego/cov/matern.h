@@ -28,13 +28,19 @@ namespace NEgo {
         {
         }
 
-        TMatrixD CalculateDerivative(const TMatrixD &left, const TMatrixD &right) override final {
-            TMatrixD K(left.n_rows, right.n_rows);
-            return MaternFunDeriv(K) % NLa::Exp(-K);
+        TCubeD CalculateDerivative(const TMatrixD &left, const TMatrixD &right) override final {
+            ENSURE(left.n_cols ==  DimSize, "Col size of left input matrix are not satisfy to kernel params: " << DimSize);
+            ENSURE(right.n_cols ==  DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize);
+
+            TCubeD k(Params.size(), left.n_cols, right.n_cols);
+
+            return k; //MaternFunDeriv(K) % NLa::Exp(-K);
         }
 
         TMatrixD CalculateKernel(const TMatrixD &left, const TMatrixD &right) override final {
             ENSURE(Params.size() > 0, "Need hyperparameters be set");
+            ENSURE(left.n_cols ==  DimSize, "Col size of left input matrix are not satisfy to kernel params: " << DimSize);
+            ENSURE(right.n_cols ==  DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize);
 
             TMatrixD K = NLa::SquareDist(
                 NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(left)),
