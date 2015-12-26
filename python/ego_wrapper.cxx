@@ -45,7 +45,6 @@ void TCovWrap::ListEntities() {
 }
 
 TMatWrap TCovWrap::CalculateKernel(const TMatWrap &left, const TMatWrap &right) const {
-	NLa::Print(left.ToMatrix());
 	return TMatWrap::FromMatrix(Cov->CalculateKernel(left.ToMatrix(), right.ToMatrix()));
 }
 

@@ -43,11 +43,10 @@ namespace NEgo {
             ENSURE(right.n_cols ==  DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize);
             
             TMatrixD K = NLa::SquareDist(
-                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(left)),
-                NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(right))
+                NLa::Trans(NLa::DiagMat(sqrt(Power)/Params) * NLa::Trans(left)),
+                NLa::Trans(NLa::DiagMat(sqrt(Power)/Params) * NLa::Trans(right))
             );
             K = NLa::Sqrt(K);
-            NLa::Print(SignalVariance * MaternFun(K) % NLa::Exp(-K));
             return SignalVariance * MaternFun(K) % NLa::Exp(-K);
         }
 

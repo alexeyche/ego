@@ -15,7 +15,7 @@ cdef extern from "ego_wrapper.h":
 cdef extern from "ego_wrapper.h":
     cdef cppclass TCovWrap:
         TCovWrap(const char *covName, size_t dim_size, vector[double]) except +
-        TMatWrap CalculateKernel(TMatWrap) except +
+        TMatWrap CalculateKernel(TMatWrap) 
 
 cdef extern from "ego_wrapper.h" namespace "TCovWrap":
         void ListEntities()

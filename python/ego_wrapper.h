@@ -24,7 +24,6 @@ public:
 		: V(nullptr)
 		, NRows(0)
 		, NCols(0) 
-		, Owner(false)
 	{
 	}
 	
