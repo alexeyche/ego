@@ -12,8 +12,12 @@ namespace NEgo {
         }
 
         virtual TCubeD CalculateDerivative(const TMatrixD &left, const TMatrixD &right) = 0;
+
         virtual TMatrixD CalculateKernel(const TMatrixD &left, const TMatrixD &right) = 0;
 
+        virtual void SetHyperParameters(const TVectorD &params) = 0;        
+
+        TMatrixD CalculateKernel(const TMatrixD &m);
     };
 
 

@@ -20,10 +20,12 @@ option(PROFILE "Compile with profiling information" OFF)
 #  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 #endif(CMAKE_COMPILER_IS_GNUCC)
 include(FindProtobuf)
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
 
 find_package(Protobuf REQUIRED)
 find_package(Armadillo REQUIRED)
-find_package (Threads REQUIRED)
+find_package(Threads REQUIRED)
+
 
 
 # Debugging CFLAGS.  Turn optimizations off; turn debugging symbols on.
@@ -63,6 +65,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 
+include(UseCython)
+
+
 # Recurse into the rest of the project.
 add_subdirectory(ego)
+add_subdirectory(python)
 add_subdirectory(tools)

@@ -4,6 +4,7 @@
 
 #include <armadillo>
 
+
 namespace NEgo {
     namespace NLa {
         using TCubeD = arma::Cube<double>;
@@ -13,14 +14,18 @@ namespace NEgo {
         TMatrixD Exp(const TMatrixD &m);
 
         TMatrixD MatrixFromConstant(size_t r, size_t c, double val);
+        
+        TMatrixD Log(const TMatrixD &m);
 
         double GetLastElem(const TVectorD &m);
 
         TMatrixD SquareDist(const TMatrixD &left, const TMatrixD &right);
 
-        TMatrixD Diag(const TVectorD &v);
+        TMatrixD DiagMat(const TVectorD &v);
 
-        TMatrixD Diag(double v, size_t size);
+        TMatrixD DiagMat(double v, size_t size);
+
+        TVectorD Diag(const TMatrixD &m);
 
         TMatrixD ColMean(const TMatrixD &m);
 
@@ -31,6 +36,8 @@ namespace NEgo {
         TMatrixD Trans(const TMatrixD &&m);
 
         TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col);
+
+        double Sum(const TVectorD &v);
 
         TMatrixD ColSum(const TMatrixD &m);
 
@@ -52,6 +59,21 @@ namespace NEgo {
 
         TVectorD Ones(size_t n);
 
+        TMatrixD Eye(size_t n);
+
+        TMatrixD Chol(const TMatrixD &m);
+
+        TVectorD Solve(const TMatrixD &A, const TMatrixD &B);
+
+        TMatrixD CholSolve(const TMatrixD &A, const TMatrixD &B);
+
+        TVectorD AsVector(const TMatrixD &m);
+
+        double AsScalar(const TMatrixD &m);
+
+        std::vector<std::vector<double>> MatToStdVec(const TMatrixD &m);
+
+        TMatrixD StdVecToMat(const std::vector<std::vector<double>> &m);
     } // namespace NLa
 
     using NLa::TMatrixD;
@@ -60,3 +82,4 @@ namespace NEgo {
 
 
 } //namespace NEgo
+

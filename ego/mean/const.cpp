@@ -1,5 +1,7 @@
 #include "const.h"
 
+#include <ego/base/errors.h>
+
 namespace NEgo {
 
     TMeanConst::TMeanConst(size_t dim_size)

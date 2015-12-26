@@ -17,8 +17,10 @@ namespace NEgo {
         {
         }
 
-        virtual TPredictiveDistribution Evaluate(const TMatrixD &left, const TMatrixD &right) = 0;
-
+        virtual TPredictiveDistribution Evaluate(const TVectorD &Y, const TVectorD &Ymean, const TVectorD &Ysd) = 0;
+        
+        virtual void SetHyperParameters(const TVectorD &params) = 0;
+        virtual const TVectorD& GetHyperParameters() const = 0;
     };
 
 

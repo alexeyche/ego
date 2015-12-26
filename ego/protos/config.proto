@@ -5,31 +5,34 @@ package NEgoProto;
 message TModelConfig {
     optional string Cov = 1 [
         (description) = "Covariance kernel name",
-        (short_option) = "-c",
         (default_value) = "cMaternARD1"
     ];
     optional string Mean = 2 [
         (description) = "Mean function name",
-        (short_option) = "-m",
         (default_value) = "mLinear"
     ];
+    optional string Inf = 3 [
+        (description) = "Inference method name",
+        (default_value) = "iExact"
+    ];
+    optional string Lik = 4 [
+        (description) = "Likelihood function name",
+        (default_value) = "lGauss"
+    ];
 
-    optional string Input = 3 [
+    optional string Input = 5 [
         (description) = "Input file name *.csv supported",
         (short_option) = "-i"
     ];
-
-    optional string Output = 4 [
+    optional string Output = 6 [
         (description) = "Output file name",
         (short_option) = "-o"
     ];
-
-    optional bool ListEntities = 5 [
+    optional bool ListEntities = 7 [
         (description) = "List available entities in system and quit",
         (short_option) = "-l"
     ];
-
-    optional bool Verbose = 6 [
+    optional bool Verbose = 8 [
         (description) = "Turn on extra logging",
         (short_option) = "-v"
     ];

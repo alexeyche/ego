@@ -24,6 +24,8 @@ set(DIRS
     protos
     model
     mean
+    lik
+    inf
 )
 
 foreach(dir ${DIRS})
@@ -44,8 +46,10 @@ target_link_libraries(ego
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     m
-
 )
+
+
+
 install(TARGETS ego  DESTINATION lib/ COMPONENT)
 
 install(

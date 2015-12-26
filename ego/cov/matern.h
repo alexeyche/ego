@@ -41,19 +41,18 @@ namespace NEgo {
             ENSURE(Params.size() > 0, "Need hyperparameters be set");
             ENSURE(left.n_cols ==  DimSize, "Col size of left input matrix are not satisfy to kernel params: " << DimSize);
             ENSURE(right.n_cols ==  DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize);
-
+            
             TMatrixD K = NLa::SquareDist(
                 NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(left)),
                 NLa::Trans(NLa::Diag(sqrt(Power)/Params) * NLa::Trans(right))
             );
-            NLa::Print(K);
             K = NLa::Sqrt(K);
+            NLa::Print(SignalVariance * MaternFun(K) % NLa::Exp(-K));
             return SignalVariance * MaternFun(K) % NLa::Exp(-K);
         }
 
         void SetHyperParameters(const TVectorD &params) override final {
             ENSURE(params.size() == DimSize + 1, "Need DimSize + 1 parameters for kernel");
-
             Params = NLa::Exp(params.head(params.size()-1));
             SignalVariance = NLa::Exp(2.0 * NLa::GetLastElem(params));
         }

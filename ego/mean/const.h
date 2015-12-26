@@ -2,7 +2,6 @@
 
 #include "mean.h"
 
-#include <ego/base/errors.h>
 #include <ego/base/factory.h>
 
 namespace NEgo {

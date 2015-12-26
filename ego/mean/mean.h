@@ -13,7 +13,7 @@ namespace NEgo {
 
         virtual TMatrixD CalculateDerivative(const TMatrixD &m) = 0;
         virtual TVectorD CalculateMean(const TMatrixD &m) = 0;
-
+		virtual void SetHyperParameters(const TVectorD &params) = 0;
     };
 
 } // namespace NEgo

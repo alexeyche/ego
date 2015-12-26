@@ -14,11 +14,16 @@ namespace NEgo {
         virtual ~IEntity() {
         }
 
-        virtual void SetHyperParameters(const TVectorD &params) = 0;
+        const size_t& GetDimSize() const {
+            return DimSize;
+        }
 
     protected:
         size_t DimSize;
     };
+
+
+
 
 
 } // namespace NEgo
