@@ -44,7 +44,6 @@ public:
 	 		NRows = m.NRows;
 	 		NCols = m.NCols;
 		 	
-	 		Owner = true;
 	 		if(V) {
 	 			delete V;
 	 		}
@@ -74,7 +73,6 @@ private:
 	double *V;
 	size_t NRows;
 	size_t NCols;
-	bool Owner;
 };
 
 
