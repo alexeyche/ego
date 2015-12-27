@@ -14,6 +14,8 @@ namespace NEgo {
 
 		void SetHyperParameters(const TVectorD &params) override final;
 		const TVectorD& GetHyperParameters() const override final;
+		size_t GetHyperParametersSize() const override final;
+		
 	private:
 		TVectorD Params;
 	};

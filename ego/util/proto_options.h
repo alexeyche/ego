@@ -24,7 +24,7 @@ namespace NEgo {
             int count = descriptor->field_count();
             for (int i = 0; i < count; ++i) {
                 const google::protobuf::FieldDescriptor* fieldDesc = descriptor->field(i);
-                TString long_option = CamelCaseToOption(fieldDesc->name());
+                TString long_option = NStr::CamelCaseToOption(fieldDesc->name());
 
                 NamedFields.insert(std::make_pair(long_option, fieldDesc));
 
@@ -46,7 +46,7 @@ namespace NEgo {
             }
 
             for(const auto& o: Opts) {
-                if((o == "-h")&&("--help")) {
+                if((o == "-h")||(o == "--help")) {
                     Usage();
                     return false;
                 }
@@ -117,7 +117,7 @@ namespace NEgo {
             int count = descriptor->field_count();
             for (int i = 0; i < count; ++i) {
                 auto* fieldDesc = descriptor->field(i);
-                std::cout << "\t" << CamelCaseToOption(fieldDesc->name());
+                std::cout << "\t" << NStr::CamelCaseToOption(fieldDesc->name());
 
                 TString short_option = fieldDesc->options().GetExtension(NEgoProto::short_option);
                 if(!short_option.empty()) {

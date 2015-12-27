@@ -26,7 +26,7 @@ include_directories(${CMAKE_SOURCE_DIR}/ego)
 #include_directories(${CMAKE_BINARY_DIR}/protos)
 # link dependencies of executable
 target_link_libraries(ego-bin
-    ${PROTOBUF_LIBRARY}
+	${PROTOBUF_LIBRARY}
     ego 
     m
 )

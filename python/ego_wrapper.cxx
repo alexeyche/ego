@@ -4,6 +4,62 @@
 #include <ego/base/factory.h>
 #include <ego/util/log/log.h>
 
+// TMatWrap implementation
+
+TMatWrap::TMatWrap(double *v, size_t n_rows, size_t n_cols)
+	: V(nullptr)
+	, NRows(n_rows)
+	, NCols(n_cols)
+{
+	V = new double[NRows*NCols];
+	memcpy(V, v, NRows*NCols*sizeof(double));
+}
+
+TMatWrap::TMatWrap() 
+	: V(nullptr)
+	, NRows(0)
+	, NCols(0) 
+{
+}
+
+TMatWrap::TMatWrap(const TMatrixD &m) {
+	FromMatrix(m);
+}
+
+TMatWrap::TMatWrap(const TMatWrap &m) {
+	*this = m;		
+}
+
+TMatWrap::~TMatWrap() {
+	delete V;
+}
+
+double TMatWrap::GetValue(size_t i, size_t j) {
+	return V[i*NCols + j];
+}
+
+TMatWrap& TMatWrap::operator=(const TMatWrap &m) {
+ 	if(this != &m) {
+ 		NRows = m.NRows;
+ 		NCols = m.NCols;
+	 	
+ 		if(V) {
+ 			delete V;
+ 		}
+		V = new double[m.NRows*m.NCols];
+		memcpy(V, m.V, m.NRows*m.NCols*sizeof(double));
+ 	}
+ 	return *this;
+ }
+
+
+size_t TMatWrap::GetNRows() {
+	return NRows;
+}
+
+size_t TMatWrap::GetNCols() {
+	return NCols;
+}
 
 TMatrixD TMatWrap::ToMatrix() const {
 	TMatrixD m(NRows, NCols);
@@ -27,7 +83,7 @@ TMatWrap TMatWrap::FromMatrix(TMatrixD m) {
 	return wr;
 }
 
-
+// TCovWrap implementation
 
 TCovWrap::TCovWrap(const char* covName, size_t dim_size, vector<double> params) {
     TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
@@ -45,7 +101,7 @@ void TCovWrap::ListEntities() {
 }
 
 TMatWrap TCovWrap::CalculateKernel(const TMatWrap &left, const TMatWrap &right) const {
-	return TMatWrap::FromMatrix(Cov->CalculateKernel(left.ToMatrix(), right.ToMatrix()));
+	return TMatWrap::FromMatrix(Cov->CalculateKernel(left.ToMatrix(), right.ToMatrix()).GetValue());
 }
 
 TMatWrap TCovWrap::CalculateKernel(const TMatWrap &m) const {

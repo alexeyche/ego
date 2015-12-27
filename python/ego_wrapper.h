@@ -11,63 +11,27 @@ using namespace NEgo;
 
 class TMatWrap {
 public:
-	TMatWrap(double *v, size_t n_rows, size_t n_cols)
-		: V(nullptr)
-		, NRows(n_rows)
-		, NCols(n_cols)
-	{
-		V = new double[NRows*NCols];
-		memcpy(V, v, NRows*NCols*sizeof(double));
-	}
+	TMatWrap(double *v, size_t n_rows, size_t n_cols);
 
-	TMatWrap() 
-		: V(nullptr)
-		, NRows(0)
-		, NCols(0) 
-	{
-	}
+	TMatWrap();
 	
-	TMatWrap(const TMatrixD m) {
-		FromMatrix(m);
-	}
+	TMatWrap(const TMatrixD &m);
 
-	TMatWrap(const TMatWrap &m) {
-		*this = m;		
-	}
-	double GetValue(size_t i, size_t j) {
-		return V[i*NCols + j];
-	}
-
-	TMatWrap& operator=(const TMatWrap &m) {
-	 	if(this != &m) {
-	 		NRows = m.NRows;
-	 		NCols = m.NCols;
-		 	
-	 		if(V) {
-	 			delete V;
-	 		}
-			V = new double[m.NRows*m.NCols];
-			memcpy(V, m.V, m.NRows*m.NCols*sizeof(double));
-	 	}
-	 	return *this;
-	 }
-
-	~TMatWrap() {
-		delete V;
-	}
+	TMatWrap(const TMatWrap &m);
 	
-	size_t GetNRows() {
-		return NRows;
-	}
+	~TMatWrap();
+
+	double GetValue(size_t i, size_t j);
+
+	TMatWrap& operator=(const TMatWrap &m);
+
+	size_t GetNRows();
 	
-	size_t GetNCols() {
-		return NCols;
-	}
+	size_t GetNCols();
 	
 	TMatrixD ToMatrix() const;	
 
 	static TMatWrap FromMatrix(TMatrixD m);
-	
 private:
 	double *V;
 	size_t NRows;

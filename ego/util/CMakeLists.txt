@@ -11,6 +11,7 @@ endforeach()
 set(SOURCES
     proto_options.cpp
     string.cpp
+    parse_parenthesis.cpp
 )
 
 set(DIR_SRCS)

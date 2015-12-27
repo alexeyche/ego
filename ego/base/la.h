@@ -37,7 +37,7 @@ namespace NEgo {
 
         TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col);
 
-        double Sum(const TVectorD &v);
+        double Sum(const TMatrixD &m);
 
         TMatrixD ColSum(const TMatrixD &m);
 
@@ -57,7 +57,11 @@ namespace NEgo {
 
         void Print(const TMatrixD &m);
 
+        void Print(const TCubeD &m);
+
         TVectorD Ones(size_t n);
+
+        TVectorD Zeros(size_t n);
 
         TMatrixD Eye(size_t n);
 
@@ -74,12 +78,23 @@ namespace NEgo {
         std::vector<std::vector<double>> MatToStdVec(const TMatrixD &m);
 
         TMatrixD StdVecToMat(const std::vector<std::vector<double>> &m);
+
+        double Trace(const TMatrixD &d);
+
+        void ForEach(TMatrixD &m, std::function<void(double&)> f);
+
+        bool IsNan(const double &v);
+
+        TVectorD SubVec(const TVectorD &v, size_t from, size_t to);
+
+        TMatrixD ColBind(const TMatrixD &l, const TMatrixD &r);
+
+        TVectorD UnifVec(size_t size);
     } // namespace NLa
 
     using NLa::TMatrixD;
     using NLa::TVectorD;
     using NLa::TCubeD;
-
 
 } //namespace NEgo
 

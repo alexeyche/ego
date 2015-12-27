@@ -38,10 +38,13 @@ include_directories(${CMAKE_BINARY_DIR}/protos)
 include_directories(${ARMADILLO_INCLUDE_DIRS} PARENT_SCOPE)
 include_directories(${PROTOBUF_INCLUDE_DIRS} PARENT_SCOPE)
 
+
 SET_TARGET_PROPERTIES(ego PROPERTIES COMPILE_FLAGS "-fPIC")
 
 target_link_libraries(ego
     ego_protos
+    dlib 
+    blas # for dlib
     ${ARMADILLO_LIBRARIES}
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}

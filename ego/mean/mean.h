@@ -1,8 +1,11 @@
 #pragma once
 
 #include <ego/base/entity.h>
+#include <ego/base/value.h>
 
 namespace NEgo {
+
+    using TMeanRet = TValue<TVectorD, TMatrixD>;
 
     class IMean : public IEntity {
     public:
@@ -11,9 +14,11 @@ namespace NEgo {
         {
         }
 
-        virtual TMatrixD CalculateDerivative(const TMatrixD &m) = 0;
-        virtual TVectorD CalculateMean(const TMatrixD &m) = 0;
-		virtual void SetHyperParameters(const TVectorD &params) = 0;
+        virtual TMeanRet CalculateMean(const TMatrixD &m) = 0;
+		
+        virtual void SetHyperParameters(const TVectorD &params) = 0;
+
+        virtual size_t GetHyperParametersSize() const = 0;
     };
 
 } // namespace NEgo

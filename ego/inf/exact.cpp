@@ -10,19 +10,23 @@ namespace NEgo {
     	ENSURE(dynamic_cast<TLikGauss*>(Lik.get()), "Exact inference only possible with Gaussian likelihood");
     }
 
-    double TInfExact::NegativeLogLik(const TMatrixD &X, const TVectorD &Y) {
-    	ENSURE(X.n_rows == Y.n_rows, "Need X and Y with the same number of rows");
+    TInfRet TInfExact::CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) {
+        ENSURE(X.n_rows == Y.n_rows, "Need X and Y with the same number of rows");
     	
-    	size_t n = X.n_rows;    	
+        size_t n = X.n_rows;    	
     	size_t D = X.n_cols;
     	
-    	auto K = Cov->CalculateKernel(X);
-    	auto m = Mean->CalculateMean(X);
-    	double sn2 = exp(2*Lik->GetHyperParameters()(0));
+        auto covV = Cov->CalculateKernel(X);
+        auto meanV = Mean->CalculateMean(X);
+    	
+        auto K = covV.GetValue();
+    	auto m = meanV.GetValue();
         
-        double sl;
-    	TMatrixD L;
+        double sn2 = exp(2*Lik->GetHyperParameters()(0));
+        
+        TMatrixD L;
     	TMatrixD pL;
+        double sl;
 
     	if(fabs(sn2) < 1e-06) { // very tiny sn2 can lead to numerical trouble
     		L = NLa::Chol(K + sn2 * NLa::Eye(n));
@@ -33,12 +37,30 @@ namespace NEgo {
     		sl = sn2;
     		pL = L;
     	}
-    	TPosterior post;
-        post.Alpha = NLa::AsVector(NLa::CholSolve(L, Y-m)/sl);
-    	post.DiagW = NLa::Ones(n)/sqrt(sn2);
-    	post.L = pL;
-        
-        return NLa::AsScalar(NLa::Trans(Y-m)*(post.Alpha/2)) + NLa::Sum(NLa::Log(NLa::Diag(L))) + n*log(2*M_PI*sl)/2;
+    	
+        TVectorD alpha = NLa::AsVector(NLa::CholSolve(L, Y-m)/sl);
+    	TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
+    	
+        return TInfRet([=]() {
+            return NLa::AsScalar(NLa::Trans(Y-m)*(alpha/2)) + NLa::Sum(NLa::Log(NLa::Diag(L))) + n*log(2*M_PI*sl)/2;;
+        }, [=]() {
+            TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
+            TVectorD dNLogLik;
+            dNLogLik.resize(Cov->GetHyperParametersSize() + Mean->GetHyperParametersSize() + 1);
+
+            size_t hypIdx=0;
+            TCubeD covD = covV.GetDerivative();
+            for(size_t covHypIdx=0; covHypIdx < Cov->GetHyperParametersSize(); ++covHypIdx, ++hypIdx) {
+                dNLogLik(hypIdx) =  NLa::Sum(Q % covD.slice(covHypIdx))/2.0;
+            }
+            TMatrixD meanD = meanV.GetDerivative();
+            for(size_t meanHypIdx=0; meanHypIdx < Mean->GetHyperParametersSize(); ++meanHypIdx, ++hypIdx) {
+                dNLogLik(hypIdx) =  NLa::AsScalar(- NLa::Trans(meanD.col(meanHypIdx)) * alpha);
+            }
+            dNLogLik(hypIdx) = sn2 * NLa::Trace(Q);
+            return dNLogLik;
+        });
     }
+
 
 } // namespace NEgo

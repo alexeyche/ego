@@ -3,9 +3,11 @@
 #include <ego/base/factory.h>
 #include <ego/base/entities.h>
 #include <ego/base/la.h>
+#include <ego/base/opt.h>
 #include <ego/protos/config.pb.h>
 
 #include <ego/util/log/log.h>
+#include <ego/util/parse_parenthesis.h>
 
 namespace NEgo {
 
@@ -45,26 +47,53 @@ namespace NEgo {
 
             size_t D = X.n_cols;
             
-            Mean = Factory.CreateMean(Config.Mean, D);
+            Mean = ParseParenthesis<SPtr<IMean>>(
+                Config.Mean, 
+                [&](TString childName) -> SPtr<IMean> {
+                    L_DEBUG << "Creating mean function \"" << childName << "\"";
+                    return Factory.CreateMean(childName, D); 
+                }, 
+                [&](TString parentName, TVector<SPtr<IMean>> childs) -> SPtr<IMean> {
+                    L_DEBUG << "Creating composite mean function \"" << parentName << "\", with childs size " << childs.size();
+                    return Factory.CreateCompMean(parentName, childs);
+                }
+            );
+
             Cov = Factory.CreateCov(Config.Cov, D);
             Lik = Factory.CreateLik(Config.Lik, D);
             Inf = Factory.CreateInf(Config.Inf, Mean, Cov, Lik);
+            size_t hypSize = Mean->GetHyperParametersSize() + Cov->GetHyperParametersSize() + Lik->GetHyperParametersSize();
 
-            TVectorD meanHyps(X.n_cols);
-            meanHyps.fill(1.0);
-            Mean->SetHyperParameters(meanHyps);
-
-            TVectorD hypParams(X.n_cols+1);
-            hypParams.fill(1.0);
-            Cov->SetHyperParameters(hypParams);
-
-            TVectorD v(1);
-            v.fill(1.0);
-            Lik->SetHyperParameters(v);
-
-            L_DEBUG << "Negative log likehood: " << Inf->NegativeLogLik(X, Y);
+            TVectorD best = NOpt::Minimize(
+                *this, 
+                [&](const TModel& self, const TVectorD &v) -> double {
+                    double val = self.GetNegativeLogLik(v).GetValue();
+                    L_DEBUG << "Got negative log likelihood value: " << val;
+                    return val;
+                }, 
+                [&](const TModel& self, const TVectorD &v) -> TVectorD {
+                    return self.GetNegativeLogLik(v).GetDerivative();
+                },
+                NLa::UnifVec(hypSize)
+            );
+            NLa::Print(best);
         }
 
+        TInfRet GetNegativeLogLik(const TVectorD& v) const {
+            size_t hypSizeIdx = 0;
+            NLa::Print(v);
+            Mean->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Mean->GetHyperParametersSize()));
+            hypSizeIdx += Mean->GetHyperParametersSize();
+
+            Cov->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Cov->GetHyperParametersSize()));
+            hypSizeIdx += Cov->GetHyperParametersSize();
+            
+            Lik->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Lik->GetHyperParametersSize()));
+            hypSizeIdx += Lik->GetHyperParametersSize();
+
+            auto infRes = Inf->CalculateNegativeLogLik(X, Y);
+            return infRes;
+        }
     private:
         TMatrixD X;
         TVectorD Y;

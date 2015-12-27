@@ -3,6 +3,8 @@
 #include <ego/base/errors.h>
 #include <ego/util/log/log.h>
 
+
+
 extern "C" {
     int dpotrs_(char *, int *, int *, double *, int *, double *, int *, int *);  
 }
@@ -78,9 +80,9 @@ namespace NEgo {
         TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col) {
             return arma::repmat(v, per_row, per_col);
         }
-
-        double Sum(const TVectorD &v) {
-            return arma::sum(v);
+        
+        double Sum(const TMatrixD &m) {
+            return arma::accu(m);
         }
 
         TMatrixD ColSum(const TMatrixD &m) {
@@ -115,12 +117,26 @@ namespace NEgo {
 
         void Print(const TMatrixD &m) {
             std::cout << "Matrix [" << m.n_rows << "x" <<  m.n_cols << "]====\n";
-            m.print(std::cout);
+            std::cout.precision(7);
+            std::cout.setf(std::ios::fixed);
+            m.raw_print(std::cout);
+            std::cout << "====\n";
+        }
+
+        void Print(const TCubeD &m) {
+            std::cout << "Cube [" << m.n_rows << "x" <<  m.n_cols << "x" << m.n_slices << "]====\n";
+            std::cout.precision(7);
+            std::cout.setf(std::ios::fixed);
+            m.raw_print(std::cout);
             std::cout << "====\n";
         }
 
         TVectorD Ones(size_t n) {
             return arma::ones(n);
+        }
+
+        TVectorD Zeros(size_t n) {
+            return arma::zeros(n);
         }
 
         TMatrixD Eye(size_t n) {
@@ -184,7 +200,30 @@ namespace NEgo {
                 r.row(i) = arma::conv_to<TVectorD>::from(m[i]);
             }
             return r;
+        }
 
+        double Trace(const TMatrixD &d) {
+            return arma::trace(d);
+        }
+            
+        void ForEach(TMatrixD &m, std::function<void(double&)> f) {
+            m.for_each(f);
+        }
+
+        bool IsNan(const double &v) {
+            return !arma::is_finite(v);
+        }
+
+        TVectorD SubVec(const TVectorD &v, size_t from, size_t to) {
+            return v.subvec(from, to-1);
+        }
+
+        TMatrixD ColBind(const TMatrixD &l, const TMatrixD &r) {
+            return arma::join_rows(l, r);
+        }
+
+        TVectorD UnifVec(size_t size) {
+            return TVectorD(size, arma::fill::randu);
         }
     } // namespace NLa
 } //namespace NEgo

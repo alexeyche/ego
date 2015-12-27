@@ -7,6 +7,8 @@ set(SOURCES
     factory.cpp
     entities.cpp
     entity.cpp
+    value.cpp
+    opt.cpp
 )
 
 set(DIR_SRCS)

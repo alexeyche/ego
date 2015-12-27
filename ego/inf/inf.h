@@ -2,6 +2,7 @@
 
 #include <ego/base/entity.h>
 #include <ego/base/errors.h>
+#include <ego/base/value.h>
 
 #include <ego/mean/mean.h>
 #include <ego/cov/cov.h>
@@ -9,12 +10,8 @@
 
 namespace NEgo {
 
-    struct TPosterior {
-        TVectorD Alpha;
-        TVectorD DiagW;
-        TMatrixD L;
-    };
-
+    using TInfRet = TValue<double, TVectorD>;
+    
     class IInf : public IEntity {
     public:
         IInf(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik)
@@ -29,7 +26,7 @@ namespace NEgo {
 
         }
 
-        virtual double NegativeLogLik(const TMatrixD &X, const TVectorD &Y) = 0;
+        virtual TInfRet CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) = 0;
 
     protected:
         SPtr<IMean> Mean;

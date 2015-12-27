@@ -9,10 +9,11 @@
 
 #include <ego/model/model.h>
 
+#include <ego/base/opt.h>
+
 using namespace NEgo;
 
 int main(int argc, const char** argv) {
-
     TProtoOptions<NEgoProto::TModelConfig> opts(argc, argv, "Ego main binary");
 
     NEgoProto::TModelConfig config;

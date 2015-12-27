@@ -22,5 +22,9 @@ namespace NEgo {
     const TVectorD& TLikGauss::GetHyperParameters() const {
     	return Params;
     }
-    
+
+    size_t TLikGauss::GetHyperParametersSize() const {
+        return 1;
+    }
+        
 } // namespace NEgo

@@ -1,27 +1,24 @@
 #pragma once
 
-#include "mean.h"
+#include "comp_mean.h"
 
 #include <ego/base/factory.h>
 
 namespace NEgo {
 
 
-    class TMeanConst : public IMean {
+    class TMeanSum : public ICompMean {
     public:
-        TMeanConst(size_t dim_size);
+        TMeanSum(TVector<SPtr<IMean>> means);
 
         TMeanRet CalculateMean(const TMatrixD &m) override final;
 
         void SetHyperParameters(const TVectorD &params) override final;
         
         size_t GetHyperParametersSize() const override final;
-    private:
-
-        TVectorD Params;
     };
 
 
-    REGISTER_MEAN(TMeanConst);
+    REGISTER_COMP_MEAN(TMeanSum);
 
 } //namespace NEgo

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ego/base/entity.h>
+#include <ego/base/value.h>
 
 namespace NEgo {
 
@@ -21,6 +22,7 @@ namespace NEgo {
         
         virtual void SetHyperParameters(const TVectorD &params) = 0;
         virtual const TVectorD& GetHyperParameters() const = 0;
+        virtual size_t GetHyperParametersSize() const = 0;
     };
 
 

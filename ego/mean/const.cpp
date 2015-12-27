@@ -9,21 +9,30 @@ namespace NEgo {
     {
     }
 
-    TMatrixD TMeanConst::CalculateDerivative(const TMatrixD &m) {
-        return m;
-    }
-
-    TVectorD TMeanConst::CalculateMean(const TMatrixD &m) {
+    TMeanRet TMeanConst::CalculateMean(const TMatrixD &m) {
         ENSURE(Params.size() > 0, "Need hyperparameters be set");
         ENSURE(m.n_cols ==  DimSize, "Col size of input matrix are not satisfy to mean function params: " << DimSize);
-
-        return Params(0) * NLa::Ones(m.n_rows);
+        
+        TVectorD ones = NLa::Ones(m.n_rows);
+        
+        return TMeanRet(
+            [=]() {
+                return Params(0) * ones;    
+            }, 
+            [=]() {
+                return ones;
+            }
+        );
     }
 
     void TMeanConst::SetHyperParameters(const TVectorD &params) {
-        ENSURE(params.size() == 1, "Need 1 parameters for mean function");
+        ENSURE(params.size() == GetHyperParametersSize(), "Need " << GetHyperParametersSize() << " parameters for mean function");
 
         Params = params;
+    }
+    
+    size_t TMeanConst::GetHyperParametersSize() const {
+        return 1;
     }
 
 } //namespace NEgo
