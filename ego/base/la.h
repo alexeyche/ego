@@ -14,7 +14,7 @@ namespace NEgo {
         TMatrixD Exp(const TMatrixD &m);
 
         TMatrixD MatrixFromConstant(size_t r, size_t c, double val);
-        
+
         TMatrixD Log(const TMatrixD &m);
 
         double GetLastElem(const TVectorD &m);
@@ -74,6 +74,12 @@ namespace NEgo {
         TVectorD AsVector(const TMatrixD &m);
 
         double AsScalar(const TMatrixD &m);
+
+        std::vector<double> VecToStd(const TVectorD &v);
+
+        TVectorD StdToVec(const std::vector<double> &v);
+
+        TMatrixD StdVecToMat(const std::vector<std::vector<double>> &m);
 
         std::vector<std::vector<double>> MatToStdVec(const TMatrixD &m);
 

@@ -10,7 +10,7 @@ lik = {@likGauss};  % specify covariance and lik
 hyp.cov = [1 1]; %[log(1);log(1.2)]; 
 hyp.lik =  1; % log(0.9); 
 hyp.mean = [1 1 1 ]'; %[3];
-par = {meanF,cov,lik,x,y}; mfun = @minimize; % input for GP function
+par = {meanF,cov,lik,x,y}; mfune = @minimize; % input for GP function
 
 % a) plain marginal likelihood optimisation (maximum likelihood)
 inf = {@infExact};                                  % inference method
@@ -24,4 +24,4 @@ hyp = minimize(hyp0,'gp', -100, inf, meanF, cov, lik, x, y); % opt hypers
 csvwrite('x.csv', [x y]);
 csvwrite('aplha.csv', post.alpha);
 csvwrite('sW.csv', post.sW);
-csvwrite('L.csv', post.L); 
+csvwrite('L.csv', post.L);

@@ -6,7 +6,7 @@
 
 
 extern "C" {
-    int dpotrs_(char *, int *, int *, double *, int *, double *, int *, int *);  
+    int dpotrs_(char *, int *, int *, double *, int *, double *, int *, int *);
 }
 
 namespace NEgo {
@@ -38,10 +38,10 @@ namespace NEgo {
             ENSURE(left.n_cols == right.n_cols, "Column length must agree");
             TMatrixD mu = left.n_rows/static_cast<double>(left.n_rows + right.n_rows) * ColMean(left) +
                           right.n_rows/static_cast<double>(left.n_rows + right.n_rows) * ColMean(right);
-            
+
             TMatrixD leftM = left - RepMat(mu, left.n_rows, 1);
             TMatrixD rightM = right - RepMat(mu, right.n_rows, 1);
-            
+
             return RepMat(RowSum(leftM % leftM), 1, right.n_rows) +
                    Trans(RepMat(RowSum(rightM % rightM), 1, left.n_rows)) -
                    2.0 * leftM * Trans(rightM);
@@ -80,7 +80,7 @@ namespace NEgo {
         TMatrixD RepMat(const TMatrixD &v, size_t per_row, size_t per_col) {
             return arma::repmat(v, per_row, per_col);
         }
-        
+
         double Sum(const TMatrixD &m) {
             return arma::accu(m);
         }
@@ -148,14 +148,14 @@ namespace NEgo {
             ENSURE(arma::chol(ans, m), "Cholesky decomposition failed");
             return ans;
         }
-        
+
         TVectorD Solve(const TMatrixD &A, const TMatrixD &B) {
             TVectorD ans;
             ENSURE(arma::solve(ans, A, B), "Solving system is failed");
             return ans;
         }
 
-        
+
 
         TMatrixD CholSolve(const TMatrixD &A, const TMatrixD &B) {
             ENSURE(A.n_rows == A.n_cols, "First argument must me square");
@@ -176,28 +176,37 @@ namespace NEgo {
             ENSURE(m.n_cols == 1, "Trying to convert to vector matrix with many columns: 1<" << m.n_cols);
             return m.col(0);
         }
-        
+
         double AsScalar(const TMatrixD &m) {
             ENSURE(m.n_rows == 1, "Trying to convert matrix with " << m.n_rows << " rows to scalar");
             ENSURE(m.n_cols == 1, "Trying to convert matrix with " << m.n_cols << " cols to scalar");
             return m(0, 0);
         }
 
+        std::vector<double> VecToStd(const TVectorD &v) {
+            return arma::conv_to<std::vector<double>>::from(v);
+        }
+
+        TVectorD StdToVec(const std::vector<double> &v) {
+            return arma::conv_to<TVectorD>::from(v);
+        }
+
+
         std::vector<std::vector<double>> MatToStdVec(const TMatrixD &m) {
             std::vector<std::vector<double>> V(m.n_rows);
             for (size_t i = 0; i < m.n_rows; ++i) {
-                V[i] = arma::conv_to<std::vector<double>>::from(m.row(i));
+                V[i] = VecToStd(m.row(i));
             }
             return V;
         }
-        
+
         TMatrixD StdVecToMat(const std::vector<std::vector<double>> &m) {
             if(m.size() == 0) return TMatrixD();
             size_t nrow = m.size();
             size_t ncol = m[0].size();
             TMatrixD r(nrow, ncol);
             for(size_t i=0; i<nrow; ++i) {
-                r.row(i) = arma::conv_to<TVectorD>::from(m[i]);
+                r.row(i) = StdToVec(m[i]);
             }
             return r;
         }
@@ -205,7 +214,7 @@ namespace NEgo {
         double Trace(const TMatrixD &d) {
             return arma::trace(d);
         }
-            
+
         void ForEach(TMatrixD &m, std::function<void(double&)> f) {
             m.for_each(f);
         }

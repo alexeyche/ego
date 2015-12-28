@@ -29,5 +29,7 @@ int main(int argc, const char** argv) {
     }
     L_DEBUG << "Got model config: \n\n" << config.DebugString();
     TModel model(config);
+
+    NOpt::Minimize(model, NLa::UnifVec(model.GetHyperParametersSize()));
 	return 0;
 }
