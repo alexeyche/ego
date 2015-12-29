@@ -223,6 +223,10 @@ namespace NEgo {
             return !arma::is_finite(v);
         }
 
+        bool IsNan(const TVectorD &v) {
+            return v.has_nan();
+        }
+
         TVectorD SubVec(const TVectorD &v, size_t from, size_t to) {
             return v.subvec(from, to-1);
         }
@@ -234,5 +238,14 @@ namespace NEgo {
         TVectorD UnifVec(size_t size) {
             return TVectorD(size, arma::fill::randu);
         }
+        
+        TString VecToStr(const TVectorD &v, TString delim) {
+            std::stringstream ss;
+            for(const auto& val: v) {
+                ss << val << delim;
+            }
+            return ss.str();
+        }
+
     } // namespace NLa
 } //namespace NEgo

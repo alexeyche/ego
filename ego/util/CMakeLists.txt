@@ -12,6 +12,7 @@ set(SOURCES
     proto_options.cpp
     string.cpp
     parse_parenthesis.cpp
+    minimize.cpp
 )
 
 set(DIR_SRCS)

@@ -45,19 +45,23 @@ namespace NEgo {
             return NLa::AsScalar(NLa::Trans(Y-m)*(alpha/2)) + NLa::Sum(NLa::Log(NLa::Diag(L))) + n*log(2*M_PI*sl)/2;;
         }, [=]() {
             TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
-            TVectorD dNLogLik;
-            dNLogLik.resize(Cov->GetHyperParametersSize() + Mean->GetHyperParametersSize() + 1);
+            TVectorD dNLogLik(Cov->GetHyperParametersSize() + 1 + Mean->GetHyperParametersSize());
 
             size_t hypIdx=0;
+            
             TCubeD covD = covV.GetDerivative();
             for(size_t covHypIdx=0; covHypIdx < Cov->GetHyperParametersSize(); ++covHypIdx, ++hypIdx) {
                 dNLogLik(hypIdx) =  NLa::Sum(Q % covD.slice(covHypIdx))/2.0;
             }
+            
+            dNLogLik(hypIdx) = sn2 * NLa::Trace(Q);
+            hypIdx++;
+
             TMatrixD meanD = meanV.GetDerivative();
             for(size_t meanHypIdx=0; meanHypIdx < Mean->GetHyperParametersSize(); ++meanHypIdx, ++hypIdx) {
                 dNLogLik(hypIdx) =  NLa::AsScalar(- NLa::Trans(meanD.col(meanHypIdx)) * alpha);
             }
-            dNLogLik(hypIdx) = sn2 * NLa::Trace(Q);
+            
             return dNLogLik;
         });
     }

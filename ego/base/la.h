@@ -91,11 +91,15 @@ namespace NEgo {
 
         bool IsNan(const double &v);
 
+        bool IsNan(const TVectorD &v);
+
         TVectorD SubVec(const TVectorD &v, size_t from, size_t to);
 
         TMatrixD ColBind(const TMatrixD &l, const TMatrixD &r);
 
         TVectorD UnifVec(size_t size);
+
+        TString VecToStr(const TVectorD &v, TString delim = ", ");
     } // namespace NLa
 
     using NLa::TMatrixD;

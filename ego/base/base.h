@@ -32,4 +32,6 @@ namespace NEgo {
     template <typename T>
     using TVector = std::vector<T>;
 
+    using ui32 = size_t;
+
 } // namespace NEgo

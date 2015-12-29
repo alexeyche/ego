@@ -79,17 +79,16 @@ namespace NEgo {
         }
 
         TInfRet GetNegativeLogLik(const TVectorD& v) const {
-            NLa::Print(v);
-
             size_t hypSizeIdx = 0;
-            Mean->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Mean->GetHyperParametersSize()));
-            hypSizeIdx += Mean->GetHyperParametersSize();
-
+            
             Cov->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Cov->GetHyperParametersSize()));
             hypSizeIdx += Cov->GetHyperParametersSize();
 
             Lik->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Lik->GetHyperParametersSize()));
             hypSizeIdx += Lik->GetHyperParametersSize();
+            
+            Mean->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Mean->GetHyperParametersSize()));
+            hypSizeIdx += Mean->GetHyperParametersSize();
 
             auto infRes = Inf->CalculateNegativeLogLik(X, Y);
             return infRes;
