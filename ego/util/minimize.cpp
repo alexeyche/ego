@@ -28,15 +28,15 @@ namespace NEgo {
 		double d3;
 		TVectorD df3 = df0;
 		double f3 = NLa::AsScalar(- NLa::Trans(df3) * s);
-		
+
 		while (i < config.MaxEval) {
 			// L_DEBUG<< "Eval " << i;
 			TVectorD BestX = Z;
 			double BestF = f0;
 			TVectorD BestDeriv = df0;
-			
+
 			TVectorD X3;
-			
+
 			size_t m = config.MaxLineSearchEval;
 			// L_DEBUG<< "Iteration number " << i << ", f2 = " << f2 << ", d2 = " << d2 << ", BestX = " << BestX(0);
 			while (true) {
@@ -45,13 +45,13 @@ namespace NEgo {
 				while (!lineSearchSuccess && (m>0)) {
 					try {
 						--m; i++;
-						
+
 						X3 = Z+x3*s;
 						// L_DEBUG<< "Trying to eval with " << NLa::VecToStr(X3);
 						TPair<double, TVectorD> fres = f(X3);
 						f3 = fres.first;
 						df3 = fres.second;
-						
+
 						// L_DEBUG<< "Eval with " << NLa::VecToStr(X3);
 						// L_DEBUG<< "\tgot " << f3 << " " << NLa::VecToStr(df3);
 						if(std::isnan(f3) || NLa::IsNan(df3)) {
@@ -102,10 +102,10 @@ namespace NEgo {
 						x3 = x3tmp;
 						// L_DEBUG<< "Third if " << x3;
 					} else {
-						// L_DEBUG<< "No if " << x3;		
+						// L_DEBUG<< "No if " << x3;
 					}
- 				} 
-				
+ 				}
+
 			}
 			double x4 = x3, f4 = f3, d4 = d3;
 			while (((fabs(d3) > -config.Sig*d0) || (f3 > f0 +x3 * config.Rho * d0)) && (m > 0)) {
@@ -116,7 +116,7 @@ namespace NEgo {
 					x2 = x3; f2 = f3; d2 = d3;
 				}
 				if (f4 > f0) {
-					x3 = x2-(0.5*d2*(x4-x2)*(x4-x2))/(f4-f2-d2*(x4-x2)); 
+					x3 = x2-(0.5*d2*(x4-x2)*(x4-x2))/(f4-f2-d2*(x4-x2));
 				} else {
 					double A = 6.0*(f2-f4)/(x4-x2)+3.0*(d4+d2);
 					double B = 3.0*(f4-f2)-(2.0*d2+d4)*(x4-x2);
@@ -127,7 +127,7 @@ namespace NEgo {
 				}
 				x3 = std::max(std::min(x3, x4-config.InterruptWithin*(x4-x2)), x2+config.InterruptWithin*(x4-x2));
 				X3 = Z+x3*s;
-				
+
 				TPair<double, TVectorD> fres = f(X3);
 				f3 = fres.first;
 				df3 = fres.second;
@@ -140,8 +140,8 @@ namespace NEgo {
 				d3 = NLa::AsScalar(NLa::Trans(df3) * s);
 			}
 			if ((fabs(d3) < -config.Sig*d0) && (f3 < f0 + x3*config.Rho*d0)) { // line search succeed
-				Z = Z + x3*s; 
-				f0 = f3; 
+				Z = Z + x3*s;
+				f0 = f3;
 				fProgress.push_back(f0);
 				L_DEBUG<< "Line search " << i << ", function value " << f0;
 				s = NLa::AsScalar((NLa::Trans(df3)*df3 - NLa::Trans(df0)*df3)/(NLa::Trans(df0)*df0))*s - df3;
@@ -149,7 +149,7 @@ namespace NEgo {
 				d3 = d0;
 				d0 = NLa::AsScalar(NLa::Trans(df0) * s);
 				if (d0 > 0.0) {
-					s = -df0; 
+					s = -df0;
 					d0 = NLa::AsScalar(- NLa::Trans(s) * s);
 				}
 				x3 = x3 * std::min(config.MaxSlopeRatio, d3/(d0 - std::numeric_limits<double>::min()));
@@ -161,7 +161,7 @@ namespace NEgo {
 				if ((lineSearchFailed) || (i > config.MaxEval)) {
 					break;
 				}
-				s = - df0; 
+				s = - df0;
 				d0 = NLa::AsScalar(- NLa::Trans(s) * s);
 				x3 = 1.0/(1.0 - d0);
 				lineSearchFailed = true;

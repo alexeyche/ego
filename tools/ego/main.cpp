@@ -8,6 +8,8 @@
 #include <ego/util/string.h>
 #include <ego/util/minimize.h>
 
+#include <ego/base/opt.h>
+
 #include <ego/model/model.h>
 
 
@@ -31,13 +33,16 @@ int main(int argc, const char** argv) {
     TModel model(config);
     TVectorD v(model.GetHyperParametersSize());
     v.fill(1.0);
-    
-    auto res = Minimize(
-        v, 
-        [&] (const TVectorD &x) -> TPair<double, TVectorD> {
-            auto res = model.GetNegativeLogLik(x);
-            return MakePair(res.GetValue(), res.GetDerivative());
-        }
-    );
+
+    // NOpt::Minimize(model, v);
+
+    L_DEBUG << model.GetNegativeLogLik(v).GetValue();
+    // auto res = Minimize(
+    //     v,
+    //     [&] (const TVectorD &x) -> TPair<double, TVectorD> {
+    //         auto res = model.GetNegativeLogLik(x);
+    //         return MakePair(res.GetValue(), res.GetDerivative());
+    //     }
+    // );
 	return 0;
 }
