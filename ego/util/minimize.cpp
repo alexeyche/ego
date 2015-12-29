@@ -30,7 +30,7 @@ namespace NEgo {
 		double f3 = NLa::AsScalar(- NLa::Trans(df3) * s);
 		
 		while (i < config.MaxEval) {
-			L_DEBUG << "Eval " << i;
+			// L_DEBUG<< "Eval " << i;
 			TVectorD BestX = Z;
 			double BestF = f0;
 			TVectorD BestDeriv = df0;
@@ -38,7 +38,7 @@ namespace NEgo {
 			TVectorD X3;
 			
 			size_t m = config.MaxLineSearchEval;
-			L_DEBUG << "Iteration number " << i << ", f2 = " << f2 << ", d2 = " << d2 << ", BestX = " << BestX(0);
+			// L_DEBUG<< "Iteration number " << i << ", f2 = " << f2 << ", d2 = " << d2 << ", BestX = " << BestX(0);
 			while (true) {
 				x2 = 0.0; f2 = f0; d2 = d0; f3 = f0; df3 = df0;
 				bool lineSearchSuccess = false;
@@ -47,69 +47,69 @@ namespace NEgo {
 						--m; i++;
 						
 						X3 = Z+x3*s;
-						L_DEBUG << "Trying to eval with " << NLa::VecToStr(X3);
+						// L_DEBUG<< "Trying to eval with " << NLa::VecToStr(X3);
 						TPair<double, TVectorD> fres = f(X3);
 						f3 = fres.first;
 						df3 = fres.second;
 						
-						L_DEBUG << "Eval with " << NLa::VecToStr(X3);
-						L_DEBUG << "\tgot " << f3 << " " << NLa::VecToStr(df3);
+						// L_DEBUG<< "Eval with " << NLa::VecToStr(X3);
+						// L_DEBUG<< "\tgot " << f3 << " " << NLa::VecToStr(df3);
 						if(std::isnan(f3) || NLa::IsNan(df3)) {
-							L_DEBUG << "Oopsie, got error while eval";
+							// L_DEBUG<< "Oopsie, got error while eval";
 							throw TEgoException() << "Got nans";
 						}
 						lineSearchSuccess = true;
-						L_DEBUG << "Line search good with function value " << f3;
+						// L_DEBUG<< "Line search good with function value " << f3;
 					} catch(const TEgoException &e) {
-						L_DEBUG << "Got error while evaluating function: " << e.what() << "; lets bisect and try again";
+						// L_DEBUG<< "Got error while evaluating function: " << e.what() << "; lets bisect and try again";
 						x3 = (x2+x3)/2.0;
 					}
 				}
 				if (f3 < BestF) {
-					L_DEBUG << "Got goodie " << f3;
+					// L_DEBUG<< "Got goodie " << f3;
 					BestX = X3;
 					BestF = f3;
 					BestDeriv = df3;
 				}
 				d3 = NLa::AsScalar(NLa::Trans(df3) * s); // new slope
-				L_DEBUG << "new slope " << d3;
+				// L_DEBUG<< "new slope " << d3;
 				if ( (d3 > config.Sig*d0) || (f3 > (f0 + x3*config.Rho*d0)) || (m == 0) ) {
-					L_DEBUG << "We done extrapolating with d3 " << d3 << " and f3 " << f3;
+					// L_DEBUG<< "We done extrapolating with d3 " << d3 << " and f3 " << f3;
 					break;
 				}
 				double x1 = x2;
 				double f1 = f2;
 				double d1 = d2;
-				L_DEBUG << "x1 = " << x1 << ", f1 = " << f1 << ", d1 = " << d1;
+				// L_DEBUG<< "x1 = " << x1 << ", f1 = " << f1 << ", d1 = " << d1;
 				x2 = x3; f2 = f3; d2 = d3;
-				L_DEBUG << "x2 = " << x2 << ", f2 = " << f2 << ", d2 = " << d2;
+				// L_DEBUG<< "x2 = " << x2 << ", f2 = " << f2 << ", d2 = " << d2;
 				double A = 6.0*(f1-f2)+3.0*(d2+d1)*(x2-x1); // cubic extrapolation
 				double B = 3.0*(f2-f1)-(2.0*d1+d2)*(x2-x1);
 				x3 = x1-d1*((x2-x1)*(x2-x1))/(B+sqrt(B*B-A*d1*(x2-x1)));
-				L_DEBUG << "A = " << A << ", B = " << B << ", x3 = " << x3 << ", Aleft = " << 6.0*(f1-f2) << ", Aright = " << 3.0*(d2+d1)*(x2-x1);
-				L_DEBUG << "x3 formula, sqrt of: " << B*B-A*d1*(x2-x1);
+				// L_DEBUG<< "A = " << A << ", B = " << B << ", x3 = " << x3 << ", Aleft = " << 6.0*(f1-f2) << ", Aright = " << 3.0*(d2+d1)*(x2-x1);
+				// L_DEBUG<< "x3 formula, sqrt of: " << B*B-A*d1*(x2-x1);
 
 				if (std::isnan(x3) || std::isinf(x3) || (x3 < 0)) {
 					x3 = x2 * config.ExtrapolateNums;
-					L_DEBUG << "First if " << x3;
+					// L_DEBUG<< "First if " << x3;
 				} else
 				if (x3 > x2 * config.ExtrapolateNums) {
 					x3 = x2 * config.ExtrapolateNums;
-					L_DEBUG << "Second if " << x3;
+					// L_DEBUG<< "Second if " << x3;
 				} else {
 					double x3tmp = x2 + config.InterruptWithin*(x2 - x1);
 					if(x3 < x3tmp) {
 						x3 = x3tmp;
-						L_DEBUG << "Third if " << x3;
+						// L_DEBUG<< "Third if " << x3;
 					} else {
-						L_DEBUG << "No if " << x3;		
+						// L_DEBUG<< "No if " << x3;		
 					}
  				} 
 				
 			}
 			double x4 = x3, f4 = f3, d4 = d3;
 			while (((fabs(d3) > -config.Sig*d0) || (f3 > f0 +x3 * config.Rho * d0)) && (m > 0)) {
-				L_DEBUG << "Second loop, d3 = " << d3 << ", f3 = " << f3 << f3 << ", m = " << m;
+				// L_DEBUG<< "Second loop, d3 = " << d3 << ", f3 = " << f3 << f3 << ", m = " << m;
 				if ((d3 > 0.0) || (f3 > f0+x3*config.Rho*d0)) {
 					x4 = x3; f4 = f3; d4 = d3;
 				} else {
@@ -143,7 +143,7 @@ namespace NEgo {
 				Z = Z + x3*s; 
 				f0 = f3; 
 				fProgress.push_back(f0);
-				L_DEBUG << "Line search " << i << ", function value " << f0;
+				L_DEBUG<< "Line search " << i << ", function value " << f0;
 				s = NLa::AsScalar((NLa::Trans(df3)*df3 - NLa::Trans(df0)*df3)/(NLa::Trans(df0)*df0))*s - df3;
 				df0 = df3;
 				d3 = d0;
