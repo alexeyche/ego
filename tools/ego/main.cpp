@@ -35,7 +35,5 @@ int main(int argc, const char** argv) {
 
     NOpt::Minimize(model, v, NOpt::MMA);
     auto d = model.GetPrediction({0, 0.1, 0.2});
-    L_DEBUG << d.Mean;
-    L_DEBUG << d.Variance;
-	return 0;
+    return 0;
 }

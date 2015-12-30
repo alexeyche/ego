@@ -9,6 +9,10 @@
 #include <ego/util/log/log.h>
 #include <ego/util/parse_parenthesis.h>
 
+#include <ego/distr/distr.h>
+
+#include <ctime>
+
 namespace NEgo {
 
     struct TModelConfig {
@@ -25,6 +29,11 @@ namespace NEgo {
             Mean = config.mean();
             Lik = config.lik();
             Inf = config.inf();
+            if(config.has_seed()) {
+                Seed = config.seed();
+            } else {
+                Seed = std::time(0);
+            }
         }
 
         TString Input;
@@ -33,6 +42,8 @@ namespace NEgo {
         TString Mean;
         TString Lik;
         TString Inf;
+
+        ui32 Seed;
     };
 
     class TModel {
@@ -45,7 +56,7 @@ namespace NEgo {
 
         size_t GetHyperParametersSize() const;
 
-        TPredictiveDistribution GetPrediction(const TMatrixD &Xnew);
+        TDistrVec GetPrediction(const TMatrixD &Xnew);
 
     private:
         TMatrixD X;

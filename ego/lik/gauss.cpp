@@ -3,6 +3,7 @@
 #include <ego/base/base.h>
 #include <ego/base/errors.h>
 
+#include <ego/distr/gauss.h>
 
 
 namespace NEgo {
@@ -12,10 +13,10 @@ namespace NEgo {
     {
     }
 
-    TPredictiveDistribution TLikGauss::CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const {
+    TPredictiveDistributionParams TLikGauss::CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const {
         ENSURE(GetHyperParametersSize() == 1, "One hyperparameter must be set");
         double sn2 = GetHyperParameters()(0);
-        TPredictiveDistribution ret;
+        TPredictiveDistributionParams ret;
         ret.LogP = -( ((Y-mean) % (Y-mean)) / (sn2+variance) )/2.0 - NLa::Log(2.0*M_PI*(sn2+variance))/2.0;
         Tie(ret.Mean, ret.Variance) = TLikGauss::GetMarginalMeanAndVariance(mean, variance);
         return ret;
@@ -40,4 +41,8 @@ namespace NEgo {
         return 1;
     }
         
+    SPtr<IDistr> TLikGauss::GetDistribution(double mean, double sd, ui32 seed) {
+        return SPtr<IDistr>(new TDistrGauss(mean, sd, seed));
+    }
+
 } // namespace NEgo

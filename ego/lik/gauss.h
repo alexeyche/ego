@@ -8,9 +8,11 @@ namespace NEgo {
 
 	class TLikGauss : public ILik {
 	public:
+
+
         TLikGauss(size_t dim_size);
 
-		TPredictiveDistribution CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const override final;
+		TPredictiveDistributionParams CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const override final;
         
         TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD &mean, const TVectorD &variance) const override final;
 
@@ -19,6 +21,8 @@ namespace NEgo {
 		const TVectorD& GetHyperParameters() const override final;
 		
 		size_t GetHyperParametersSize() const override final;
+		
+		SPtr<IDistr> GetDistribution(double mean, double sd, ui32 seed) override final;
 		
 	private:
 		TVectorD Params;

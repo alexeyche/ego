@@ -20,19 +20,23 @@ message TModelConfig {
         (default_value) = "lGauss"
     ];
 
-    optional string Input = 5 [
+    optional uint32 Seed = 5 [
+        (description) = "Seed of random generator",
+        (short_option) = "-s"
+    ];
+    optional string Input = 6 [
         (description) = "Input file name *.csv supported",
         (short_option) = "-i"
     ];
-    optional string Output = 6 [
+    optional string Output = 7 [
         (description) = "Output file name",
         (short_option) = "-o"
     ];
-    optional bool ListEntities = 7 [
+    optional bool ListEntities = 8 [
         (description) = "List available entities in system and quit",
         (short_option) = "-l"
     ];
-    optional bool Verbose = 8 [
+    optional bool Verbose = 9 [
         (description) = "Turn on extra logging",
         (short_option) = "-v"
     ];

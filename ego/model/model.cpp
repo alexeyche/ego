@@ -58,7 +58,7 @@ namespace NEgo {
     }
 
 
-    TPredictiveDistribution TModel::GetPrediction(const TMatrixD &Xnew) {
+    TDistrVec TModel::GetPrediction(const TMatrixD &Xnew) {
     	TVectorD kss = NLa::Diag(Cov->CalculateKernel(Xnew).GetValue());
     	TMatrixD Ks = Cov->CalculateKernel(X, Xnew).GetValue();
     	TVectorD ms = Mean->CalculateMean(Xnew).GetValue();
@@ -73,7 +73,9 @@ namespace NEgo {
         TVectorD V = NLa::Solve(NLa::Trans(post.L), NLa::RepMat(post.DiagW, 1, Xnew.n_rows));
         TVectorD Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
 
-        return Lik->CalculatePredictiveDistribution(Fmu, Fs2);
+        auto predDistrParams = Lik->CalculatePredictiveDistribution(Fmu, Fs2);
+        
+        return Lik->GetPredictiveDistributions(predDistrParams, Config.Seed);
     }
 
 } // namespace NEgo

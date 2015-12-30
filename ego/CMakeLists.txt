@@ -26,6 +26,7 @@ set(DIRS
     mean
     lik
     inf
+    distr
 )
 
 foreach(dir ${DIRS})

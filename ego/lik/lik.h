@@ -3,9 +3,13 @@
 #include <ego/base/entity.h>
 #include <ego/base/value.h>
 
-namespace NEgo {
+#include <ego/distr/distr.h>
 
-    struct TPredictiveDistribution {
+namespace NEgo {
+    
+    using TDistrVec = TVector<SPtr<IDistr>>;
+
+    struct TPredictiveDistributionParams {
         TVectorD LogP;
         TVectorD Mean;
         TVectorD Variance;
@@ -18,11 +22,11 @@ namespace NEgo {
         {
         }
 
-        virtual TPredictiveDistribution CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const = 0;
+        virtual TPredictiveDistributionParams CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const = 0;
 
         virtual TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD &mean, const TVectorD &variance) const = 0;
 
-        TPredictiveDistribution CalculatePredictiveDistribution(const TVectorD &mean, const TVectorD &variance) const;
+        TPredictiveDistributionParams CalculatePredictiveDistribution(const TVectorD &mean, const TVectorD &variance) const;
 
         virtual void SetHyperParameters(const TVectorD &params) = 0;
 
@@ -30,6 +34,9 @@ namespace NEgo {
 
         virtual size_t GetHyperParametersSize() const = 0;
 
+        virtual SPtr<IDistr> GetDistribution(double mean, double sd, ui32 seed) = 0;
+
+        TDistrVec GetPredictiveDistributions(TPredictiveDistributionParams params, ui32 seed);
     };
 
 
