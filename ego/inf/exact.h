@@ -13,7 +13,7 @@ namespace NEgo {
 	public:
         TInfExact(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik);
 		
-		TInfRet CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) override final;
+		TInfValue CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) override final;
 	};
  
 	REGISTER_INF(TInfExact);

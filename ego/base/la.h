@@ -2,6 +2,10 @@
 
 #include <ego/base/base.h>
 
+#define ARMA_DONT_USE_WRAPPER
+#define ARMA_USE_LAPACK
+#define ARMA_USE_BLAS
+
 #include <armadillo>
 
 

@@ -9,11 +9,15 @@ namespace NEgo {
 	class TLikGauss : public ILik {
 	public:
         TLikGauss(size_t dim_size);
+
+		TPredictiveDistribution CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const override final;
         
-		TPredictiveDistribution Evaluate(const TVectorD &Y, const TVectorD &Ymean, const TVectorD &Ysd) override final;
+        TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD &mean, const TVectorD &variance) const override final;
 
 		void SetHyperParameters(const TVectorD &params) override final;
+		
 		const TVectorD& GetHyperParameters() const override final;
+		
 		size_t GetHyperParametersSize() const override final;
 		
 	private:

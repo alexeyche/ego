@@ -18,13 +18,18 @@ namespace NEgo {
         {
         }
 
-        virtual TPredictiveDistribution Evaluate(const TVectorD &Y, const TVectorD &Ymean, const TVectorD &Ysd) = 0;
+        virtual TPredictiveDistribution CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const = 0;
+
+        virtual TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD &mean, const TVectorD &variance) const = 0;
+
+        TPredictiveDistribution CalculatePredictiveDistribution(const TVectorD &mean, const TVectorD &variance) const;
 
         virtual void SetHyperParameters(const TVectorD &params) = 0;
 
         virtual const TVectorD& GetHyperParameters() const = 0;
 
         virtual size_t GetHyperParametersSize() const = 0;
+
     };
 
 

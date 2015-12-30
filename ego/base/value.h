@@ -6,11 +6,12 @@ namespace NEgo {
 
     template <typename V, typename dV>
     class TValue {
-    private:
+    protected:
         using TValueCb = std::function<V()>;
         using TDerivativeCb = std::function<dV()>;
 
     public:
+        
         TValue(TValueCb valueCb)
             : ValueCb(valueCb)
             , DerivativeCb([] { return dV(); })

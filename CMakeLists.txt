@@ -20,7 +20,7 @@ option(PROFILE "Compile with profiling information" OFF)
 #  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 #endif(CMAKE_COMPILER_IS_GNUCC)
 include(FindProtobuf)
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
 
 find_package(Protobuf REQUIRED)
 find_package(Armadillo REQUIRED)
@@ -39,8 +39,8 @@ elseif(PROFILE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -pg")
 else()
   add_definitions(-DNDEBUG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -O3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -std=c++11 -O3")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -std=gnu99 -O3")
 endif(DEBUG)
 
 if(PERF)
@@ -54,9 +54,6 @@ endif(PERF)
 #  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 #endif(PROFILE)
 
-# set path right
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -69,6 +66,7 @@ include(UseCython)
 
 
 # Recurse into the rest of the project.
+add_subdirectory(nlopt)
 add_subdirectory(ego)
 add_subdirectory(python)
 add_subdirectory(tools)

@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <tuple>
 
 namespace NEgo {
 
@@ -33,5 +34,36 @@ namespace NEgo {
     using TVector = std::vector<T>;
 
     using ui32 = size_t;
+
+    //template< class... Types>
+    //using Tie = std::tie<Types& ...>;
+
+
+	template< typename T1, typename T2>
+	class TTie {
+	public:
+	 	TTie(T1 &first,T2 &second)
+	  		: First(first)
+	  		, Second(second)
+	  	{
+	  	}
+
+	 	TPair<T1, T2> const & operator = (TPair<T1, T2> const &rhs) {
+		    First = rhs.first;
+		    Second = rhs.second;
+		    return rhs;
+		}
+
+	private:
+	  	void operator=(TTie const &);
+	  	T1 &First;
+	  	T2 &Second;
+	};
+
+	template <typename T1, typename T2>
+	inline TTie<T1,T2> Tie(T1 &first, T2 &second)
+	{
+	  return TTie<T1, T2>(first, second);
+	}
 
 } // namespace NEgo

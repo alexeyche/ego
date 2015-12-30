@@ -6,7 +6,6 @@
 #include <ego/protos/config.pb.h>
 #include <ego/util/proto_options.h>
 #include <ego/util/string.h>
-#include <ego/util/minimize.h>
 
 #include <ego/base/opt.h>
 
@@ -34,15 +33,9 @@ int main(int argc, const char** argv) {
     TVectorD v(model.GetHyperParametersSize());
     v.fill(1.0);
 
-    // NOpt::Minimize(model, v);
-
-    L_DEBUG << model.GetNegativeLogLik(v).GetValue();
-    // auto res = Minimize(
-    //     v,
-    //     [&] (const TVectorD &x) -> TPair<double, TVectorD> {
-    //         auto res = model.GetNegativeLogLik(x);
-    //         return MakePair(res.GetValue(), res.GetDerivative());
-    //     }
-    // );
+    NOpt::Minimize(model, v, NOpt::MMA);
+    auto d = model.GetPrediction({0, 0.1, 0.2});
+    L_DEBUG << d.Mean;
+    L_DEBUG << d.Variance;
 	return 0;
 }

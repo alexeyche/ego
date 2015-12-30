@@ -10,7 +10,40 @@
 
 namespace NEgo {
 
-    using TInfRet = TValue<double, TVectorD>;
+    struct TPosterior {
+        TPosterior() {}
+
+        TPosterior(const TMatrixD &l, const TVectorD &alpha, const TVectorD &diagW)
+            : L(l)
+            , Alpha(alpha)
+            , DiagW(diagW)
+        {
+        }
+
+        TMatrixD L;
+        TVectorD Alpha;
+        TVectorD DiagW;
+    };
+
+
+    class TInfValue : public TValue<double, TVectorD> {
+        using Parent = TValue<double, TVectorD>;
+    public:
+        using TPosteriorCb = std::function<TPosterior()>;
+
+        TInfValue(Parent::TValueCb valueCb, Parent::TDerivativeCb derivativeCb, TPosteriorCb posteriorCb) 
+            : TValue(valueCb, derivativeCb)
+            , PosteriorCb(posteriorCb)
+        {
+        }
+
+        TPosterior GetPosterior() const {
+            return PosteriorCb();
+        }
+    private:
+        TPosteriorCb PosteriorCb;
+    };
+
     
     class IInf : public IEntity {
     public:
@@ -26,7 +59,7 @@ namespace NEgo {
 
         }
 
-        virtual TInfRet CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) = 0;
+        virtual TInfValue CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) = 0;
 
     protected:
         SPtr<IMean> Mean;

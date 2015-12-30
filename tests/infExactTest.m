@@ -1,5 +1,6 @@
 
-x = [0:0.1:10; 0:0.1:10; 0:0.1:10]'; 
+t = cputime
+x = [0:0.1:1; 0:0.1:1; 0:0.1:1]'; 
 %x = [0 1 2 3 4 5; 0 1 2 3 4 5]';
 rng(10, 'twister');
 y = 2*sum(x,2)+randn(size(x, 1), 1);   % generate training data
@@ -18,10 +19,13 @@ inf = {@infExact};                                  % inference method
 %hyp_plain = feval(mfun, hyp, @gp, -10, im, par{:}); 
 
 [post nlZ dnlZ] = feval(inf{:}, hyp, meanF, cov, lik, x, y); 
-hyp0 = hyp
+hyp0 = hyp;
+xs = [0 0 0; 0.1 0.1 0.1; 0.5 0.5 0.5; 0.7 0.7 0.7];
+nargin = 7;
+mean=meanF;
 hyp = minimize(hyp0,'gp', -200, inf, meanF, cov, lik, x, y); % opt hypers
 
-
+cputime-t
 dlmwrite('x.csv', [x y], 'delimiter', ',', 'precision', 9);
 csvwrite('aplha.csv', post.alpha);
 csvwrite('sW.csv', post.sW);

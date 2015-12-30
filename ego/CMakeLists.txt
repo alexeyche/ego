@@ -37,16 +37,22 @@ add_library(ego SHARED ${EGO_SRCS})
 include_directories(${CMAKE_BINARY_DIR}/protos)
 include_directories(${ARMADILLO_INCLUDE_DIRS} PARENT_SCOPE)
 include_directories(${PROTOBUF_INCLUDE_DIRS} PARENT_SCOPE)
-
+include_directories(${OpenBLAS_INCLUDE_DIRS} PARENT_SCOPE)
 
 SET_TARGET_PROPERTIES(ego PROPERTIES COMPILE_FLAGS "-fPIC")
+
+SET(OpenBLAS_VERSION "0.2.16.dev")
+SET(OpenBLAS_INCLUDE_DIRS /opt/OpenBLAS/include)
+SET(OpenBLAS_LIBRARIES /opt/OpenBLAS/lib/libopenblas.so)
 
 target_link_libraries(ego
     ego_protos
     nlopt
+    ${OpenBLAS_LIBRARIES}
+    lapack
     #dlib
     #blas # for dlib
-    ${ARMADILLO_LIBRARIES}
+    #${ARMADILLO_LIBRARIES}
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     m
