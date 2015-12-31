@@ -23,7 +23,7 @@ namespace NEgo {
 
         auto K = covV.GetValue();
     	auto m = meanV.GetValue();
-        
+
         double sn2 = exp(2*Lik->GetHyperParameters()(0));
 
         TMatrixD L;
@@ -46,7 +46,7 @@ namespace NEgo {
         return TInfValue(
             [=]() {
                 return NLa::AsScalar(NLa::Trans(Y-m)*(alpha/2)) + NLa::Sum(NLa::Log(NLa::Diag(L))) + n*log(2*M_PI*sl)/2;;
-            }, 
+            },
             [=]() {
                 TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
                 TVectorD dNLogLik(Cov->GetHyperParametersSize() + 1 + Mean->GetHyperParametersSize());

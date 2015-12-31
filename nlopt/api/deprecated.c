@@ -7,17 +7,17 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "nlopt.h"
@@ -53,10 +53,10 @@ NLOPT_STDCALL nlopt_set_local_search_algorithm(nlopt_algorithm deriv,
 int nlopt_stochastic_population = 0;
 
 int
-NLOPT_STDCALL nlopt_get_stochastic_population(void) { 
+NLOPT_STDCALL nlopt_get_stochastic_population(void) {
      return nlopt_stochastic_population; }
 void
-NLOPT_STDCALL nlopt_set_stochastic_population(int pop) { 
+NLOPT_STDCALL nlopt_set_stochastic_population(int pop) {
      nlopt_stochastic_population = pop <= 0 ? 0 : (unsigned) pop; }
 
 /*************************************************************************/
@@ -90,7 +90,7 @@ NLOPT_STDCALL nlopt_minimize_econstrained(
      if (ret != NLOPT_SUCCESS) { nlopt_destroy(opt); return ret; }
 
      for (i = 0; i < m; ++i) {
-	  ret = nlopt_add_inequality_constraint(opt, (nlopt_func) fc, 
+	  ret = nlopt_add_inequality_constraint(opt, (nlopt_func) fc,
 						fc_data + i*fc_datum_size,
 						0.0);
 	  if (ret != NLOPT_SUCCESS) { nlopt_destroy(opt); return ret; }
@@ -98,7 +98,7 @@ NLOPT_STDCALL nlopt_minimize_econstrained(
 
      (void) htol_rel; /* unused */
      for (i = 0; i < p; ++i) {
-	  ret = nlopt_add_equality_constraint(opt, (nlopt_func) h, 
+	  ret = nlopt_add_equality_constraint(opt, (nlopt_func) h,
 					      h_data + i*h_datum_size,
 					      htol_abs);
 	  if (ret != NLOPT_SUCCESS) { nlopt_destroy(opt); return ret; }
@@ -121,7 +121,7 @@ NLOPT_STDCALL nlopt_minimize_econstrained(
      if (ret != NLOPT_SUCCESS) { nlopt_destroy(opt); return ret; }
      if (xtol_abs) ret = nlopt_set_xtol_abs(opt, xtol_abs);
      if (ret != NLOPT_SUCCESS) { nlopt_destroy(opt); return ret; }
-     
+
      ret = nlopt_set_maxeval(opt, maxeval);
      if (ret != NLOPT_SUCCESS) { nlopt_destroy(opt); return ret; }
 
@@ -147,7 +147,7 @@ NLOPT_STDCALL nlopt_minimize_constrained(
      int maxeval, double maxtime)
 {
      return nlopt_minimize_econstrained(
-	  algorithm, n, f, f_data, 
+	  algorithm, n, f, f_data,
 	  m, fc, fc_data, fc_datum_size, 0, NULL, NULL, 0,
 	  lb, ub, x, minf, minf_max, ftol_rel, ftol_abs,
 	  xtol_rel, xtol_abs, ftol_rel, ftol_abs, maxeval, maxtime);

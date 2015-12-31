@@ -31,7 +31,7 @@ namespace NEgo {
     public:
         using TPosteriorCb = std::function<TPosterior()>;
 
-        TInfValue(Parent::TValueCb valueCb, Parent::TDerivativeCb derivativeCb, TPosteriorCb posteriorCb) 
+        TInfValue(Parent::TValueCb valueCb, Parent::TDerivativeCb derivativeCb, TPosteriorCb posteriorCb)
             : TValue(valueCb, derivativeCb)
             , PosteriorCb(posteriorCb)
         {
@@ -44,7 +44,7 @@ namespace NEgo {
         TPosteriorCb PosteriorCb;
     };
 
-    
+
     class IInf : public IEntity {
     public:
         IInf(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik)

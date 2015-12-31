@@ -12,7 +12,7 @@
 namespace NEgo {
 
 	class ICov;
-	
+
 
 	class ILik;
 	class IInf;
@@ -28,7 +28,7 @@ namespace NEgo {
     	template<typename BASE, typename INST> static SPtr<BASE> CreateCbSimple(size_t dim_size) { return std::move(SPtr<BASE>(new INST(dim_size))); }
 
 		// Inference entities Ctor
-		
+
 		template <typename BASE>
 		using TInfCtor = SPtr<BASE> (*)(SPtr<IMean>, SPtr<ICov>, SPtr<ILik>);
 
@@ -41,7 +41,7 @@ namespace NEgo {
 
 		template<typename BASE, typename INST> static SPtr<BASE> CreateCbComp(TVector<SPtr<typename BASE::TElem>> elems) { return std::move(SPtr<BASE>(new INST(elems))); }
 
-	
+
 	public:
 	    template <typename T>
 	    void RegisterCov(TString type) {
@@ -81,6 +81,8 @@ namespace NEgo {
 
 	    SPtr<IMean> CreateMean(TString name, size_t dim_size);
 
+	    SPtr<IMean> CreateSimpleMean(TString name, size_t dim_size);
+
 	    SPtr<IMean> CreateCompMean(TString name, TVector<SPtr<IMean>> means);
 
 	    SPtr<ILik> CreateLik(TString name, size_t dim_size);
@@ -91,14 +93,29 @@ namespace NEgo {
 
 	    void PrintEntities();
 
-	    std::vector<TString> GetCovNames() const;
+	    template <typename T>
+		TVector<TString> GetNames(const T &map) const {
+	    	TVector<TString> names;
+	    	for(const auto &m: map) {
+	    		names.push_back(m.first);
+	    	}
+	    	return names;
+		}
+
+	    TVector<TString> GetCovNames() const;
+
+	    TVector<TString> GetMeanNames() const;
+
+	    TVector<TString> GetLikNames() const;
+
+	    TVector<TString> GetInfNames() const;
 
 	private:
 		TCreateMap<ICov, TSimpleEntityCtor> CovMap;
-	
+
 		TCreateMap<IMean, TSimpleEntityCtor> MeanMap;
 		TCreateMap<ICompMean, TCompCtor> CompMeanMap;
-	
+
 		TCreateMap<ILik, TSimpleEntityCtor> LikMap;
 		TCreateMap<IInf, TInfCtor> InfMap;
 	};

@@ -7,7 +7,6 @@
 #include <ego/protos/config.pb.h>
 
 #include <ego/util/log/log.h>
-#include <ego/util/parse_parenthesis.h>
 
 #include <ego/distr/distr.h>
 
@@ -16,6 +15,8 @@
 namespace NEgo {
 
     struct TModelConfig {
+        TModelConfig() {}
+
         TModelConfig(const NEgoProto::TModelConfig &config) {
             ENSURE(config.has_input() && config.has_output(), "Need input and output data");
             ENSURE(config.has_cov(), "Need specification of covariance in model config");
@@ -49,6 +50,7 @@ namespace NEgo {
     class TModel {
     public:
         TModel(TModelConfig config);
+        TModel();
 
         TInfValue GetNegativeLogLik(const TVectorD& v) const;
 
@@ -58,6 +60,8 @@ namespace NEgo {
 
         TDistrVec GetPrediction(const TMatrixD &Xnew);
 
+        void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf);
+        void SetData(TMatrixD x, TVectorD y);
     private:
         TMatrixD X;
         TVectorD Y;

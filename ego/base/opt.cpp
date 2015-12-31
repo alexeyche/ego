@@ -30,7 +30,7 @@ namespace NEgo {
 			double best = 0.0;
 			auto initStd = NLa::VecToStd(init);
 			optAlg.optimize(initStd, best);
-		    return MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());			
+		    return MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());
 		}
 
 
@@ -55,8 +55,8 @@ namespace NEgo {
 
 
 		TPair<TVectorD, double> CgMinimize(const TVectorD &X, TCallback f, TCgMinimizeConfig config) {
-			double f0; 
-			TVectorD df0; 
+			double f0;
+			TVectorD df0;
 
 			Tie(f0, df0) = f(X);
 

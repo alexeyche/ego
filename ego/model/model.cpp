@@ -3,6 +3,9 @@
 
 namespace NEgo {
 
+    TModel::TModel() {
+    }
+
     TModel::TModel(TModelConfig config)
         : Config(config)
     {
@@ -13,22 +16,10 @@ namespace NEgo {
 
         size_t D = X.n_cols;
 
-        Mean = ParseParenthesis<SPtr<IMean>>(
-            Config.Mean,
-            [&](TString childName) -> SPtr<IMean> {
-                L_DEBUG << "Creating mean function \"" << childName << "\"";
-                return Factory.CreateMean(childName, D);
-            },
-            [&](TString parentName, TVector<SPtr<IMean>> childs) -> SPtr<IMean> {
-                L_DEBUG << "Creating composite mean function \"" << parentName << "\", with childs size " << childs.size();
-                return Factory.CreateCompMean(parentName, childs);
-            }
-        );
-
+        Mean = Factory.CreateMean(Config.Mean, D);
         Cov = Factory.CreateCov(Config.Cov, D);
         Lik = Factory.CreateLik(Config.Lik, D);
         Inf = Factory.CreateInf(Config.Inf, Mean, Cov, Lik);
-        
     }
 
     TInfValue TModel::GetNegativeLogLik(const TVectorD& v) const {
@@ -62,7 +53,7 @@ namespace NEgo {
     	TVectorD kss = NLa::Diag(Cov->CalculateKernel(Xnew).GetValue());
     	TMatrixD Ks = Cov->CalculateKernel(X, Xnew).GetValue();
     	TVectorD ms = Mean->CalculateMean(Xnew).GetValue();
-		
+
 		TPosterior post;
 		{
 			auto infRes = Inf->CalculateNegativeLogLik(X, Y);
@@ -74,8 +65,20 @@ namespace NEgo {
         TVectorD Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
 
         auto predDistrParams = Lik->CalculatePredictiveDistribution(Fmu, Fs2);
-        
+
         return Lik->GetPredictiveDistributions(predDistrParams, Config.Seed);
+    }
+
+    void TModel::SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf) {
+        Mean = mean;
+        Cov = cov;
+        Lik = lik;
+        Inf = inf;
+    }
+
+    void TModel::SetData(TMatrixD x, TVectorD y) {
+        X = x;
+        Y = y;
     }
 
 } // namespace NEgo

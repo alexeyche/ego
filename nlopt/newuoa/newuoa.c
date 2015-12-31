@@ -8,17 +8,17 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /* NEWUOA derivative-free optimization algorithm by M. J. D. Powell.
@@ -96,9 +96,9 @@ static double rho_constraint(int n, const double *x, double *grad, void *data)
      return val;
 }
 
-static nlopt_result trsapp_(int *n, int *npt, double *xopt, 
-	double *xpt, double *gq, double *hq, double *pq, 
-	double *delta, double *step, double *d__, double *g, 
+static nlopt_result trsapp_(int *n, int *npt, double *xopt,
+	double *xpt, double *gq, double *hq, double *pq,
+	double *delta, double *step, double *d__, double *g,
 	double *hd, double *hs, double *crvmin,
 		    const double *xbase, const double *lb, const double *ub)
 {
@@ -190,8 +190,8 @@ static nlopt_result trsapp_(int *n, int *npt, double *xopt,
 	 else {
 	      for (j = 1; j <= *n; ++j) d__[j] = step[j] - xopt[j];
 	      quad_model(*n, &d__[1], &g[1], &qmd);
-	      crv = gg = 0; 
-	      for (j = 1; j <= *n; ++j) { 
+	      crv = gg = 0;
+	      for (j = 1; j <= *n; ++j) {
 		   crv += step[j] * (g[j] - gq[j]);
 		   gg += step[j] * step[j];
 	      }
@@ -203,7 +203,7 @@ static nlopt_result trsapp_(int *n, int *npt, double *xopt,
 	 *crvmin = crv;
 	 return ret;
     }
-    
+
     /* Function Body */
     half = .5;
     zero = 0.;
@@ -486,15 +486,15 @@ L170:
 /*************************************************************************/
 /* bigden.f */
 
-static nlopt_result bigden_(int *n, int *npt, double *xopt, 
-		    double *xpt, double *bmat, double *zmat, int *idz, 
-		    int *ndim, int *kopt, int *knew, double *d__, 
-		    double *w, double *vlag, double *beta, double *s, 
+static nlopt_result bigden_(int *n, int *npt, double *xopt,
+		    double *xpt, double *bmat, double *zmat, int *idz,
+		    int *ndim, int *kopt, int *knew, double *d__,
+		    double *w, double *vlag, double *beta, double *s,
 		    double *wvec, double *prod,
 		    const double *xbase, const double *lb, const double *ub)
 {
     /* System generated locals */
-    int xpt_dim1, xpt_offset, bmat_dim1, bmat_offset, zmat_dim1, 
+    int xpt_dim1, xpt_offset, bmat_dim1, bmat_offset, zmat_dim1,
 	    zmat_offset, wvec_dim1, wvec_offset, prod_dim1, prod_offset, i__1,
 	     i__2;
     double d__1;
@@ -513,7 +513,7 @@ static nlopt_result bigden_(int *n, int *npt, double *xopt,
     int iterc;
     double tempa, tempb, tempc;
     int isave;
-    double ssden, dtest, quart, xoptd, twopi, xopts, denold, denmax, 
+    double ssden, dtest, quart, xoptd, twopi, xopts, denold, denmax,
 	    densav, dstemp, sumold, sstemp, xoptsq;
 
 
@@ -754,7 +754,7 @@ L70:
 		i__2 = *n;
 		for (j = 1; j <= i__2; ++j) {
 /* L160: */
-		    sum += bmat[k + j * bmat_dim1] * wvec[*npt + j + jc * 
+		    sum += bmat[k + j * bmat_dim1] * wvec[*npt + j + jc *
 			    wvec_dim1];
 		}
 /* L170: */
@@ -780,7 +780,7 @@ L70:
     for (k = 1; k <= i__1; ++k) {
 	sum = zero;
 	for (i__ = 1; i__ <= 5; ++i__) {
-	    par[i__ - 1] = half * prod[k + i__ * prod_dim1] * wvec[k + i__ * 
+	    par[i__ - 1] = half * prod[k + i__ * prod_dim1] * wvec[k + i__ *
 		    wvec_dim1];
 /* L200: */
 	    sum += par[i__ - 1];
@@ -788,30 +788,30 @@ L70:
 	den[0] = den[0] - par[0] - sum;
 	tempa = prod[k + prod_dim1] * wvec[k + (wvec_dim1 << 1)] + prod[k + (
 		prod_dim1 << 1)] * wvec[k + wvec_dim1];
-	tempb = prod[k + (prod_dim1 << 1)] * wvec[k + (wvec_dim1 << 2)] + 
+	tempb = prod[k + (prod_dim1 << 1)] * wvec[k + (wvec_dim1 << 2)] +
 		prod[k + (prod_dim1 << 2)] * wvec[k + (wvec_dim1 << 1)];
-	tempc = prod[k + prod_dim1 * 3] * wvec[k + wvec_dim1 * 5] + prod[k + 
+	tempc = prod[k + prod_dim1 * 3] * wvec[k + wvec_dim1 * 5] + prod[k +
 		prod_dim1 * 5] * wvec[k + wvec_dim1 * 3];
 	den[1] = den[1] - tempa - half * (tempb + tempc);
 	den[5] -= half * (tempb - tempc);
-	tempa = prod[k + prod_dim1] * wvec[k + wvec_dim1 * 3] + prod[k + 
+	tempa = prod[k + prod_dim1] * wvec[k + wvec_dim1 * 3] + prod[k +
 		prod_dim1 * 3] * wvec[k + wvec_dim1];
-	tempb = prod[k + (prod_dim1 << 1)] * wvec[k + wvec_dim1 * 5] + prod[k 
+	tempb = prod[k + (prod_dim1 << 1)] * wvec[k + wvec_dim1 * 5] + prod[k
 		+ prod_dim1 * 5] * wvec[k + (wvec_dim1 << 1)];
-	tempc = prod[k + prod_dim1 * 3] * wvec[k + (wvec_dim1 << 2)] + prod[k 
+	tempc = prod[k + prod_dim1 * 3] * wvec[k + (wvec_dim1 << 2)] + prod[k
 		+ (prod_dim1 << 2)] * wvec[k + wvec_dim1 * 3];
 	den[2] = den[2] - tempa - half * (tempb - tempc);
 	den[6] -= half * (tempb + tempc);
 	tempa = prod[k + prod_dim1] * wvec[k + (wvec_dim1 << 2)] + prod[k + (
 		prod_dim1 << 2)] * wvec[k + wvec_dim1];
 	den[3] = den[3] - tempa - par[1] + par[2];
-	tempa = prod[k + prod_dim1] * wvec[k + wvec_dim1 * 5] + prod[k + 
+	tempa = prod[k + prod_dim1] * wvec[k + wvec_dim1 * 5] + prod[k +
 		prod_dim1 * 5] * wvec[k + wvec_dim1];
-	tempb = prod[k + (prod_dim1 << 1)] * wvec[k + wvec_dim1 * 3] + prod[k 
+	tempb = prod[k + (prod_dim1 << 1)] * wvec[k + wvec_dim1 * 3] + prod[k
 		+ prod_dim1 * 3] * wvec[k + (wvec_dim1 << 1)];
 	den[4] = den[4] - tempa - half * tempb;
 	den[7] = den[7] - par[3] + par[4];
-	tempa = prod[k + (prod_dim1 << 2)] * wvec[k + wvec_dim1 * 5] + prod[k 
+	tempa = prod[k + (prod_dim1 << 2)] * wvec[k + wvec_dim1 * 5] + prod[k
 		+ prod_dim1 * 5] * wvec[k + (wvec_dim1 << 2)];
 /* L210: */
 	den[8] -= half * tempa;
@@ -844,7 +844,7 @@ L70:
     denex[4] = alpha * den[4] + tempa + prod[*knew + (prod_dim1 << 1)] * prod[
 	    *knew + prod_dim1 * 3];
     denex[7] = alpha * den[7] + par[3] - par[4];
-    denex[8] = alpha * den[8] + prod[*knew + (prod_dim1 << 2)] * prod[*knew + 
+    denex[8] = alpha * den[8] + prod[*knew + (prod_dim1 << 2)] * prod[*knew +
 	    prod_dim1 * 5];
 
 /* Seek the value of the angle that maximizes the modulus of DENOM. */
@@ -1049,15 +1049,15 @@ static double lag(int n, const double *dx, double *grad, void *data)
      return val;
 }
 
-static nlopt_result biglag_(int *n, int *npt, double *xopt, 
-		    double *xpt, double *bmat, double *zmat, int *idz, 
-		    int *ndim, int *knew, double *delta, double *d__, 
-		    double *alpha, double *hcol, double *gc, double *gd, 
+static nlopt_result biglag_(int *n, int *npt, double *xopt,
+		    double *xpt, double *bmat, double *zmat, int *idz,
+		    int *ndim, int *knew, double *delta, double *d__,
+		    double *alpha, double *hcol, double *gc, double *gd,
 		    double *s, double *w,
 		    const double *xbase, const double *lb, const double *ub)
 {
     /* System generated locals */
-    int xpt_dim1, xpt_offset, bmat_dim1, bmat_offset, zmat_dim1, 
+    int xpt_dim1, xpt_offset, bmat_dim1, bmat_offset, zmat_dim1,
 	    zmat_offset, i__1, i__2;
     double d__1;
 
@@ -1065,7 +1065,7 @@ static nlopt_result biglag_(int *n, int *npt, double *xopt,
     int i__, j, k;
     double dd, gg;
     int iu;
-    double sp, ss, cf1, cf2, cf3, cf4, cf5, dhd, cth, one, tau, sth, sum, 
+    double sp, ss, cf1, cf2, cf3, cf4, cf5, dhd, cth, one, tau, sth, sum,
 	    half, temp, step;
     int nptm;
     double zero, angle, scale, denom;
@@ -1376,8 +1376,8 @@ L160:
 /*************************************************************************/
 /* update.f */
 
-static void update_(int *n, int *npt, double *bmat, 
-	double *zmat, int *idz, int *ndim, double *vlag, 
+static void update_(int *n, int *npt, double *bmat,
+	double *zmat, int *idz, int *ndim, double *vlag,
 	double *beta, int *knew, double *w)
 {
     /* System generated locals */
@@ -1433,9 +1433,9 @@ static void update_(int *n, int *npt, double *bmat,
 	    tempb = zmat[*knew + j * zmat_dim1] / temp;
 	    i__2 = *npt;
 	    for (i__ = 1; i__ <= i__2; ++i__) {
-		temp = tempa * zmat[i__ + jl * zmat_dim1] + tempb * zmat[i__ 
+		temp = tempa * zmat[i__ + jl * zmat_dim1] + tempb * zmat[i__
 			+ j * zmat_dim1];
-		zmat[i__ + j * zmat_dim1] = tempa * zmat[i__ + j * zmat_dim1] 
+		zmat[i__ + j * zmat_dim1] = tempa * zmat[i__ + j * zmat_dim1]
 			- tempb * zmat[i__ + jl * zmat_dim1];
 /* L10: */
 		zmat[i__ + jl * zmat_dim1] = temp;
@@ -1481,7 +1481,7 @@ static void update_(int *n, int *npt, double *bmat,
 	i__1 = *npt;
 	for (i__ = 1; i__ <= i__1; ++i__) {
 /* L40: */
-	    zmat[i__ + zmat_dim1] = tempa * zmat[i__ + zmat_dim1] - tempb * 
+	    zmat[i__ + zmat_dim1] = tempa * zmat[i__ + zmat_dim1] - tempb *
 		    vlag[i__];
 	}
 	if (*idz == 1 && temp < zero) {
@@ -1507,10 +1507,10 @@ static void update_(int *n, int *npt, double *bmat,
 	scalb_ = scala * sqrt((fabs(denom)));
 	i__1 = *npt;
 	for (i__ = 1; i__ <= i__1; ++i__) {
-	    zmat[i__ + ja * zmat_dim1] = scala * (tau * zmat[i__ + ja * 
+	    zmat[i__ + ja * zmat_dim1] = scala * (tau * zmat[i__ + ja *
 		    zmat_dim1] - temp * vlag[i__]);
 /* L50: */
-	    zmat[i__ + jb * zmat_dim1] = scalb_ * (zmat[i__ + jb * zmat_dim1] 
+	    zmat[i__ + jb * zmat_dim1] = scalb_ * (zmat[i__ + jb * zmat_dim1]
 		    - tempa * w[i__] - tempb * vlag[i__]);
 	}
 	if (denom <= zero) {
@@ -1547,10 +1547,10 @@ static void update_(int *n, int *npt, double *bmat,
 	tempb = (-(*beta) * w[jp] - tau * vlag[jp]) / denom;
 	i__2 = jp;
 	for (i__ = 1; i__ <= i__2; ++i__) {
-	    bmat[i__ + j * bmat_dim1] = bmat[i__ + j * bmat_dim1] + tempa * 
+	    bmat[i__ + j * bmat_dim1] = bmat[i__ + j * bmat_dim1] + tempa *
 		    vlag[i__] + tempb * w[i__];
 	    if (i__ > *npt) {
-		bmat[jp + (i__ - *npt) * bmat_dim1] = bmat[i__ + j * 
+		bmat[jp + (i__ - *npt) * bmat_dim1] = bmat[i__ + j *
 			bmat_dim1];
 	    }
 /* L70: */
@@ -1563,18 +1563,18 @@ static void update_(int *n, int *npt, double *bmat,
 /*************************************************************************/
 /* newuob.f */
 
-static nlopt_result newuob_(int *n, int *npt, double *x, 
-			    double *rhobeg, 
+static nlopt_result newuob_(int *n, int *npt, double *x,
+			    double *rhobeg,
 			    const double *lb, const double *ub,
 			    nlopt_stopping *stop, double *minf,
 			    newuoa_func calfun, void *calfun_data,
-		    double *xbase, double *xopt, double *xnew, 
-		    double *xpt, double *fval, double *gq, double *hq, 
-		    double *pq, double *bmat, double *zmat, int *ndim, 
+		    double *xbase, double *xopt, double *xnew,
+		    double *xpt, double *fval, double *gq, double *hq,
+		    double *pq, double *bmat, double *zmat, int *ndim,
 		    double *d__, double *vlag, double *w)
 {
     /* System generated locals */
-    int xpt_dim1, xpt_offset, bmat_dim1, bmat_offset, zmat_dim1, 
+    int xpt_dim1, xpt_offset, bmat_dim1, bmat_offset, zmat_dim1,
 	    zmat_offset, i__1, i__2, i__3;
     double d__1, d__2, d__3;
 
@@ -1593,7 +1593,7 @@ static nlopt_result newuob_(int *n, int *npt, double *x,
     int knew;
     double temp, suma, sumb, fopt = HUGE_VAL, bsum, gqsq;
     int kopt, nptm;
-    double zero, xipt, xjpt, sumz, diffa, diffb, diffc, hdiag, alpha, 
+    double zero, xipt, xjpt, sumz, diffa, diffb, diffc, hdiag, alpha,
 	    delta, recip, reciq, fsave;
     int ksave, nfsav, itemp;
     double dnorm, ratio, dstep, tenth, vquad;
@@ -1898,7 +1898,7 @@ L120:
 		i__3 = i__;
 		for (j = 1; j <= i__3; ++j) {
 /* L140: */
-		    bmat[ip + j * bmat_dim1] = bmat[ip + j * bmat_dim1] + 
+		    bmat[ip + j * bmat_dim1] = bmat[ip + j * bmat_dim1] +
 			    vlag[i__] * w[j] + w[i__] * vlag[j];
 		}
 	    }
@@ -1930,7 +1930,7 @@ L120:
 		i__1 = *npt;
 		for (i__ = 1; i__ <= i__1; ++i__) {
 /* L170: */
-		    bmat[i__ + j * bmat_dim1] += sum * zmat[i__ + k * 
+		    bmat[i__ + j * bmat_dim1] += sum * zmat[i__ + k *
 			    zmat_dim1];
 		}
 	    }
@@ -1971,7 +1971,7 @@ L120:
 		gq[i__] += hq[ih] * xopt[j];
 		hq[ih] = hq[ih] + w[i__] * xopt[j] + xopt[i__] * w[j];
 /* L200: */
-		bmat[*npt + i__ + j * bmat_dim1] = bmat[*npt + j + i__ * 
+		bmat[*npt + i__ + j * bmat_dim1] = bmat[*npt + j + i__ *
 			bmat_dim1];
 	    }
 	}
@@ -1989,10 +1989,10 @@ L120:
 /* cancellation in DENOM. */
 
     if (knew > 0) {
-       rc2 = 
+       rc2 =
 	 biglag_(n, npt, &xopt[1], &xpt[xpt_offset], &bmat[bmat_offset], &zmat[
 		zmat_offset], &idz, ndim, &knew, &dstep, &d__[1], &alpha, &
-		vlag[1], &vlag[*npt + 1], &w[1], &w[np], &w[np + *n], 
+		vlag[1], &vlag[*npt + 1], &w[1], &w[np], &w[np + *n],
 		&xbase[1], lb, ub);
        if (rc2 < 0) { rc = rc2; goto L530; }
     }
@@ -2072,10 +2072,10 @@ L120:
 	if (d__1 == 0) { rc = NLOPT_ROUNDOFF_LIMITED; goto L530; }
 	temp = one + alpha * beta / (d__1 * d__1);
 	if (fabs(temp) <= .8) {
-	  rc2 = 
+	  rc2 =
 	    bigden_(n, npt, &xopt[1], &xpt[xpt_offset], &bmat[bmat_offset], &
 		    zmat[zmat_offset], &idz, ndim, &kopt, &knew, &d__[1], &w[
-		    1], &vlag[1], &beta, &xnew[1], &w[*ndim + 1], &w[*ndim * 
+		    1], &vlag[1], &beta, &xnew[1], &w[*ndim + 1], &w[*ndim *
 		    6 + 1], &xbase[1], lb, ub);
 	  if (rc2 < 0) { rc = rc2; goto L530; }
 	}
@@ -2112,7 +2112,7 @@ L310:
        rc = NLOPT_MINF_MAX_REACHED;
        goto L530;
     }
-    
+
     if (nf <= *npt) {
 	goto L70;
     }
@@ -2475,7 +2475,7 @@ nlopt_result newuoa(int n, int npt, double *x,
 		    newuoa_func calfun, void *calfun_data)
 {
     /* Local variables */
-    int id, np, iw, igq, ihq, ixb, ifv, ipq, ivl, ixn, ixo, ixp, ndim, 
+    int id, np, iw, igq, ihq, ixb, ifv, ipq, ivl, ixn, ixo, ixp, ndim,
 	    nptm, ibmat, izmat;
     nlopt_result ret;
     double *w;
@@ -2545,8 +2545,8 @@ nlopt_result newuoa(int n, int npt, double *x,
 /* The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of */
 /* W plus the space that is needed by the last array of NEWUOB. */
 
-    ret = newuob_(&n, &npt, &x[1], &rhobeg, 
-		  lb, ub, stop, minf, calfun, calfun_data, 
+    ret = newuob_(&n, &npt, &x[1], &rhobeg,
+		  lb, ub, stop, minf, calfun, calfun_data,
 		  &w[ixb], &w[ixo], &w[ixn], &w[ixp], &w[ifv],
 		  &w[igq], &w[ihq], &w[ipq], &w[ibmat], &w[izmat],
 		  &ndim, &w[id], &w[ivl], &w[iw]);
