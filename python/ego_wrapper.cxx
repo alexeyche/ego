@@ -1,5 +1,7 @@
 #include "ego_wrapper.h"
 
+#include <ego/util/pretty_print.h>
+
 #include <ego/base/entities.h>
 
 #include <ego/util/log/log.h>
@@ -22,16 +24,26 @@ TMatWrap::TMatWrap()
 {
 }
 
-TMatWrap::TMatWrap(const TMatrixD &m) {
-	FromMatrix(m);
+TMatWrap::TMatWrap(const TMatrixD &m)
+	: V(nullptr)
+	, NRows(0)
+	, NCols(0)
+{
+	*this = FromMatrix(m);
 }
 
-TMatWrap::TMatWrap(const TMatWrap &m) {
+TMatWrap::TMatWrap(const TMatWrap &m) 
+	: V(nullptr)
+	, NRows(0)
+	, NCols(0)
+{
 	*this = m;
 }
 
 TMatWrap::~TMatWrap() {
-	delete V;
+	if(V) {
+		delete V;
+	}
 }
 
 double TMatWrap::GetValue(size_t i, size_t j) {
@@ -91,8 +103,14 @@ void SetDebugLogLevel() {
 TCovWrap::TCovWrap(const char* covName, size_t dim_size, vector<double> params) {
 	Cov = Factory.CreateCov(covName, dim_size);
 	L_DEBUG << "Creating covariance function: " << covName;
-
-	Cov->SetHyperParameters(params);
+	if(params.size()>0) {
+		L_DEBUG << "Setting hyperparameters " << params;
+		Cov->SetParameters(params);	
+	} else {
+		TVector<double> p(Cov->GetParametersSize(), TModel::ParametersDefault);
+		L_DEBUG << "Setting default hyperparameters " << p;
+		Cov->SetParameters(p);
+	}
 }
 
 void TCovWrap::ListEntities() {
@@ -102,7 +120,7 @@ void TCovWrap::ListEntities() {
 }
 
 TMatWrap TCovWrap::CalculateKernel(const TMatWrap &left, const TMatWrap &right) const {
-	return TMatWrap::FromMatrix(Cov->CalculateKernel(left.ToMatrix(), right.ToMatrix()).GetValue());
+	return TMatWrap::FromMatrix(Cov->Calc(left.ToMatrix(), right.ToMatrix()).Value());
 }
 
 TMatWrap TCovWrap::CalculateKernel(const TMatWrap &m) const {
@@ -114,7 +132,14 @@ TMeanWrap::TMeanWrap(const char* meanName, size_t dim_size, vector<double> param
 	Mean = Factory.CreateMean(meanName, dim_size);
 	L_DEBUG << "Creating mean function: " << meanName;
 
-	Mean->SetHyperParameters(params);
+	if(params.size()>0) {
+		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
+		Mean->SetHyperParameters(params);	
+	} else {
+		TVectorD p = NLa::Ones(Mean->GetHyperParametersSize()) * TModel::ParametersDefault;
+		L_DEBUG << "Setting default hyperparameters " << NLa::Trans(p);
+		Mean->SetHyperParameters(p);
+	}
 }
 
 void TMeanWrap::ListEntities() {
@@ -127,7 +152,15 @@ TLikWrap::TLikWrap(const char* likName, size_t dim_size, vector<double> params) 
 	Lik = Factory.CreateLik(likName, dim_size);
 	L_DEBUG << "Creating likelihood function: " << likName;
 
-	Lik->SetHyperParameters(params);
+	if(params.size()>0) {
+		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
+		Lik->SetHyperParameters(params);	
+	} else {
+		TVectorD p = NLa::Ones(Lik->GetHyperParametersSize()) * TModel::ParametersDefault;
+		L_DEBUG << "Setting default hyperparameters " << NLa::Trans(p);
+		Lik->SetHyperParameters(p);
+	}
+	
 }
 
 void TLikWrap::ListEntities() {
@@ -136,9 +169,48 @@ void TLikWrap::ListEntities() {
 	}
 }
 
+TAcqWrap::TAcqWrap(const char* acqName, vector<double> params) {
+	Acq = Factory.CreateAcq(acqName);
+	L_DEBUG << "Creating acquisition function: " << acqName;
+
+	if(params.size()>0) {
+		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
+		Acq->SetHyperParameters(params);	
+	} else {
+		TVectorD p = NLa::Ones(Acq->GetHyperParametersSize()) * TModel::ParametersDefault;
+		L_DEBUG << "Setting default hyperparameters " << NLa::Trans(p);
+		Acq->SetHyperParameters(p);
+	}
+}
+
+TPair<TMatWrap, TMatWrap> TAcqWrap::EvaluateCriteria(const TMatWrap& m) const {
+	std::vector<double> resacc;
+	TMatrixD deriv;
+	TMatrixD mIn = m.ToMatrix();
+	for(size_t rowId = 0; rowId < mIn.n_rows; ++rowId) {
+		auto res = Acq->EvaluateCriteria(NLa::Trans(mIn.row(rowId)));	
+		resacc.push_back(res.GetValue());
+		deriv = NLa::RowBind(deriv, res.GetDerivative());
+
+	}
+	return MakePair(TMatWrap(&resacc[0], resacc.size(), 1), TMatWrap::FromMatrix(deriv));
+}
+
+void TAcqWrap::SetHyperParameters(std::vector<double> params) {
+	Acq->SetHyperParameters(params);
+}
+
+void TAcqWrap::ListEntities() {
+	for(const auto &e: Factory.GetAcqNames()) {
+		std::cout << e << "\n";
+	}
+}
+
 
 TInfWrap::TInfWrap(const char* infName) {
+	ENSURE(Factory.CheckInfName(infName), "Can't find inference method with name: " << infName);
 	L_DEBUG << "Precreating instance of inference method: " << infName;
+	InfName = infName;
 }
 
 void TInfWrap::ListEntities() {
@@ -148,13 +220,61 @@ void TInfWrap::ListEntities() {
 }
 
 
+double TDistrWrap::GetMean() const {
+	ENSURE(Distr, "Distribution is not set");
+	return Distr->GetMean();
+}
 
-TModelWrap::TModelWrap(TInfWrap* infWrap, TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik) {
+double TDistrWrap::GetSd() const {
+	ENSURE(Distr, "Distribution is not set");
+	return Distr->GetSd();
+}
+
+
+TModelWrap::TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* infWrap, TAcqWrap* acq) {
 	auto inf = Factory.CreateInf(infWrap->InfName, mean->Mean, cov->Cov, lik->Lik);
-	model.SetModel(mean->Mean, cov->Cov, lik->Lik, inf);
+	Model.SetModel(mean->Mean, cov->Cov, lik->Lik, inf, acq->Acq);
 	L_DEBUG << "Creating model";
 }
 
-void TModelWrap::SetData(const TMatWrap &x, const TMatWrap &y) {
-	model.SetData(x.ToMatrix(), y.ToMatrix());
+TModel& TModelWrap::GetModel() {
+	return Model;
 }
+
+void TModelWrap::SetData(const TMatWrap &x, const TMatWrap &y) {
+	Model.SetData(x.ToMatrix(), y.ToMatrix());
+}
+
+void TModelWrap::SetConfig(TModelConfig config) {
+	Model.SetConfig(config);
+}
+
+TMatWrap TModelWrap::GetHyperParameters() const {
+	return TMatWrap::FromMatrix(Model.GetHyperParameters());
+}
+
+TVector<TDistrWrap> TModelWrap::GetPrediction(const TMatWrap &x) {
+	TDistrVec d = Model.GetPrediction(x.ToMatrix());
+	TVector<TDistrWrap> dw(d.size());
+	for(size_t di=0; di<d.size(); ++di) {
+		dw[di] = TDistrWrap(d[di]);
+	}
+	return dw;
+}
+
+void TModelWrap::Optimize(FOptimCallback cb, void* userData) {
+	Model.Optimize([&userData, &cb](const TVectorD &x) -> double {
+		return cb(NLa::VecToStd(x), userData);
+	});
+}
+
+TPair<TMatWrap, TMatWrap> TModelWrap::GetData() const {
+	auto data = Model.GetData();
+	return MakePair(TMatWrap::FromMatrix(data.first), TMatWrap::FromMatrix(data.second));
+}
+
+void OptimizeModel(TModelWrap *model, const char* optMethod, NOpt::TOptimizeConfig config) {
+	NOpt::OptimizeModelLogLik(model->GetModel(), NOpt::MethodFromString(optMethod), config);
+}
+
+

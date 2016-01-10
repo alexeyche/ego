@@ -23,5 +23,22 @@ namespace NEgo {
 	    
 	    TVector<TString> Split(const TString &s_inp, const TString &delimiter, const TString &not_include = "");
 
+
+	    class TStringBuilder {
+	    public:
+	        template <typename T>
+	        TStringBuilder& operator << (const T& s) {
+	            ss << s;
+	            return *this;
+	        }
+
+	        operator TString () {
+	        	return ss.str();
+	        }
+	        
+		private:
+	        stringstream ss;
+	    };
+
 	} // namespace NStr
 } // namespace NEgo

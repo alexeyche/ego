@@ -1,69 +1,32 @@
-#include "opt.h"
+#include "cg.h"
 
-#include <ego/model/model.h>
+#include "impl.h"
+
+#include <ego/util/log/log.h>
 
 namespace NEgo {
 	namespace NOpt {
 
-
-		double NLoptMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data) {
-			const TModel &model = *static_cast<const TModel*>(f_data);
-			try {
-				auto ans = model.GetNegativeLogLik(NLa::VecToStd(x));
-				grad = NLa::VecToStd(ans.GetDerivative());
-				double nLogLik = ans.GetValue();
-				L_DEBUG << "Got negative log likelihood: " << nLogLik;
-				return nLogLik;
-			} catch(std::exception &e) {
-				L_DEBUG << "Got error while calculating likelihood: " << e.what();
-				throw;
-			}
-		}
-		TPair<TVectorD, double> NLoptMinimize(const TModel &model, TVectorD init, nlopt::algorithm algo) {
-			nlopt::opt optAlg(
-				algo
-			  , model.GetHyperParametersSize()
-			);
-			optAlg.set_min_objective(NLoptMinimizer, static_cast<void*>(const_cast<TModel*>(&model)));
-			optAlg.set_ftol_rel(1e-12);
-			// optAlg.set_maxeval(100);
-			double best = 0.0;
-			auto initStd = NLa::VecToStd(init);
-			optAlg.optimize(initStd, best);
-		    return MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());
+		TCgMinimizeConfig::TCgMinimizeConfig() {
 		}
 
-
-		TPair<TVectorD, double> Minimize(const TModel &model, TVectorD init, EMethod optMethod) {
-			switch(optMethod) {
-				case CG:
-					return CgMinimize(
-				        init,
-				        [&] (const TVectorD &x) -> TPair<double, TVectorD> {
-				            auto res = model.GetNegativeLogLik(x);
-				            return MakePair(res.GetValue(), res.GetDerivative());
-				        }
-				    );
-					break;
-				case MMA:
-					return NLoptMinimize(model, init, nlopt::LD_MMA);
-					break;
-				default:
-					throw TEgoException() << "Unknown method: " << optMethod;
-			}
+		TCgMinimizeConfig::TCgMinimizeConfig(TOptimizeConfig config)
+			: MaxEval(config.MaxEval)
+		{
 		}
-
 
 		TPair<TVectorD, double> CgMinimize(const TVectorD &X, TCallback f, TCgMinimizeConfig config) {
 			double f0;
 			TVectorD df0;
 
 			Tie(f0, df0) = f(X);
-
+			
 			TVectorD Z = X;
 			double fX = f0;
 			ui32 i = 0;
-
+			L_DEBUG<< "Line search " << i << ", function value " << fX;
+			i++;
+			
 			TVectorD s = -df0;
 			double d0 = NLa::AsScalar(- NLa::Trans(s) * s);
 			double x3 = config.FirstReduction/(1-d0);
@@ -98,13 +61,14 @@ namespace NEgo {
 							X3 = Z+x3*s;
 							// L_DEBUG<< "Trying to eval with " << NLa::VecToStr(X3);
 							Tie(f3, df3) = f(X3);
-
 							// L_DEBUG<< "Eval with " << NLa::VecToStr(X3);
 							// L_DEBUG<< "\tgot " << f3 << " " << NLa::VecToStr(df3);
-							if(std::isnan(f3) || NLa::IsNan(df3)) {
+							if(std::isnan(f3) || NLa::IsNan(df3) || std::isinf(f3)) {
 								// L_DEBUG<< "Oopsie, got error while eval";
 								throw TEgoException() << "Got nans";
 							}
+							L_DEBUG<< "Line search " << i << ", function value " << f3;
+							
 							lineSearchSuccess = true;
 							// L_DEBUG<< "Line search good with function value " << f3;
 						} catch(const TEgoException &e) {
@@ -174,7 +138,6 @@ namespace NEgo {
 					}
 					x3 = std::max(std::min(x3, x4-config.InterruptWithin*(x4-x2)), x2+config.InterruptWithin*(x4-x2));
 					X3 = Z+x3*s;
-
 					Tie(f3, df3) = f(X3);
 
 					if (f3 < BestF) {
@@ -215,6 +178,7 @@ namespace NEgo {
 			}
 			return TPair<TVectorD, double>(Z, f0);
 		}
+
 
 
 	} // namespace NOpt

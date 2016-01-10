@@ -10,6 +10,7 @@ endforeach()
 
 
 set(SOURCES
+    digamma.cpp
 )
 
 # add directory name to sources

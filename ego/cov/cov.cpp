@@ -3,8 +3,8 @@
 
 namespace NEgo {
 
-	TCovRet ICov::CalculateKernel(const TMatrixD &m) {
-		return CalculateKernel(m, m);
+	ICov::Result ICov::CrossCovariance(const TMatrixD &m) {
+		return Parent::Calc(m, m);
 	}
 
 } // namespace NEgo

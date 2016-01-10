@@ -26,9 +26,25 @@ namespace NEgo {
         stringstream ss;
     };
 
-    struct TEgoInterrupt : public std::exception {
+    struct TEgoInterrupt : public TEgoException {
     };
 
+    struct TEgoNotImplemented : public std::exception {
+        TEgoNotImplemented() {}
+        TEgoNotImplemented(TEgoNotImplemented &exc) {
+            ss << exc.ss.str();
+        }
+
+        template <typename T>
+        TEgoNotImplemented& operator << (const T& s) {
+            ss << s;
+            return *this;
+        }
+        const char * what () const throw () {
+            return ss.str().c_str();
+        }
+        stringstream ss;
+    };
 
     #define ENSURE(cond, str) \
         if(!(cond)) { \

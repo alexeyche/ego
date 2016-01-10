@@ -1,5 +1,8 @@
 #include "linear.h"
 
+#include <ego/util/log/log.h>
+
+
 namespace NEgo {
 
     TMeanLinear::TMeanLinear(size_t dim_size)
@@ -29,6 +32,10 @@ namespace NEgo {
 
     size_t TMeanLinear::GetHyperParametersSize() const {
         return DimSize;
+    }
+
+    TVectorD TMeanLinear::GetHyperParameters() const {
+        return Params;
     }
 
 } //namespace NEgo

@@ -4,6 +4,7 @@
 #include <ego/util/log/log.h>
 #include <ego/util/parse_parenthesis.h>
 
+#include <ego/model/model.h>
 
 namespace NEgo {
 
@@ -48,6 +49,10 @@ namespace NEgo {
     SPtr<IInf> TFactory::CreateInf(TString name, SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik) {
     	return CreateEntity<IInf>(name, InfMap, mean, cov, lik);
     }
+    
+    SPtr<IAcq> TFactory::CreateAcq(TString name) {
+        return CreateEntity<IAcq>(name, AcqMap);
+    }
 
 	void TFactory::PrintEntities() {
 		#define PRINT_MAP(M, D) {  \
@@ -60,11 +65,10 @@ namespace NEgo {
 
 		PRINT_MAP(CovMap, "Covariance kernels: ");
 		PRINT_MAP(MeanMap, "Mean functions: ");
-
 		PRINT_MAP(CompMeanMap, "Mean functions (composite): ");
-
 		PRINT_MAP(LikMap, "Likelihood functions: ");
 		PRINT_MAP(InfMap, "Inference methods: ");
+        PRINT_MAP(AcqMap, "Acquisition functions: ");
 	}
 
 
@@ -83,5 +87,12 @@ namespace NEgo {
     TVector<TString> TFactory::GetInfNames() const {
         return GetNames(InfMap);
     }
-
+    
+    TVector<TString> TFactory::GetAcqNames() const {
+        return GetNames(AcqMap);
+    }
+    
+    bool TFactory::CheckInfName(const TString &s) const {
+        return InfMap.find(s) != InfMap.end();
+    }
 } // namespace NEgo

@@ -10,20 +10,18 @@ namespace NEgo {
 	
 		TDistrGauss(double mean, double sd, ui32 seed)
 			: IDistr(mean, sd, seed)
+			, Distr(Mean, Sd)
 		{
 		}
 		
-		double Pdf(double x) override final;
-
-    	double NegativeExpectedImprovement(double min, size_t g) override final;
+		
+		double StandardPdf(double x) const override final;
 	    
-	    double LowerConfidenceBound(double beta = 1) override final;
-	    
-	    double NegativeProbabilityOfImprovement(double yMin, double epsilon) override final;
-	    
+	    double StandardCdf(double x) const override final;
+    	
 	    double Sample() override final;
 
-	private:
+	protected:
 		std::normal_distribution<double> Distr;
 	};
 

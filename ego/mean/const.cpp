@@ -35,4 +35,8 @@ namespace NEgo {
         return 1;
     }
 
+    TVectorD TMeanConst::GetHyperParameters() const {
+        return Params;
+    }
+
 } //namespace NEgo

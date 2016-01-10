@@ -11,6 +11,7 @@
 #include <iostream>
 
 namespace NEgo {
+    
 
     template <typename Proto>
     class TProtoOptions {

@@ -1,9 +1,13 @@
 #include "la.h"
 
+#include <ego/contrib/digamma.h>
+
 #include <ego/base/errors.h>
 #include <ego/util/log/log.h>
 
+#include <ego/util/fs.h>
 
+#include <math.h>
 
 extern "C" {
     int dpotrs_(char *, int *, int *, double *, int *, double *, int *, int *);
@@ -11,6 +15,30 @@ extern "C" {
 
 namespace NEgo {
     namespace NLa {
+        
+        const ui32 GaussianHermitQuadSize = 20;
+
+        const double GaussianHermitQuad[] = {
+            -7.6190485417, -6.5105901570, -5.5787388059, -4.7345813340, -3.9439673507, 
+            -3.1890148166, -2.4586636112, -1.7452473208, -1.0429453488, -0.3469641571, 
+            0.3469641571, 1.0429453488, 1.7452473208, 2.4586636112, 3.1890148166, 
+            3.9439673507, 4.7345813340, 5.5787388059, 6.5105901570, 7.6190485417
+        };
+
+        const double GaussianHermitQuadWeights[] = {
+            0.0000000000, 0.0000000002, 0.0000000613, 0.0000044021, 0.0001288263, 
+            0.0018301031, 0.0139978374, 0.0615063721, 0.1617393340, 0.2607930634, 
+            0.2607930634, 0.1617393340, 0.0615063721, 0.0139978374, 0.0018301031, 
+            0.0001288263, 0.0000044021, 0.0000000613, 0.0000000002, 0.0000000000
+        };
+
+        TGauherTup Gauher() {
+            return {
+                TVectorD(GaussianHermitQuad, GaussianHermitQuadSize), 
+                TVectorD(GaussianHermitQuadWeights, GaussianHermitQuadSize)
+            }; 
+        }  
+
         TMatrixD Exp(const TMatrixD &m) {
             return arma::exp(m);
         }
@@ -23,10 +51,20 @@ namespace NEgo {
             return arma::log(m);
         }
 
+        double Log(double v) {
+            return std::log(v);
+        }
+
         TMatrixD MatrixFromConstant(size_t r, size_t c, double val) {
             TMatrixD m(r, c);
             m.fill(val);
             return m;
+        }
+
+        TVectorD VectorFromConstant(size_t vsize, double val) {
+            TVectorD v(vsize);
+            v.fill(val);
+            return v;
         }
 
         double GetLastElem(const TVectorD &m) {
@@ -46,7 +84,7 @@ namespace NEgo {
                    Trans(RepMat(RowSum(rightM % rightM), 1, left.n_rows)) -
                    2.0 * leftM * Trans(rightM);
         }
-
+        
         TMatrixD DiagMat(const TVectorD &v) {
             return arma::diagmat(v);
         }
@@ -67,6 +105,14 @@ namespace NEgo {
 
         TMatrixD RowMean(const TMatrixD &m) {
             return arma::mean(m, 1);
+        }
+
+        double Mean(const TMatrixD &m) {
+            return arma::mean(arma::mean(m));
+        }
+
+        TMatrixD Cov(const TMatrixD &m) {
+            return arma::cov(m);    
         }
 
         TMatrixD Trans(const TMatrixD &m) {
@@ -135,8 +181,16 @@ namespace NEgo {
             return arma::ones(n);
         }
 
+        TMatrixD Ones(size_t r, size_t c) {
+            return arma::ones(r, c);
+        }
+
         TVectorD Zeros(size_t n) {
             return arma::zeros(n);
+        }
+
+        TMatrixD Zeros(size_t r, size_t c) {
+            return arma::zeros(r, c);
         }
 
         TMatrixD Eye(size_t n) {
@@ -145,12 +199,12 @@ namespace NEgo {
 
         TMatrixD Chol(const TMatrixD &m) {
             TMatrixD ans;
-            ENSURE(arma::chol(ans, m), "Cholesky decomposition failed");
+            ENSURE(arma::chol(ans, m), "Cholesky decomposition failed");    
             return ans;
         }
 
-        TVectorD Solve(const TMatrixD &A, const TMatrixD &B) {
-            TVectorD ans;
+        TMatrixD Solve(const TMatrixD &A, const TMatrixD &B) {
+            TMatrixD ans;
             ENSURE(arma::solve(ans, A, B), "Solving system is failed");
             return ans;
         }
@@ -235,6 +289,10 @@ namespace NEgo {
             return arma::join_rows(l, r);
         }
 
+        TMatrixD RowBind(const TMatrixD &l, const TMatrixD &r) {
+            return arma::join_cols(l, r);
+        }
+
         TVectorD UnifVec(size_t size) {
             return TVectorD(size, arma::fill::randu);
         }
@@ -245,6 +303,175 @@ namespace NEgo {
                 ss << val << delim;
             }
             return ss.str();
+        }
+
+
+        TMatrixD Abs(const TMatrixD &m) {
+            return arma::abs(m);
+        }
+
+        TMatrixD Sign(const TMatrixD &m) {
+            return arma::sign(m);
+        }
+
+        TVectorD Vectorize(const TMatrixD &m) {
+            return arma::vectorise(m);
+        }
+
+        TLuTup Lu(const TMatrixD &X) {
+            TMatrixD L, U, P;
+            arma::lu(L, U, P, X);
+            return {L, U, P};
+        }
+
+        double Prod(const TVectorD &v) {
+            return arma::prod(v);
+        }
+
+        TVectorD Linspace(double start, double end, ui32 N) {
+            return arma::linspace(start, end, N);
+        }
+
+        double LogGamma(double v) {
+            return gammal(v);
+        }
+
+        double Norm(const TVectorD &v) {
+            return arma::norm(v);
+        }
+
+        TVectorD MaxOverCols(const TMatrixD &m) {
+            return arma::max(m, 1);
+        }
+
+        double Max(const TVectorD& m) {
+            return arma::max(m);
+        }
+
+        double Min(const TVectorD& m) {
+            return arma::min(m);
+        }
+
+        TVectorD LogExpAx(const TMatrixD &A, const TVectorD &x) {
+            ui32 N = A.n_cols;
+            TVectorD maxA = MaxOverCols(A);
+            return NLa::Log(NLa::Exp(A - maxA * NLa::Trans(NLa::Ones(N))) * x) + maxA;
+        }
+
+        TVectorD Inf(size_t v) {
+            TVectorD vec(v);
+            vec.fill(arma::datum::inf);
+            return vec;
+        }
+
+        double Psi(double v) {
+            int ifault = 0;
+            double ret = digamma(v, &ifault);
+            ENSURE(ifault == 0, "Digamma calculations failed with x == " << v);
+            return ret;
+        }
+
+        TMatrixD TriangLow(const TMatrixD &m, bool withoutMain) {
+            TMatrixD res = arma::trimatl(m);
+            if(withoutMain) {
+                res.diag() = NLa::Zeros(m.n_rows);
+            }
+            return res;
+        }
+
+        void DebugSave(const TMatrixD &m, TString s) {
+            size_t i = 0;
+            TString fname(s);
+            while(true) {
+                std::stringstream ss;   
+                ss << "/var/tmp/" << s << "-" << i << ".csv";
+                fname = ss.str();
+                if(!FileExists(fname)) {
+                    break;
+                }
+                i++;
+            }
+            L_DEBUG << "Saving " << s << ": " << fname;
+            WriteCsv(m, fname);
+        }
+
+        TMatrixD Cos(const TMatrixD& m) {
+            return arma::cos(m);
+        }
+        
+        TMatrixD Sin(const TMatrixD& m) {
+            return arma::sin(m);
+        }
+
+        TMatrixD Pow(const TMatrixD& m, double pow) {
+            return arma::pow(m, pow);
+        }
+
+        TVectorD LogSumExp(const TMatrixD &v) {
+            ui32 N = v.n_cols;
+            TVectorD mv = MaxOverCols(v);
+            return NLa::Log(
+                NLa::RowSum(
+                    NLa::Exp(v - NLa::RepMat(mv, 1, v.n_rows))
+                )
+            ) + mv;
+        }
+
+
+        // Returns the erf() of a value (not super precice, but ok)
+        double Erf(double x) {  
+            double y = 1.0 / ( 1.0 + 0.3275911 * x);   
+            return 1 - (((((
+                + 1.061405429  * y
+                - 1.453152027) * y
+                + 1.421413741) * y
+                - 0.284496736) * y 
+                + 0.254829592) * y) 
+                * std::exp (-x * x);
+        }
+
+        double NormPdf(double x, double mu, double sigma) {
+          return std::exp( -1 * (x - mu) * (x - mu) / (2 * sigma * sigma)) / (sigma * std::sqrt(2 * M_PI));
+        }
+
+        double NormCdf(double x, double mu, double sigma) {
+            return 0.5 * (1 + Erf((x - mu) / (sigma * std::sqrt(2.))));
+        }
+
+        const double FactorialTable[] = {
+            1.0, 1.0, 2.0, 6.0, 24.0, 
+            120.0, 720.0, 5040.0, 40320.0, 362880.0, 
+            3628800.0, 39916800.0, 479001600.0, 6227020800.0, 87178291200.0, 
+            1.307674e+12, 2.092279e+13, 3.556874e+14, 6.402374e+15, 1.216451e+17, 
+            2.432902e+18
+        };
+
+        double Factorial(ui32 val) {
+            ENSURE(val < 21, "Can't calculate big factorials: " << val);
+            return FactorialTable[val];
+        }
+
+        void AddCholeskyRow(TMatrixD &L, const TVectorD &v) {
+            ENSURE(L.n_rows == L.n_cols, "Need quadratic matrix");
+            ENSURE(L.n_rows+1 == v.size(), "Adding must be iterative: " << L.n_rows << " != " << v.size() + 1);
+
+            const ui32 n = v.size();
+            L.resize(n, n);
+
+            double L_j;
+            for (size_t j = 0; j < n-1; ++j) {
+                // L_DEBUG << "ip: " << arma::dot(L(j, arma::span(0, j)), L(n-1, arma::span(0, j)));
+                // if(j>0) {
+                //     L_DEBUG << L(j, arma::span(0, j));
+                // }
+                L_j = v(j) - arma::dot(L(j, arma::span(0, j)), L(n-1, arma::span(0, j)));
+                L(n-1, j) = L_j / L(j, j);
+                // L_j = v(j) - arma::dot(L(arma::span(0, j), j), L(arma::span(0, j), n-1));
+                // L(j, n-1) = L_j / L(j, j);
+            }
+            L_j = v(n-1) - arma::dot(L(n-1, arma::span(0, n-1)), L(n-1, arma::span(0, n-1)));
+            // L_j = v(n-1) - arma::dot(L(arma::span(0, n-1), n-1), L(arma::span(0, n-1), n-1));
+            L(n-1, n-1) = sqrt(L_j);
         }
 
     } // namespace NLa

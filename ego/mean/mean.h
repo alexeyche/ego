@@ -19,6 +19,9 @@ namespace NEgo {
         virtual void SetHyperParameters(const TVectorD &params) = 0;
 
         virtual size_t GetHyperParametersSize() const = 0;
+
+        virtual TVectorD GetHyperParameters() const = 0;
+
     };
 
 } // namespace NEgo

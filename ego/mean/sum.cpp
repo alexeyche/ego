@@ -1,6 +1,7 @@
 #include "sum.h"
 
 #include <ego/base/errors.h>
+#include <ego/util/log/log.h>
 
 namespace NEgo {
 
@@ -54,6 +55,14 @@ namespace NEgo {
             hypNum += m->GetHyperParametersSize();
         }
         return hypNum;
+    }
+
+    TVectorD TMeanSum::GetHyperParameters() const {
+        TVectorD params;
+        for(const auto& m: Means) {
+            params = NLa::RowBind(params, m->GetHyperParameters());
+        }
+        return params;
     }
 
 } //namespace NEgo

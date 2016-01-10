@@ -61,6 +61,8 @@ namespace NEgo {
 
         virtual TInfValue CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) = 0;
 
+        virtual void UpdatePosterior(const TMatrixD &X, const TVectorD &Y, TPosterior& post) = 0;
+
     protected:
         SPtr<IMean> Mean;
         SPtr<ICov> Cov;

@@ -18,20 +18,27 @@ namespace NEgo {
         size_t n = X.n_rows;
     	size_t D = X.n_cols;
 
-        auto covV = Cov->CalculateKernel(X);
+        auto covV = Cov->CrossCovariance(X);
         auto meanV = Mean->CalculateMean(X);
 
-        auto K = covV.GetValue();
+        auto K = covV.Value();
     	auto m = meanV.GetValue();
-
+        
         double sn2 = exp(2*Lik->GetHyperParameters()(0));
+
+        // NLa::DebugSave(K, "K");
+        // NLa::DebugSave(m, "m");
+
+        
+        // L_DEBUG << "sn2: " << sn2;
 
         TMatrixD L;
     	TMatrixD pL;
         double sl;
 
     	if(fabs(sn2) < 1e-06) { // very tiny sn2 can lead to numerical trouble
-    		L = NLa::Chol(K + sn2 * NLa::Eye(n));
+    		sn2 = std::max(sn2, 1e-10);
+            L = NLa::Chol(K + sn2 * NLa::Eye(n));
     		sl = 1.0;
     		pL = - NLa::CholSolve(L, NLa::Eye(n));
     	} else {
@@ -40,8 +47,15 @@ namespace NEgo {
     		pL = L;
     	}
 
+        // NLa::DebugSave(L, "L");
+        // NLa::DebugSave(pL, "pL");
+        
         TVectorD alpha = NLa::AsVector(NLa::CholSolve(L, Y-m)/sl);
     	TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
+
+        
+        // NLa::DebugSave(alpha, "alpha");
+        // NLa::DebugSave(diagW, "diagW");
 
         return TInfValue(
             [=]() {
@@ -49,7 +63,7 @@ namespace NEgo {
             },
             [=]() {
                 TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
-                TVectorD dNLogLik(Cov->GetHyperParametersSize() + 1 + Mean->GetHyperParametersSize());
+                TVectorD dNLogLik(Cov->GetParametersSize() + 1 + Mean->GetHyperParametersSize());
 
                 size_t hypIdx=0;
 
@@ -58,9 +72,9 @@ namespace NEgo {
                     dNLogLik(hypIdx) =  NLa::AsScalar(- NLa::Trans(meanD.col(meanHypIdx)) * alpha);
                 }
 
-                TCubeD covD = covV.GetDerivative();
-                for(size_t covHypIdx=0; covHypIdx < Cov->GetHyperParametersSize(); ++covHypIdx, ++hypIdx) {
-                    dNLogLik(hypIdx) =  NLa::Sum(Q % covD.slice(covHypIdx))/2.0;
+                for(const auto& dKdHyp: covV.ParamDeriv()) {
+                    dNLogLik(hypIdx) =  NLa::Sum(Q % dKdHyp)/2.0;
+                    ++hypIdx;
                 }
 
                 dNLogLik(hypIdx) = sn2 * NLa::Trace(Q);
@@ -72,6 +86,7 @@ namespace NEgo {
             }
         );
     }
+    
 
 
 } // namespace NEgo

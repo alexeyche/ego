@@ -8,11 +8,9 @@ namespace NEgo {
 
 	class TLikGauss : public ILik {
 	public:
-
-
         TLikGauss(size_t dim_size);
 
-		TPredictiveDistributionParams CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const override final;
+		TLogLikValue CalculateLogLikelihood(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const override final;
         
         TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD &mean, const TVectorD &variance) const override final;
 

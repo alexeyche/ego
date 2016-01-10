@@ -17,6 +17,7 @@ endforeach()
 set(EGO_SRCS ${DIR_SRCS})
 
 set(DIRS
+    acq
     base
     contrib
     cov
@@ -27,6 +28,8 @@ set(DIRS
     lik
     inf
     distr
+    opt
+    func
 )
 
 foreach(dir ${DIRS})
@@ -65,7 +68,7 @@ install(TARGETS ego  DESTINATION lib/ COMPONENT)
 
 install(
     DIRECTORY
-    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/ego
     DESTINATION
     include
     FILES_MATCHING

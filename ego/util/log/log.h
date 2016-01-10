@@ -16,7 +16,7 @@ namespace NEgo {
         TLog()
         {
             Log = spdlog::stdout_logger_mt("console");
-            Log->set_pattern("LOG [%H:%M:%S %z]: %v");
+            Log->set_pattern("LOG [%H:%M:%S %z] %v");
         }
         void SetColors() {
             Log->set_pattern("\x1b[32mLOG [%H:%M:%S %z] [thread %t]: %v\x1b[0m");
@@ -49,7 +49,11 @@ namespace NEgo {
         spdlog::details::line_logger Debug() {
             return Log->debug();
         }
-
+        
+        spdlog::details::line_logger Error() {
+            return Log->error();
+        }
+        
         static TLog& Instance();
     private:
         std::shared_ptr<spdlog::logger> Log;
@@ -57,8 +61,11 @@ namespace NEgo {
 
 
 #define L_INFO \
-    TLog::Instance().Info()
+    TLog::Instance().Info() << "INFO: "
 #define L_DEBUG \
-    TLog::Instance().Debug()
+    TLog::Instance().Debug() << "DEBUG: "
+
+#define L_ERROR \
+    TLog::Instance().Error() << "ERROR: "
 
 }

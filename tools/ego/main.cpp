@@ -7,12 +7,15 @@
 #include <ego/util/proto_options.h>
 #include <ego/util/string.h>
 
-#include <ego/base/opt.h>
+#include <ego/opt/opt.h>
 
 #include <ego/model/model.h>
 
 
 using namespace NEgo;
+
+struct test {};
+using TTestTup = TTagTuple<test, double>;
 
 int main(int argc, const char** argv) {
     TProtoOptions<NEgoProto::TModelConfig> opts(argc, argv, "Ego main binary");
@@ -21,19 +24,26 @@ int main(int argc, const char** argv) {
     if(!opts.Parse(config)) {
         return 0;
     }
+    
     if(config.listentities()) {
         Factory.PrintEntities();
         return 0;
     }
+    
+    if(config.listmethods()) {
+        NOpt::PrintMethods();
+        return 0;
+    }
+
     if(config.verbose()) {
         TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
     }
     L_DEBUG << "Got model config: \n\n" << config.DebugString();
     TModel model(config);
-    TVectorD v(model.GetHyperParametersSize());
-    v.fill(1.0);
 
-    NOpt::Minimize(model, v, NOpt::MMA);
-    auto d = model.GetPrediction({0, 0.1, 0.2});
+    auto res = model.GetNegativeLogLik();
+    L_DEBUG << res.GetValue();
+    L_DEBUG << res.GetDerivative();
+    NOpt::OptimizeModelLogLik(model, NOpt::MethodFromString(config.opt()));
     return 0;
 }

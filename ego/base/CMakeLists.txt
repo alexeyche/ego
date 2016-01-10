@@ -8,7 +8,6 @@ set(SOURCES
     entities.cpp
     entity.cpp
     value.cpp
-    opt.cpp
 )
 
 set(DIR_SRCS)

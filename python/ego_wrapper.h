@@ -2,6 +2,7 @@
 
 #include <ego/base/factory.h>
 #include <ego/model/model.h>
+#include <ego/opt/opt.h>
 
 #include <vector>
 
@@ -86,6 +87,21 @@ private:
 	SPtr<ILik> Lik;
 };
 
+class TAcqWrap {
+	friend class TModelWrap;
+	friend class TInfWrap;
+public:
+	TAcqWrap(const char* acqName, vector<double> params);
+
+	static void ListEntities();
+
+	TPair<TMatWrap, TMatWrap> EvaluateCriteria(const TMatWrap& m) const;
+	void SetHyperParameters(vector<double> params);
+
+private:
+	SPtr<IAcq> Acq;
+};
+
 
 class TInfWrap {
 	friend class TModelWrap;
@@ -97,14 +113,43 @@ private:
 	TString InfName;
 };
 
+class TDistrWrap {
+public:
+	TDistrWrap() {}
+
+	TDistrWrap(SPtr<IDistr> distr)
+		: Distr(distr)
+	{
+	}
+
+	double GetMean() const;
+	double GetSd() const;
+private:
+	SPtr<IDistr> Distr;
+};
+
+typedef double (*FOptimCallback)(const std::vector<double> &, void *);
 
 class TModelWrap {
 public:
-	TModelWrap(TInfWrap* wrap, TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik);
+	TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* wrap, TAcqWrap* acq);
 
 	void SetData(const TMatWrap &x, const TMatWrap &y);
+	
+	void SetConfig(TModelConfig config);
+	
+	TModel& GetModel();
+	
+	TMatWrap GetHyperParameters() const;
+
+	TPair<TMatWrap, TMatWrap> GetData() const;
+
+	TVector<TDistrWrap> GetPrediction(const TMatWrap &x);
+
+	void Optimize(FOptimCallback cb, void *userData);
+
 private:
-	TModel model;
+	TModel Model;
 };
 
-
+void OptimizeModel(TModelWrap *model, const char* method, NOpt::TOptimizeConfig config);

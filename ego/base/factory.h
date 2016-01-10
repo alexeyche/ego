@@ -12,10 +12,10 @@
 namespace NEgo {
 
 	class ICov;
-
-
 	class ILik;
 	class IInf;
+	class IAcq;
+	class TModel;
 
 	class TFactory {
 		template <typename BASE, template <typename> class FUN>
@@ -41,6 +41,12 @@ namespace NEgo {
 
 		template<typename BASE, typename INST> static SPtr<BASE> CreateCbComp(TVector<SPtr<typename BASE::TElem>> elems) { return std::move(SPtr<BASE>(new INST(elems))); }
 
+
+		// Empty Ctor 
+		template <typename BASE>
+		using TEmptyCtor = SPtr<BASE> (*)();
+
+    	template<typename BASE, typename INST> static SPtr<BASE> CreateCbEmpty() { return std::move(SPtr<BASE>(new INST())); }
 
 	public:
 	    template <typename T>
@@ -68,6 +74,10 @@ namespace NEgo {
 	    	CompMeanMap[type] = &CreateCbComp<ICompMean, T>;
 	    }
 
+		template <typename T>
+	    void RegisterAcq(TString type) {
+	    	AcqMap[type] = &CreateCbEmpty<IAcq, T>;
+	    }
 
 	    template <typename R, typename T, typename ... Params>
 	    SPtr<R> CreateEntity(TString name, const T &map, Params ... params) {
@@ -88,6 +98,8 @@ namespace NEgo {
 	    SPtr<ILik> CreateLik(TString name, size_t dim_size);
 
 	    SPtr<IInf> CreateInf(TString name, SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik);
+
+	    SPtr<IAcq> CreateAcq(TString name);
 
 	    static TFactory& Instance();
 
@@ -110,6 +122,9 @@ namespace NEgo {
 
 	    TVector<TString> GetInfNames() const;
 
+	    TVector<TString> GetAcqNames() const;
+
+	    bool CheckInfName(const TString &s) const;
 	private:
 		TCreateMap<ICov, TSimpleEntityCtor> CovMap;
 
@@ -118,6 +133,8 @@ namespace NEgo {
 
 		TCreateMap<ILik, TSimpleEntityCtor> LikMap;
 		TCreateMap<IInf, TInfCtor> InfMap;
+
+		TCreateMap<IAcq, TEmptyCtor> AcqMap;
 	};
 
 	#define REGISTRATOR_CLASS(Name, SuffixToReplace, ReplaceBy) \
@@ -134,12 +151,14 @@ namespace NEgo {
 	REGISTRATOR_CLASS(CompMean, "TMean", "m");
 	REGISTRATOR_CLASS(Lik, "TLik", "l");
 	REGISTRATOR_CLASS(Inf, "TInf", "i");
+	REGISTRATOR_CLASS(Acq, "TAcq", "a");
 
 	#define REGISTER_COV(CovType) static TCovRegistrator<CovType> JOIN(TCovRegistrator, CovType)(#CovType);
 	#define REGISTER_MEAN(MeanType) static TMeanRegistrator<MeanType> JOIN(TMeanRegistrator, MeanType)(#MeanType);
 	#define REGISTER_LIK(LikType) static TLikRegistrator<LikType> JOIN(TLikRegistrator, LikType)(#LikType);
 	#define REGISTER_INF(InfType) static TInfRegistrator<InfType> JOIN(TInfRegistrator, InfType)(#InfType);
 	#define REGISTER_COMP_MEAN(CompMeanType) static TCompMeanRegistrator<CompMeanType> JOIN(TCompMeanRegistrator, CompMeanType)(#CompMeanType);
+	#define REGISTER_ACQ(AcqType) static TAcqRegistrator<AcqType> JOIN(TAcqRegistrator, AcqType)(#AcqType);
 
 } // namespace NEgo
 
