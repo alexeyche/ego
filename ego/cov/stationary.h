@@ -17,25 +17,45 @@
 #include <functional>
 
 namespace NEgo {
-	
+
 	class TSquareDistFunctor : public TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD> {
 	public:
 		TSquareDistFunctor::Result UserCalc(const TMatrixD &left, const TMatrixD &right) override final {
-			return TSquareDistFunctor::Result()
-				.SetCalc(
+			TVectorD left2sum = NLa::RowSum(left % left);
+            TVectorD right2sum = NLa::RowSum(right % right);
+            TMatrixD leftSums = NLa::RepMat(left2sum, 1, right.n_rows);
+            TMatrixD rightSums = NLa::RepMat(NLa::Trans(right2sum), left.n_rows, 1);
+
+            TMatrixD res2 = - 2.0 * left * NLa::Trans(right) + leftSums + rightSums;
+            NLa::ForEach(res2, [](double &v) { if(v<0.0) v = 0.0; });
+            TMatrixD r = NLa::Sqrt(res2);
+
+            return TSquareDistFunctor::Result()
+				.SetValue(
 					[=]() -> TMatrixD {
-						// return (left - right) % (left - right);
-						return NLa::SquareDist(left, right);
+						return r;
 					}
 				)
-				.SetCalcFirstArgDeriv(
+				.SetFirstArgDeriv(
 					[=]() -> TMatrixD {
-						return 2.0 * (left - right);
+                        TMatrixD dR(left.n_rows, right.n_rows);
+                        for(size_t ri=0; ri < left.n_rows; ++ri) {
+                            for(size_t rj=0; rj < right.n_rows; ++rj) {
+                                dR(ri, rj) = NLa::Sum(left.row(ri) - right.row(rj))/r(ri, rj);
+                            }
+                        }
+                        return dR;
 					}
 				)
-				.SetCalcSecondArgDeriv(
+				.SetSecondArgDeriv(
 					[=]() -> TMatrixD {
-						return - 2.0 * (left - right);
+                        TMatrixD dR(left.n_rows, right.n_rows);
+                        for(size_t ri=0; ri < left.n_rows; ++ri) {
+                            for(size_t rj=0; rj < right.n_rows; ++rj) {
+                                dR(ri, rj) = - NLa::Sum(left.row(ri) - right.row(rj))/r(ri, rj);
+                            }
+                        }
+                        return dR;
 					}
 				);
 		}
@@ -43,12 +63,12 @@ namespace NEgo {
 
 	template <typename TKernelFunctor>
     class TCovStationaryISO : public ICov {
-    	
-    	static_assert(std::is_base_of<TOneArgFunctor<TMatrixD, TMatrixD>, TKernelFunctor>::value, 
+
+    	static_assert(std::is_base_of<TOneArgFunctor<TMatrixD, TMatrixD>, TKernelFunctor>::value,
     		"TKernelFunctor must be a descendant of TOneArgFunctor<TMatrixD, TMatrixD>");
 
     public:
-        TCovStationaryISO(size_t dim_size) 
+        TCovStationaryISO(size_t dim_size)
         	: ICov(dim_size)
         {
         }
@@ -56,33 +76,33 @@ namespace NEgo {
         TCovStationaryISO::Result UserCalc(const TMatrixD &left, const TMatrixD &right) override final {
         	ENSURE(left.n_cols == DimSize, "Col size of left input matrix are not satisfy to kernel params: " << DimSize << " != " << left.n_cols);
 	        ENSURE(right.n_cols == DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize << " != " << right.n_cols);
-	        
+
 	        const double& l = Parameters[0];
         	const double& var = Parameters[1];
-	        
-	        auto sqDistRes = SqDistFunctor(left, right);
 
-	        auto Kres = KernelFunctor(sqDistRes.Value()/l);
-	        
+	        auto sqDistRes = SqDistFunctor(left, right);
+            TMatrixD r = sqDistRes.Value();
+	        auto Kres = KernelFunctor(r/l);
+
 	        TMatrixD K = Kres.Value();
 	        TMatrixD dKdArg = Kres.ArgDeriv();
 
 	        return TCovStationaryISO::Result()
-	        	.SetCalc(
+	        	.SetValue(
 	        		[=]() -> TMatrixD {
 	                	return var * K;
 	            	}
 	        	)
-	        	.SetCalcParamDeriv(
+	        	.SetParamDeriv(
 		            [=]() -> TVector<TMatrixD> {
 		            	TVector<TMatrixD> dK(GetParametersSize());
 
-		                dK[0] = - var * K % dKdArg / (l*l);
+		                dK[0] = - var * dKdArg % r / (l*l);
 		                dK[1] = K;
 		                return dK;
 		            }
 		        )
-		        .SetCalcSecondArgDeriv(
+		        .SetSecondArgDeriv(
 	        		[=]() -> TMatrixD {
 	        			return var * dKdArg % sqDistRes.SecondArgDeriv() / l;
 	        		}

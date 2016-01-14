@@ -15,29 +15,29 @@ extern "C" {
 
 namespace NEgo {
     namespace NLa {
-        
+
         const ui32 GaussianHermitQuadSize = 20;
 
         const double GaussianHermitQuad[] = {
-            -7.6190485417, -6.5105901570, -5.5787388059, -4.7345813340, -3.9439673507, 
-            -3.1890148166, -2.4586636112, -1.7452473208, -1.0429453488, -0.3469641571, 
-            0.3469641571, 1.0429453488, 1.7452473208, 2.4586636112, 3.1890148166, 
+            -7.6190485417, -6.5105901570, -5.5787388059, -4.7345813340, -3.9439673507,
+            -3.1890148166, -2.4586636112, -1.7452473208, -1.0429453488, -0.3469641571,
+            0.3469641571, 1.0429453488, 1.7452473208, 2.4586636112, 3.1890148166,
             3.9439673507, 4.7345813340, 5.5787388059, 6.5105901570, 7.6190485417
         };
 
         const double GaussianHermitQuadWeights[] = {
-            0.0000000000, 0.0000000002, 0.0000000613, 0.0000044021, 0.0001288263, 
-            0.0018301031, 0.0139978374, 0.0615063721, 0.1617393340, 0.2607930634, 
-            0.2607930634, 0.1617393340, 0.0615063721, 0.0139978374, 0.0018301031, 
+            0.0000000000, 0.0000000002, 0.0000000613, 0.0000044021, 0.0001288263,
+            0.0018301031, 0.0139978374, 0.0615063721, 0.1617393340, 0.2607930634,
+            0.2607930634, 0.1617393340, 0.0615063721, 0.0139978374, 0.0018301031,
             0.0001288263, 0.0000044021, 0.0000000613, 0.0000000002, 0.0000000000
         };
 
         TGauherTup Gauher() {
             return {
-                TVectorD(GaussianHermitQuad, GaussianHermitQuadSize), 
+                TVectorD(GaussianHermitQuad, GaussianHermitQuadSize),
                 TVectorD(GaussianHermitQuadWeights, GaussianHermitQuadSize)
-            }; 
-        }  
+            };
+        }
 
         TMatrixD Exp(const TMatrixD &m) {
             return arma::exp(m);
@@ -74,17 +74,26 @@ namespace NEgo {
 
         TMatrixD SquareDist(const TMatrixD &left, const TMatrixD &right) {
             ENSURE(left.n_cols == right.n_cols, "Column length must agree");
-            TMatrixD mu = left.n_rows/static_cast<double>(left.n_rows + right.n_rows) * ColMean(left) +
-                          right.n_rows/static_cast<double>(left.n_rows + right.n_rows) * ColMean(right);
+            TVectorD left2sum = NLa::RowSum(left % left);
+            TVectorD right2sum = NLa::RowSum(right % right);
+            NLa::Print(NLa::RepMat(left2sum, 1, left.n_cols));
+            NLa::Print(NLa::RepMat(NLa::Trans(right2sum), right.n_cols, 1));
+            TMatrixD res2 = - 2.0 * left * NLa::Trans(right) +
+                NLa::RepMat(left2sum, 1, left.n_cols) +
+                NLa::RepMat(NLa::Trans(right2sum), right.n_cols, 1);
+            ForEach(res2, [](double &v) { if(v<0.0) v = 0.0; });
+            return Sqrt(res2);
+            // TMatrixD mu = left.n_rows/static_cast<double>(left.n_rows + right.n_rows) * ColMean(left) +
+            //               right.n_rows/static_cast<double>(left.n_rows + right.n_rows) * ColMean(right);
 
-            TMatrixD leftM = left - RepMat(mu, left.n_rows, 1);
-            TMatrixD rightM = right - RepMat(mu, right.n_rows, 1);
+            // TMatrixD leftM = left - RepMat(mu, left.n_rows, 1);
+            // TMatrixD rightM = right - RepMat(mu, right.n_rows, 1);
 
-            return RepMat(RowSum(leftM % leftM), 1, right.n_rows) +
-                   Trans(RepMat(RowSum(rightM % rightM), 1, left.n_rows)) -
-                   2.0 * leftM * Trans(rightM);
+            // return RepMat(RowSum(leftM % leftM), 1, right.n_rows) +
+            //        Trans(RepMat(RowSum(rightM % rightM), 1, left.n_rows)) -
+            //        2.0 * leftM * Trans(rightM);
         }
-        
+
         TMatrixD DiagMat(const TVectorD &v) {
             return arma::diagmat(v);
         }
@@ -112,7 +121,7 @@ namespace NEgo {
         }
 
         TMatrixD Cov(const TMatrixD &m) {
-            return arma::cov(m);    
+            return arma::cov(m);
         }
 
         TMatrixD Trans(const TMatrixD &m) {
@@ -199,7 +208,7 @@ namespace NEgo {
 
         TMatrixD Chol(const TMatrixD &m) {
             TMatrixD ans;
-            ENSURE(arma::chol(ans, m), "Cholesky decomposition failed");    
+            ENSURE(arma::chol(ans, m), "Cholesky decomposition failed");
             return ans;
         }
 
@@ -296,7 +305,7 @@ namespace NEgo {
         TVectorD UnifVec(size_t size) {
             return TVectorD(size, arma::fill::randu);
         }
-        
+
         TString VecToStr(const TVectorD &v, TString delim) {
             std::stringstream ss;
             for(const auto& val: v) {
@@ -383,7 +392,7 @@ namespace NEgo {
             size_t i = 0;
             TString fname(s);
             while(true) {
-                std::stringstream ss;   
+                std::stringstream ss;
                 ss << "/var/tmp/" << s << "-" << i << ".csv";
                 fname = ss.str();
                 if(!FileExists(fname)) {
@@ -398,7 +407,7 @@ namespace NEgo {
         TMatrixD Cos(const TMatrixD& m) {
             return arma::cos(m);
         }
-        
+
         TMatrixD Sin(const TMatrixD& m) {
             return arma::sin(m);
         }
@@ -419,14 +428,14 @@ namespace NEgo {
 
 
         // Returns the erf() of a value (not super precice, but ok)
-        double Erf(double x) {  
-            double y = 1.0 / ( 1.0 + 0.3275911 * x);   
+        double Erf(double x) {
+            double y = 1.0 / ( 1.0 + 0.3275911 * x);
             return 1 - (((((
                 + 1.061405429  * y
                 - 1.453152027) * y
                 + 1.421413741) * y
-                - 0.284496736) * y 
-                + 0.254829592) * y) 
+                - 0.284496736) * y
+                + 0.254829592) * y)
                 * std::exp (-x * x);
         }
 
@@ -439,10 +448,10 @@ namespace NEgo {
         }
 
         const double FactorialTable[] = {
-            1.0, 1.0, 2.0, 6.0, 24.0, 
-            120.0, 720.0, 5040.0, 40320.0, 362880.0, 
-            3628800.0, 39916800.0, 479001600.0, 6227020800.0, 87178291200.0, 
-            1.307674e+12, 2.092279e+13, 3.556874e+14, 6.402374e+15, 1.216451e+17, 
+            1.0, 1.0, 2.0, 6.0, 24.0,
+            120.0, 720.0, 5040.0, 40320.0, 362880.0,
+            3628800.0, 39916800.0, 479001600.0, 6227020800.0, 87178291200.0,
+            1.307674e+12, 2.092279e+13, 3.556874e+14, 6.402374e+15, 1.216451e+17,
             2.432902e+18
         };
 

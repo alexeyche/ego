@@ -17,16 +17,16 @@ TTestRegister::TCounters TTestRegister::RunTests() {
 	TCounters c;
 	for(const auto &t: Tests) {
 		L_INFO << "Running " << t.first;
-		try {
+		// try {
 			t.second();
 			TestStatus[t.first] = std::make_pair(true, "Test Ok");
 			L_INFO << "Test Ok";
 			c.TestOk++;
-		} catch (const std::exception &e) {
-			L_ERROR << "Got error: " << e.what();
-			TestStatus[t.first] = std::make_pair(false, e.what());
-			c.TestFail++;
-		}
+		// } catch (const std::exception &e) {
+		// 	L_ERROR << "Got error: " << e.what();
+		// 	TestStatus[t.first] = std::make_pair(false, e.what());
+		// 	c.TestFail++;
+		// }
 	}
 	L_INFO << "================|  Summary  |=====================";
 	L_INFO << "TestOk: " << c.TestOk;

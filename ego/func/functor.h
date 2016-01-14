@@ -12,7 +12,7 @@ namespace NEgo {
 			using TCalcCb = std::function<T()>;
 			using TCalcParamDerivCb = std::function<TVector<T>()>;
 
-			TFunctorResult() : 
+			TFunctorResult() :
 				CalcCb([=]() -> T {
 					throw TEgoNotImplemented() << "Calculation was not implemented";
 				}),
@@ -21,21 +21,21 @@ namespace NEgo {
 				})
 			{
 			}
-			
-			Derived& SetCalc(TCalcCb cb) {
+
+			Derived& SetValue(TCalcCb cb) {
 				CalcCb = cb;
 				return *static_cast<Derived*>(this);
 			}
-		
-			Derived& SetCalcParamDeriv(TCalcParamDerivCb cb) {
+
+			Derived& SetParamDeriv(TCalcParamDerivCb cb) {
 				CalcParamDerivCb = cb;
 				return *static_cast<Derived*>(this);
 			}
-			
+
 			T Value() const {
 				return CalcCb();
 			}
-			
+
 			TVector<T> ParamDeriv() const {
 				return CalcParamDerivCb();
 			}
@@ -44,8 +44,8 @@ namespace NEgo {
 			TCalcCb CalcCb;
 			TCalcParamDerivCb CalcParamDerivCb;
 		};
-		
-		
+
+
         virtual void SetParameters(const TVector<double>& parameters) {
         	Parameters = parameters;
         }
@@ -55,7 +55,7 @@ namespace NEgo {
         }
 
 	protected:
-		TVector<double> Parameters;	
+		TVector<double> Parameters;
 	};
 
 

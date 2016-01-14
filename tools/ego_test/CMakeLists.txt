@@ -22,15 +22,27 @@ add_executable(test_ego
     ${SOURCES}
 )
 
-#SET_TARGET_PROPERTIES(ego-bin
-#  PROPERTIES OUTPUT_NAME ego)
-
 include_directories(${CMAKE_SOURCE_DIR}/ego)
 #include_directories(${CMAKE_BINARY_DIR}/protos)
 # link dependencies of executable
 target_link_libraries(test_ego
 	${PROTOBUF_LIBRARY}
-    ego 
+    ego
     m
 )
 install(TARGETS RUNTIME DESTINATION bin)
+
+add_custom_command(
+  OUTPUT test_ego.pass
+  POST_BUILD
+  COMMAND test_ego && touch test_ego.pass
+  COMMENT "Running test"
+  DEPENDS test_ego
+)
+
+add_custom_target(
+    check_test ALL
+    DEPENDS test_ego.pass
+)
+
+

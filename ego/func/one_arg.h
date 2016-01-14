@@ -13,15 +13,15 @@ namespace NEgo {
 		class TOneArgFunctorResult : public TFunctorBase<T>::template TFunctorResult<TOneArgFunctorResult> {
 		public:
 			using TCalcArgDerivCb = std::function<T()>;
-			
-			TOneArgFunctorResult() : 
+
+			TOneArgFunctorResult() :
 				CalcArgDerivCb([=]() -> T {
 					throw TEgoNotImplemented() << "Calculation of argument derivative was not implemented";
 				})
 			{
 			}
-			
-			TOneArgFunctorResult& SetCalcArgDeriv(TCalcArgDerivCb cb) {
+
+			TOneArgFunctorResult& SetArgDeriv(TCalcArgDerivCb cb) {
 				CalcArgDerivCb = cb;
 				return *this;
 			}
@@ -29,7 +29,7 @@ namespace NEgo {
 			T ArgDeriv() const {
 				return CalcArgDerivCb();
 			}
-			
+
 		private:
 			TCalcArgDerivCb CalcArgDerivCb;
 		};
@@ -41,7 +41,7 @@ namespace NEgo {
 		virtual size_t GetParametersSize() const { return 0; }
 
         Result Calc(const A& arg) {
-        	ENSURE(TFunctorBase<T>::Parameters.size() == GetParametersSize(), 
+        	ENSURE(TFunctorBase<T>::Parameters.size() == GetParametersSize(),
         		"Parameters are not satisfying to functor parameter size: " << TFunctorBase<T>::Parameters.size() << " != " << GetParametersSize());
         	return UserCalc(arg);
         }

@@ -10,13 +10,13 @@ namespace NEgo {
 		using TFirst = A1;
 		using TSecond = A2;
 		using TReturn = T;
-		
+
 		class TTwoArgFunctorResult : public TFunctorBase<T>::template TFunctorResult<TTwoArgFunctorResult> {
 		public:
 			using TCalcFirstArgDerivCb = std::function<T()>;
 			using TCalcSecondArgDerivCb = std::function<T()>;
-			
-			TTwoArgFunctorResult() : 
+
+			TTwoArgFunctorResult() :
 				CalcFirstArgDerivCb([=]() -> T {
 					throw TEgoNotImplemented() << "Calculation of first argument derivative was not implemented";
 				}),
@@ -25,21 +25,21 @@ namespace NEgo {
 				})
 			{
 			}
-			
-			TTwoArgFunctorResult& SetCalcFirstArgDeriv(TCalcFirstArgDerivCb cb) {
+
+			TTwoArgFunctorResult& SetFirstArgDeriv(TCalcFirstArgDerivCb cb) {
 				CalcFirstArgDerivCb = cb;
 				return *this;
 			}
-			
-			TTwoArgFunctorResult& SetCalcSecondArgDeriv(TCalcSecondArgDerivCb cb) {
+
+			TTwoArgFunctorResult& SetSecondArgDeriv(TCalcSecondArgDerivCb cb) {
 				CalcSecondArgDerivCb = cb;
 				return *this;
 			}
-			
+
 			T FirstArgDeriv() const {
 				return CalcFirstArgDerivCb();
 			}
-			
+
 			T SecondArgDeriv() const {
 				return CalcSecondArgDerivCb();
 			}
@@ -56,11 +56,11 @@ namespace NEgo {
 		virtual size_t GetParametersSize() const { return 0; }
 
 		Result Calc(const A1& firstArg, const A2& secondArg) {
-			ENSURE(TFunctorBase<T>::Parameters.size() == GetParametersSize(), 
+			ENSURE(TFunctorBase<T>::Parameters.size() == GetParametersSize(),
         		"Parameters are not satisfying to functor parameter size: " << TFunctorBase<T>::Parameters.size() << " != " << GetParametersSize());
         	return UserCalc(firstArg, secondArg);
 		}
-        
+
         Result operator()(const A1& firstArg, const A2& secondArg) {
         	return Calc(firstArg, secondArg);
         }

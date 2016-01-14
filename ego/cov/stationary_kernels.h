@@ -9,12 +9,12 @@ namespace NEgo {
     		TSqExp::Result UserCalc(const TMatrixD &r) override final {
     			TMatrixD K = NLa::Exp( - 0.5 * NLa::Pow(r, 2.0));
                 return TSqExp::Result()
-    				.SetCalc(
+    				.SetValue(
     					[=]() -> TMatrixD {
     						return K;
     					}
     				)
-    				.SetCalcArgDeriv(
+    				.SetArgDeriv(
     					[=]() -> TMatrixD {
     						return - r % K;
     					}
