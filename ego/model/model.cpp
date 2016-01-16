@@ -5,6 +5,8 @@
 
 namespace NEgo {
 
+    const double TModel::ParametersDefault = 1.0;
+
     TModel::TModel() : MinF(std::numeric_limits<double>::max()) {
     }
 
@@ -23,21 +25,21 @@ namespace NEgo {
         Cov = Factory.CreateCov(Config.Cov, D);
         Lik = Factory.CreateLik(Config.Lik, D);
         Inf = Factory.CreateInf(Config.Inf, Mean, Cov, Lik);
-        Acq = Factory.CreateAcq(Config.Acq);
+        Acq = Factory.CreateAcq(Config.Acq, D);
         Acq->SetModel(*this);
 
-        TVectorD v(GetHyperParametersSize());
-        v.fill(TModel::ParametersDefault);
+        TVector<double> v(GetHyperParametersSize(), TModel::ParametersDefault);
         SetHyperParameters(v);
     }
 
-    TInfValue TModel::GetNegativeLogLik(const TVectorD& v) {
+
+    TInfResult TModel::GetNegativeLogLik(const TVector<double>& v) {
         SetHyperParameters(v);
-        return Inf->CalculateNegativeLogLik(X, Y);
+        return Inf->Calc(X, Y);
     }
 
-    TInfValue TModel::GetNegativeLogLik() const {
-        return Inf->CalculateNegativeLogLik(X,Y);
+    TInfResult TModel::GetNegativeLogLik() const {
+        return Inf->Calc(X,Y);
     }
 
     size_t TModel::GetDimSize() const {
@@ -45,33 +47,15 @@ namespace NEgo {
     }
 
     size_t TModel::GetHyperParametersSize() const {
-        return
-            Mean->GetHyperParametersSize() +
-            Cov->GetParametersSize() +
-            Lik->GetHyperParametersSize();
+        return Inf->GetParametersSize();
     }
     
-    void TModel::SetHyperParameters(const TVectorD &v) {
-        size_t hypSizeIdx = 0;
-
-        Mean->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Mean->GetHyperParametersSize()));
-        hypSizeIdx += Mean->GetHyperParametersSize();
-        TVector<double> p;
-        for(const auto& v: NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Cov->GetParametersSize())) {
-            p.push_back(v);
-        }
-        Cov->SetParameters(p);
-        hypSizeIdx += Cov->GetParametersSize();
-
-        Lik->SetHyperParameters(NLa::SubVec(v, hypSizeIdx, hypSizeIdx + Lik->GetHyperParametersSize()));
-        hypSizeIdx += Lik->GetHyperParametersSize();
+    void TModel::SetHyperParameters(const TVector<double> &v) {
+        Inf->SetParameters(v);
     }
 
-    TVectorD TModel::GetHyperParameters() const {
-        auto params = Mean->GetHyperParameters();
-        params = NLa::RowBind(params, Cov->GetParameters());
-        params = NLa::RowBind(params, Lik->GetHyperParameters());
-        return params;
+    TVector<double> TModel::GetHyperParameters() const {
+        return Inf->GetParameters();
     }
 
     void TModel::SetData(const TMatrixD &x, const TVectorD &y) {
@@ -105,36 +89,37 @@ namespace NEgo {
 
 
     TDistrVec TModel::GetPrediction(const TMatrixD &Xnew) {
-        ENSURE(X.n_rows>0, "Data is not set");
+  //       ENSURE(X.n_rows>0, "Data is not set");
 
-        TVectorD kss = NLa::Diag(Cov->CrossCovariance(Xnew).Value());
-        TMatrixD Ks = Cov->Calc(X, Xnew).Value();
-        TVectorD ms = Mean->CalculateMean(Xnew).GetValue();
-		if(!Posterior || (Posterior->L.n_rows != X.n_rows)) {
-            L_DEBUG << "Initializing posterior";
-            Posterior.emplace(Inf->CalculateNegativeLogLik(X, Y).GetPosterior());    
-        }
+  //       TVectorD kss = NLa::Diag(Cov->CrossCovariance(Xnew).Value());
+  //       TMatrixD Ks = Cov->Calc(X, Xnew).Value();
+  //       TVectorD ms = Mean->CalculateMean(Xnew).GetValue();
+		// if(!Posterior || (Posterior->L.n_rows != X.n_rows)) {
+  //           L_DEBUG << "Initializing posterior";
+  //           Posterior.emplace(Inf->CalculateNegativeLogLik(X, Y).GetPosterior());    
+  //       }
         
-        bool isCholesky = false;
-        if(NLa::Sum(NLa::TriangLow(Posterior->L, true)) < std::numeric_limits<double>::epsilon()) {
-            // L_DEBUG << "Is Cholesky";
-            isCholesky = true;
-        }
-        // L_DEBUG << "Sum triang: " << NLa::Sum(NLa::TriangLow(Posterior->L, true));
+  //       bool isCholesky = false;
+  //       if(NLa::Sum(NLa::TriangLow(Posterior->L, true)) < std::numeric_limits<double>::epsilon()) {
+  //           // L_DEBUG << "Is Cholesky";
+  //           isCholesky = true;
+  //       }
+  //       // L_DEBUG << "Sum triang: " << NLa::Sum(NLa::TriangLow(Posterior->L, true));
 
-        TVectorD Fmu = ms + NLa::Trans(Ks) * Posterior->Alpha;
-        TVectorD Fs2;
-        if(isCholesky) {
-            TMatrixD V = NLa::Solve(NLa::Trans(Posterior->L), NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % Ks);
-            Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
-        } else {
-            TMatrixD LKs = Posterior->L * Ks;
-            Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % LKs));
-            NLa::ForEach(Fs2, [](double &v) { if(v < 0.0) v = 0; });
-        }
+  //       TVectorD Fmu = ms + NLa::Trans(Ks) * Posterior->Alpha;
+  //       TVectorD Fs2;
+  //       if(isCholesky) {
+  //           TMatrixD V = NLa::Solve(NLa::Trans(Posterior->L), NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % Ks);
+  //           Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
+  //       } else {
+  //           TMatrixD LKs = Posterior->L * Ks;
+  //           Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % LKs));
+  //           NLa::ForEach(Fs2, [](double &v) { if(v < 0.0) v = 0; });
+  //       }
         
-        auto predDistrParams = Lik->CalculatePredictiveDistribution(Fmu, Fs2);
-        return Lik->GetPredictiveDistributions(predDistrParams, Config.Seed);
+  //       auto predDistrParams = Lik->CalculatePredictiveDistribution(Fmu, Fs2);
+  //       return Lik->GetPredictiveDistributions(predDistrParams, Config.Seed);
+        return TDistrVec();
     }
 
     SPtr<IDistr> TModel::GetPointPrediction(const TVectorD& Xnew) {
@@ -148,38 +133,38 @@ namespace NEgo {
     }
 
     void TModel::Optimize(TOptimCallback cb) {
-        for(size_t iterNum=0; iterNum < Config.MaxEval; ++iterNum) {
-            L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
-            L_DEBUG << "Optimizing acquisition function ...";
+        // for(size_t iterNum=0; iterNum < Config.MaxEval; ++iterNum) {
+        //     L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
+        //     L_DEBUG << "Optimizing acquisition function ...";
 
-            TVectorD x;
-            double crit;
-            Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Acq, NOpt::MethodFromString(Config.AcqOptMethod));
+        //     TVectorD x;
+        //     double crit;
+        //     Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Acq, NOpt::MethodFromString(Config.AcqOptMethod));
             
-            L_DEBUG << "Found criteria value: " << crit;
-            double res = cb(x);
+        //     L_DEBUG << "Found criteria value: " << crit;
+        //     double res = cb(x);
 
-            L_DEBUG << "Got result: " << res;
+        //     L_DEBUG << "Got result: " << res;
 
-            if(res < GetMinimum()) {
-                L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
-                SetMinimum(res);
-            }
+        //     if(res < GetMinimum()) {
+        //         L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
+        //         SetMinimum(res);
+        //     }
             
-            L_DEBUG << "Updating posterior";
+        //     L_DEBUG << "Updating posterior";
             
-            X = NLa::RowBind(X, NLa::Trans(x));
-            Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, res));
+        //     X = NLa::RowBind(X, NLa::Trans(x));
+        //     Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, res));
 
-            Posterior.emplace(Inf->CalculateNegativeLogLik(X, Y).GetPosterior());
-            if((iterNum+1) % Config.HypOptFreq == 0) {
-                NOpt::OptimizeModelLogLik(
-                    *this, 
-                    NOpt::MethodFromString(Config.HypOptMethod), 
-                    NOpt::TOptimizeConfig(Config.HypOptMaxEval)
-                );
-            }
-        }
+        //     Posterior.emplace(Inf->CalculateNegativeLogLik(X, Y).GetPosterior());
+        //     if((iterNum+1) % Config.HypOptFreq == 0) {
+        //         NOpt::OptimizeModelLogLik(
+        //             *this, 
+        //             NOpt::MethodFromString(Config.HypOptMethod), 
+        //             NOpt::TOptimizeConfig(Config.HypOptMaxEval)
+        //         );
+        //     }
+        // }
     }
 
 } // namespace NEgo

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ego/base/entity.h>
 #include <ego/base/errors.h>
 #include <ego/base/value.h>
 
@@ -25,38 +26,29 @@ namespace NEgo {
     };
 
 
-    class TInfResult : public TTwoArgFunctorResultBase<double, TInfResult> {
+    class TInfValue : public TValue<double, TVectorD> {
+        using Parent = TValue<double, TVectorD>;
     public:
-        using TCalcPosteriorCb = std::function<TPosterior()>;
+        using TPosteriorCb = std::function<TPosterior()>;
 
-        TInfResult() :
-            CalcPosteriorCb([=]() -> TPosterior {
-                throw TEgoNotImplemented() << "Calculation of posterior is not implemented";
-            })
+        TInfValue(Parent::TValueCb valueCb, Parent::TDerivativeCb derivativeCb, TPosteriorCb posteriorCb)
+            : TValue(valueCb, derivativeCb)
+            , PosteriorCb(posteriorCb)
         {
         }
 
-        TInfResult& SetPosterior(TCalcPosteriorCb cb) {
-            CalcPosteriorCb = cb;
-            return *this;
+        TPosterior GetPosterior() const {
+            return PosteriorCb();
         }
-
-        TPosterior Posterior() const {
-            return CalcPosteriorCb();
-        }
-
     private:
-        TCalcPosteriorCb CalcPosteriorCb;
+        TPosteriorCb PosteriorCb;
     };
 
 
-
-    class IInf : public TTwoArgFunctor<double, TMatrixD, TVectorD, TInfResult> {
+    class IInf : public IEntity {
     public:
-    	using TParent = TTwoArgFunctor<double, TMatrixD, TVectorD, TInfResult>;
-
         IInf(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik)
-            : TParent(mean->GetDimSize())
+            : IEntity(mean->GetDimSize())
             , Mean(mean)
             , Cov(cov)
             , Lik(lik)
@@ -65,14 +57,11 @@ namespace NEgo {
             ENSURE(Cov->GetDimSize() == GetDimSize(), "Dimension size is not satisfied for likelihood");
             ENSURE(Lik->GetDimSize() == GetDimSize(), "Dimension size is not satisfied for likelihood");
 
-            MetaEntity = true;
         }
-		
-		size_t GetParametersSize() const override;
 
-		void SetParameters(const TVector<double>& parameters) override;
-		
-		TVector<double> GetParameters() const override;
+        virtual TInfValue CalculateNegativeLogLik(const TMatrixD &X, const TVectorD &Y) = 0;
+
+        virtual void UpdatePosterior(const TMatrixD &X, const TVectorD &Y, TPosterior& post) = 0;
 
     protected:
         SPtr<IMean> Mean;

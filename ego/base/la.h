@@ -69,6 +69,8 @@ namespace NEgo {
 
         double Sum(const TMatrixD &m);
 
+        double Sum(const double &m);
+
         TMatrixD ColSum(const TMatrixD &m);
 
         TMatrixD RowSum(const TMatrixD &m);

@@ -91,12 +91,12 @@ class TAcqWrap {
 	friend class TModelWrap;
 	friend class TInfWrap;
 public:
-	TAcqWrap(const char* acqName, vector<double> params);
+	TAcqWrap(const char* acqName, size_t dim_size, vector<double> params);
 
 	static void ListEntities();
 
 	TPair<TMatWrap, TMatWrap> EvaluateCriteria(const TMatWrap& m) const;
-	void SetHyperParameters(vector<double> params);
+	void SetParameters(vector<double> params);
 
 private:
 	SPtr<IAcq> Acq;
@@ -140,7 +140,7 @@ public:
 	
 	TModel& GetModel();
 	
-	TMatWrap GetHyperParameters() const;
+	TVector<double> GetParameters() const;
 
 	TPair<TMatWrap, TMatWrap> GetData() const;
 

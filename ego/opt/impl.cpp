@@ -12,9 +12,9 @@ namespace NEgo {
 		double NLoptModelMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data) {
 			TModel &model = *static_cast<TModel*>(f_data);
 			try {
-				auto ans = model.GetNegativeLogLik(NLa::StdToVec(x));
-				grad = NLa::VecToStd(ans.GetDerivative());
-				double nLogLik = ans.GetValue();
+				auto ans = model.GetNegativeLogLik(x);
+				grad = ans.ParamDeriv();
+				double nLogLik = ans.Value();
 				L_DEBUG << "Got negative log likelihood: " << nLogLik;
 				return nLogLik;
 			} catch(std::exception &e) {
@@ -35,14 +35,14 @@ namespace NEgo {
 			auto initStd = NLa::VecToStd(init);
 			optAlg.optimize(initStd, best);
 			auto res = MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());
-		    model.SetHyperParameters(res.first);
+		    model.SetHyperParameters(initStd);
 			return res;
 		}
 		
 		double NLoptAcqMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data) {
 			try {
 				IAcq* acq = static_cast<IAcq*>(f_data);
-				return acq->EvaluateCriteria(NLa::StdToVec(x)).GetValue();	
+				return acq->Calc(NLa::StdToVec(x)).Value();	
 			} catch(const std::exception& e) {
 				L_ERROR << "Got errors while optimization: " << e.what();
 				throw;

@@ -8,24 +8,18 @@ namespace NEgo {
 
 	class TLikGauss : public ILik {
 	public:
-        TLikGauss(size_t dim_size);
+        TLikGauss(size_t dimSize);
 
-		TLogLikValue CalculateLogLikelihood(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const override final;
-        
-        TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD &mean, const TVectorD &variance) const override final;
+        TLikGauss::Result UserCalc(const TVectorD& Y, const TVectorD& var) override final;
+		
+		TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD& mean, const TVectorD& variance) const override final;
+	    
+	    SPtr<IDistr> GetDistribution(double mean, double sd, ui32 seed) const override final;
+	    
+	    size_t GetParametersSize() const override final;
+    };
 
-		void SetHyperParameters(const TVectorD &params) override final;
-		
-		const TVectorD& GetHyperParameters() const override final;
-		
-		size_t GetHyperParametersSize() const override final;
-		
-		SPtr<IDistr> GetDistribution(double mean, double sd, ui32 seed) override final;
-		
-	private:
-		TVectorD Params;
-	};
- 
+
 	REGISTER_LIK(TLikGauss);
 
 } // namespace NEgo

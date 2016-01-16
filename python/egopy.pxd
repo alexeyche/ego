@@ -28,9 +28,9 @@ cdef extern from "ego_wrapper.h":
 
 cdef extern from "ego_wrapper.h":
     cdef cppclass TAcqWrap:
-        TAcqWrap(const char *meanName, vector[double]) # except +
+        TAcqWrap(const char *meanName, size_t dim_size, vector[double]) # except +
         pair[TMatWrap, TMatWrap] EvaluateCriteria(TMatWrap) # except +
-        void SetHyperParameters(vector[double]) # except +
+        void SetParameters(vector[double]) # except +
         
 cdef extern from "ego_wrapper.h":
     cdef cppclass TInfWrap:
@@ -53,7 +53,7 @@ cdef extern from "ego_wrapper.h":
         void SetData(TMatWrap, TMatWrap) # except +
         void SetConfig(TModelConfig)
         vector[TDistrWrap] GetPrediction(TMatWrap) # except +
-        TMatWrap GetHyperParameters()
+        vector[double] GetParameters() # except +
         void Optimize(FOptimCallback, void*) # except +
         pair[TMatWrap, TMatWrap] GetData() # except +
         

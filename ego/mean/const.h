@@ -11,16 +11,9 @@ namespace NEgo {
     public:
         TMeanConst(size_t dim_size);
 
-        TMeanRet CalculateMean(const TMatrixD &m) override final;
+        TMeanConst::Result UserCalc(const TMatrixD &m) override final;
 
-        void SetHyperParameters(const TVectorD &params) override final;
-        
-        size_t GetHyperParametersSize() const override final;
-        
-        TVectorD GetHyperParameters() const override final;
-    private:
-
-        TVectorD Params;
+        size_t GetParametersSize() const override final;
     };
 
 

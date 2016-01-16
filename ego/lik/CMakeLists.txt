@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 set(SOURCES
     lik.cpp
     gauss.cpp
-    student_t.cpp
-    link_funcs.cpp
-    gamma.cpp
 )
 
 set(DIR_SRCS)

@@ -9,19 +9,13 @@ namespace NEgo {
 	
 	class TAcqEI : public IAcq {
 	public:
-		TAcqEI() : Exp(1)
-		{
-		}
-
-        TDistrRet EvaluateCriteria(const TVectorD& x) override final;
-
-     	void UpdateCriteria() override final;
-
-        void SetHyperParameters(const TVectorD &params) override final;
-
-        size_t GetHyperParametersSize() const override final;
-
-        TVectorD GetHyperParameters() const override final;
+		TAcqEI(size_t dimSize)
+            : IAcq(dimSize)
+            , Exp(1)
+        {
+        }
+		
+        TAcqEI::Result UserCalc(const TVectorD& x) override final;
 
     private:
     	ui32 Exp;

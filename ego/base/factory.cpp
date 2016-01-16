@@ -14,16 +14,16 @@ namespace NEgo {
 	}
 
 
-    SPtr<ICov> TFactory::CreateCov(TString name, size_t dim_size) {
-    	return CreateEntity<ICov>(name, CovMap, dim_size);
+    SPtr<ICov> TFactory::CreateCov(TString name, size_t dimSize) {
+    	return CreateEntity<ICov>(name, CovMap, dimSize);
     }
 
-    SPtr<IMean> TFactory::CreateMean(TString name, size_t dim_size) {
+    SPtr<IMean> TFactory::CreateMean(TString name, size_t dimSize) {
         return ParseParenthesis<SPtr<IMean>>(
             name,
             [&](TString childName) -> SPtr<IMean> {
                 L_DEBUG << "Creating mean function \"" << childName << "\"";
-                return Factory.CreateSimpleMean(childName, dim_size);
+                return Factory.CreateSimpleMean(childName, dimSize);
             },
             [&](TString parentName, TVector<SPtr<IMean>> childs) -> SPtr<IMean> {
                 L_DEBUG << "Creating composite mean function \"" << parentName << "\", with childs size " << childs.size();
@@ -32,9 +32,9 @@ namespace NEgo {
         );
     }
 
-    SPtr<IMean> TFactory::CreateSimpleMean(TString name, size_t dim_size) {
+    SPtr<IMean> TFactory::CreateSimpleMean(TString name, size_t dimSize) {
     	ENSURE(CompMeanMap.find(name) == CompMeanMap.end(), "Dealing with composite mean function " << name << " as with regular function");
-    	return CreateEntity<IMean>(name, MeanMap, dim_size);
+    	return CreateEntity<IMean>(name, MeanMap, dimSize);
     }
 
     SPtr<IMean> TFactory::CreateCompMean(TString name, TVector<SPtr<IMean>> means) {
@@ -42,16 +42,16 @@ namespace NEgo {
     	return CreateEntity<IMean>(name, CompMeanMap, means);
     }
 
-	SPtr<ILik> TFactory::CreateLik(TString name, size_t dim_size) {
-		return CreateEntity<ILik>(name, LikMap, dim_size);
+	SPtr<ILik> TFactory::CreateLik(TString name, size_t dimSize) {
+		return CreateEntity<ILik>(name, LikMap, dimSize);
 	}
 
     SPtr<IInf> TFactory::CreateInf(TString name, SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik) {
     	return CreateEntity<IInf>(name, InfMap, mean, cov, lik);
     }
     
-    SPtr<IAcq> TFactory::CreateAcq(TString name) {
-        return CreateEntity<IAcq>(name, AcqMap);
+    SPtr<IAcq> TFactory::CreateAcq(TString name, size_t dimSize) {
+        return CreateEntity<IAcq>(name, AcqMap, dimSize);
     }
 
 	void TFactory::PrintEntities() {

@@ -83,12 +83,12 @@ namespace NEgo {
 						auto res = CgMinimize(
 					        model.GetHyperParameters(),
 					        [&] (const TVectorD &x) -> TPair<double, TVectorD> {
-					            auto res = model.GetNegativeLogLik(x);
-					            return MakePair(res.GetValue(), res.GetDerivative());
+					            auto res = model.GetNegativeLogLik(NLa::VecToStd(x));
+					            return MakePair(res.Value(), NLa::StdToVec(res.ParamDeriv()));
 					        },
 					        TCgMinimizeConfig(config)
 					    );
-					    model.SetHyperParameters(res.first);
+					    model.SetHyperParameters(NLa::VecToStd(res.first));
 					    return res;
 					}
 				default:

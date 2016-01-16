@@ -4,7 +4,7 @@
 namespace NEgo {
 
 	ICov::Result ICov::CrossCovariance(const TMatrixD &m) {
-		return Parent::Calc(m, m);
+		return TParent::Calc(m, m);
 	}
 
 } // namespace NEgo

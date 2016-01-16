@@ -4,7 +4,7 @@
 
 namespace NEgo {
 
-    TDistrRet TAcqEI::EvaluateCriteria(const TVectorD& x) {
+    TAcqEI::Result TAcqEI::UserCalc(const TVectorD& x) {
     	ENSURE(Model, "Model is not set");
         
         SPtr<IDistr> d = Model->GetPointPrediction(x);
@@ -35,32 +35,19 @@ namespace NEgo {
             criteria = std::pow(d->GetSd(), Exp) * sumEI;
         }
 
-        return TDistrRet(
-            [=]() {
-                return criteria;
-            },
-            [=]() {
-                return TVectorD();
-            }
-        );
+        return TAcqEI::Result()
+            .SetValue(
+                [=]() {
+                   return criteria;
+                }
+            )
+            .SetArgDeriv(
+                [=]() {
+                    return 0;
+                }
+            );
     }
 
-    void TAcqEI::UpdateCriteria() {
-
-    }
-
-	void TAcqEI::SetHyperParameters(const TVectorD &params) {
-		ENSURE(params.size() == GetHyperParametersSize(), "Need " << GetHyperParametersSize() << " parameters for this function");
-		Exp = params(0);
-	}
-
-    size_t TAcqEI::GetHyperParametersSize() const {
-		return 1;    	
-    }
-
-    TVectorD TAcqEI::GetHyperParameters() const {
-    	return NLa::VectorFromConstant(1, Exp);
-    }
 
 
 } // namespace NEgo

@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 set(SOURCES
     acq.cpp
     ei.cpp
-    expect_ret.cpp
-    acq_random.cpp
+    #expect_ret.cpp
+    #acq_random.cpp
 )
 
 set(DIR_SRCS)

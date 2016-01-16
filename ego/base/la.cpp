@@ -140,6 +140,10 @@ namespace NEgo {
             return arma::accu(m);
         }
 
+        double Sum(const double &m) {
+            return m;
+        }
+
         TMatrixD ColSum(const TMatrixD &m) {
             return arma::sum(m, 0);
         }

@@ -25,7 +25,7 @@ namespace NEgo {
 		template <typename BASE>
 		using TSimpleEntityCtor = SPtr<BASE> (*)(size_t);
 
-    	template<typename BASE, typename INST> static SPtr<BASE> CreateCbSimple(size_t dim_size) { return std::move(SPtr<BASE>(new INST(dim_size))); }
+    	template<typename BASE, typename INST> static SPtr<BASE> CreateCbSimple(size_t dimSize) { return std::move(SPtr<BASE>(new INST(dimSize))); }
 
 		// Inference entities Ctor
 
@@ -40,13 +40,6 @@ namespace NEgo {
 		using TCompCtor = SPtr<BASE> (*)(TVector<SPtr<typename BASE::TElem>>);
 
 		template<typename BASE, typename INST> static SPtr<BASE> CreateCbComp(TVector<SPtr<typename BASE::TElem>> elems) { return std::move(SPtr<BASE>(new INST(elems))); }
-
-
-		// Empty Ctor 
-		template <typename BASE>
-		using TEmptyCtor = SPtr<BASE> (*)();
-
-    	template<typename BASE, typename INST> static SPtr<BASE> CreateCbEmpty() { return std::move(SPtr<BASE>(new INST())); }
 
 	public:
 	    template <typename T>
@@ -76,7 +69,7 @@ namespace NEgo {
 
 		template <typename T>
 	    void RegisterAcq(TString type) {
-	    	AcqMap[type] = &CreateCbEmpty<IAcq, T>;
+	    	AcqMap[type] = &CreateCbSimple<IAcq, T>;
 	    }
 
 	    template <typename R, typename T, typename ... Params>
@@ -87,19 +80,19 @@ namespace NEgo {
 	    }
 
 
-	    SPtr<ICov> CreateCov(TString name, size_t dim_size);
+	    SPtr<ICov> CreateCov(TString name, size_t dimSize);
 
-	    SPtr<IMean> CreateMean(TString name, size_t dim_size);
+	    SPtr<IMean> CreateMean(TString name, size_t dimSize);
 
-	    SPtr<IMean> CreateSimpleMean(TString name, size_t dim_size);
+	    SPtr<IMean> CreateSimpleMean(TString name, size_t dimSize);
 
 	    SPtr<IMean> CreateCompMean(TString name, TVector<SPtr<IMean>> means);
 
-	    SPtr<ILik> CreateLik(TString name, size_t dim_size);
+	    SPtr<ILik> CreateLik(TString name, size_t dimSize);
 
 	    SPtr<IInf> CreateInf(TString name, SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik);
 
-	    SPtr<IAcq> CreateAcq(TString name);
+	    SPtr<IAcq> CreateAcq(TString name, size_t dimSize);
 
 	    static TFactory& Instance();
 
@@ -134,7 +127,7 @@ namespace NEgo {
 		TCreateMap<ILik, TSimpleEntityCtor> LikMap;
 		TCreateMap<IInf, TInfCtor> InfMap;
 
-		TCreateMap<IAcq, TEmptyCtor> AcqMap;
+		TCreateMap<IAcq, TSimpleEntityCtor> AcqMap;
 	};
 
 	#define REGISTRATOR_CLASS(Name, SuffixToReplace, ReplaceBy) \

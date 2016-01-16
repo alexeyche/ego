@@ -7,6 +7,7 @@
 #include <ego/base/errors.h>
 #include <ego/base/factory.h>
 #include <ego/util/log/log.h>
+#include <ego/util/pretty_print.h>
 
 #include <ego/base/la.h>
 
@@ -20,6 +21,13 @@ namespace NEgo {
 
 	class TSquareDistFunctor : public TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD> {
 	public:
+		using TParent = TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD>;
+
+		TSquareDistFunctor(size_t dimSize)
+			: TParent(dimSize)
+		{
+		}
+
 		TSquareDistFunctor::Result UserCalc(const TMatrixD &left, const TMatrixD &right) override final {
 			TVectorD left2sum = NLa::RowSum(left % left);
             TVectorD right2sum = NLa::RowSum(right % right);
@@ -68,8 +76,10 @@ namespace NEgo {
     		"TKernelFunctor must be a descendant of TOneArgFunctor<TMatrixD, TMatrixD>");
 
     public:
-        TCovStationaryISO(size_t dim_size)
-        	: ICov(dim_size)
+        TCovStationaryISO(size_t dimSize)
+        	: ICov(dimSize)
+        	, SqDistFunctor(dimSize)
+        	, KernelFunctor(dimSize)
         {
         }
 
@@ -116,7 +126,7 @@ namespace NEgo {
         void SetParameters(const TVector<double>& parameters) override final {
         	Parameters = {parameters[0], parameters[1]};
 			TVector<double> kernParams;
-        	for(size_t pi=2; pi < KernelFunctor.GetParametersSize(); ++pi) {
+        	for(size_t pi=2; pi < (2+KernelFunctor.GetParametersSize()); ++pi) {
         		kernParams.push_back(parameters[pi]);
         	}
         	KernelFunctor.SetParameters(kernParams);

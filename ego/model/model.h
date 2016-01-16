@@ -14,6 +14,8 @@
 
 namespace NEgo {
 
+    using TDistrVec = TVector<SPtr<IDistr>>;
+
     struct TModelConfig {
         TModelConfig()
             : Seed(std::time(0))
@@ -76,19 +78,19 @@ namespace NEgo {
 
     class TModel {
     public:
-        static constexpr double ParametersDefault = 1.0;
+        static const double ParametersDefault;
 
         TModel(TModelConfig config);
         TModel();
 
-        TInfValue GetNegativeLogLik(const TVectorD& v);
-        TInfValue GetNegativeLogLik() const;
+        TInfResult GetNegativeLogLik(const TVector<double>& v);
+        TInfResult GetNegativeLogLik() const;
 
         size_t GetHyperParametersSize() const;
 
-        TVectorD GetHyperParameters() const;
+        TVector<double> GetHyperParameters() const;
 
-        void SetHyperParameters(const TVectorD &v);
+        void SetHyperParameters(const TVector<double> &v);
 
         size_t GetDimSize() const;
 
@@ -122,7 +124,7 @@ namespace NEgo {
         
         TModelConfig Config;
 
-        TOptional<TPosterior> Posterior;
+        // TOptional<TPosterior> Posterior;
 
         double MinF;
     };

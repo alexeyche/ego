@@ -134,11 +134,11 @@ TMeanWrap::TMeanWrap(const char* meanName, size_t dim_size, vector<double> param
 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
-		Mean->SetHyperParameters(params);	
+		Mean->SetParameters(params);	
 	} else {
-		TVectorD p = NLa::Ones(Mean->GetHyperParametersSize()) * TModel::ParametersDefault;
-		L_DEBUG << "Setting default hyperparameters " << NLa::Trans(p);
-		Mean->SetHyperParameters(p);
+		TVector<double> p(Mean->GetParametersSize(), TModel::ParametersDefault);
+		L_DEBUG << "Setting default hyperparameters " << p;
+		Mean->SetParameters(p);
 	}
 }
 
@@ -154,11 +154,11 @@ TLikWrap::TLikWrap(const char* likName, size_t dim_size, vector<double> params) 
 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
-		Lik->SetHyperParameters(params);	
+		Lik->SetParameters(params);	
 	} else {
-		TVectorD p = NLa::Ones(Lik->GetHyperParametersSize()) * TModel::ParametersDefault;
-		L_DEBUG << "Setting default hyperparameters " << NLa::Trans(p);
-		Lik->SetHyperParameters(p);
+		TVector<double> p(Lik->GetParametersSize(), TModel::ParametersDefault);
+		L_DEBUG << "Setting default hyperparameters " << p;
+		Lik->SetParameters(p);
 	}
 	
 }
@@ -169,35 +169,35 @@ void TLikWrap::ListEntities() {
 	}
 }
 
-TAcqWrap::TAcqWrap(const char* acqName, vector<double> params) {
-	Acq = Factory.CreateAcq(acqName);
+TAcqWrap::TAcqWrap(const char* acqName, size_t dim_size, vector<double> params) {
+	Acq = Factory.CreateAcq(acqName, dim_size);
 	L_DEBUG << "Creating acquisition function: " << acqName;
 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
-		Acq->SetHyperParameters(params);	
+		Acq->SetParameters(params);	
 	} else {
-		TVectorD p = NLa::Ones(Acq->GetHyperParametersSize()) * TModel::ParametersDefault;
-		L_DEBUG << "Setting default hyperparameters " << NLa::Trans(p);
-		Acq->SetHyperParameters(p);
+		TVector<double> p(Acq->GetParametersSize(), TModel::ParametersDefault);
+		L_DEBUG << "Setting default hyperparameters " << p;
+		Acq->SetParameters(p);
 	}
 }
 
 TPair<TMatWrap, TMatWrap> TAcqWrap::EvaluateCriteria(const TMatWrap& m) const {
 	std::vector<double> resacc;
-	TMatrixD deriv;
+	std::vector<double> deriv;
 	TMatrixD mIn = m.ToMatrix();
 	for(size_t rowId = 0; rowId < mIn.n_rows; ++rowId) {
-		auto res = Acq->EvaluateCriteria(NLa::Trans(mIn.row(rowId)));	
-		resacc.push_back(res.GetValue());
-		deriv = NLa::RowBind(deriv, res.GetDerivative());
+		auto res = Acq->Calc(NLa::Trans(mIn.row(rowId)));	
+		resacc.push_back(res.Value());
+		deriv.push_back(res.ArgDeriv());
 
 	}
 	return MakePair(TMatWrap(&resacc[0], resacc.size(), 1), TMatWrap::FromMatrix(deriv));
 }
 
-void TAcqWrap::SetHyperParameters(std::vector<double> params) {
-	Acq->SetHyperParameters(params);
+void TAcqWrap::SetParameters(std::vector<double> params) {
+	Acq->SetParameters(params);
 }
 
 void TAcqWrap::ListEntities() {
@@ -249,8 +249,8 @@ void TModelWrap::SetConfig(TModelConfig config) {
 	Model.SetConfig(config);
 }
 
-TMatWrap TModelWrap::GetHyperParameters() const {
-	return TMatWrap::FromMatrix(Model.GetHyperParameters());
+TVector<double> TModelWrap::GetParameters() const {
+	return Model.GetHyperParameters();
 }
 
 TVector<TDistrWrap> TModelWrap::GetPrediction(const TMatWrap &x) {

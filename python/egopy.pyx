@@ -57,8 +57,8 @@ cdef class Lik:
 cdef class Acq:
     cdef TAcqWrap* obj
 
-    def __init__(self, str acqName, vector[double] params = vector[double]()):
-        self.obj = new TAcqWrap(acqName, params)
+    def __init__(self, str acqName, int dim_size, vector[double] params = vector[double]()):
+        self.obj = new TAcqWrap(acqName, dim_size, params)
 
     def evaluateCriteria(self, x):
         if len(x.shape) == 1:
@@ -66,8 +66,8 @@ cdef class Acq:
         r = self.obj.EvaluateCriteria(fromNumpyToMatWrap(x))
         return fromMatWrapToNumpy(r.first), fromMatWrapToNumpy(r.second)
 
-    def setHyperParameters(self, x):
-        self.obj.SetHyperParameters(x)
+    def setParameters(self, x):
+        self.obj.SetParameters(x)
 
     def __del__(self):
         del self.obj
@@ -133,8 +133,8 @@ cdef class Model:
             l.append(d)
         return l
 
-    def getHyperParameters(self):
-        return fromMatWrapToNumpy(self.obj.GetHyperParameters())
+    def getParameters(self):
+        return self.obj.GetParameters()
 
     def optimize(self, f):
         self.obj.Optimize(OptimCallback, <void*>f)

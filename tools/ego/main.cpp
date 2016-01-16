@@ -42,8 +42,6 @@ int main(int argc, const char** argv) {
     TModel model(config);
 
     auto res = model.GetNegativeLogLik();
-    L_DEBUG << res.GetValue();
-    L_DEBUG << res.GetDerivative();
     NOpt::OptimizeModelLogLik(model, NOpt::MethodFromString(config.opt()));
     return 0;
 }

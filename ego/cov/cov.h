@@ -1,16 +1,15 @@
 #pragma once
 
 #include <ego/func/two_arg.h>
-#include <ego/base/entity.h>
 
 namespace NEgo {
 
-    class ICov : public TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD>, public IEntity {
+    class ICov : public TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD> {
     public:
-        using Parent = TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD>;
+        using TParent = TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD>;
         
-        ICov(size_t dim_size)
-            : IEntity(dim_size)
+        ICov(size_t dimSize)
+            : TParent(dimSize)
         {
         }
 

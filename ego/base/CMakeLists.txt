@@ -6,7 +6,6 @@ set(SOURCES
     errors.cpp
     factory.cpp
     entities.cpp
-    entity.cpp
     value.cpp
 )
 

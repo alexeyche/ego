@@ -62,6 +62,6 @@ namespace NEgo {
 		static TLogDetTup LogDet(const TMatrixD& K, const TVectorD &w);
 	};
  
-	REGISTER_INF(TInfLaplace);
+	// REGISTER_INF(TInfLaplace);
 
 } // namespace NEgo

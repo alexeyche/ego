@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 set(SOURCES
     inf.cpp
     exact.cpp
-    laplace.cpp
 )
 
 set(DIR_SRCS)

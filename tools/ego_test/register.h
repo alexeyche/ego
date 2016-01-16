@@ -20,6 +20,7 @@ public:
 
 	TCounters RunTests();
 private:
+	std::vector<std::string> TestNames;
 	std::map<std::string, std::function<void()>> Tests;
 	std::map<std::string, std::pair<bool, std::string>> TestStatus;
 };

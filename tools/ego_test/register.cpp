@@ -11,22 +11,24 @@ TTestRegister& TTestRegister::Instance() {
 void TTestRegister::RegisterTest(std::string name, std::function<void()> cb) {
 	auto res = Tests.insert(std::make_pair(name, cb));
 	ENSURE(res.second, "Test with name " << name << " already exists in system");
+	TestNames.push_back(name);
 }
 
 TTestRegister::TCounters TTestRegister::RunTests() {
 	TCounters c;
-	for(const auto &t: Tests) {
-		L_INFO << "Running " << t.first;
-		// try {
-			t.second();
-			TestStatus[t.first] = std::make_pair(true, "Test Ok");
+	for(const auto &tn: TestNames) {
+		auto t = Tests.find(tn);
+		L_INFO << "Running " << t->first;
+		try {
+			t->second();
+			TestStatus[t->first] = std::make_pair(true, "Test Ok");
 			L_INFO << "Test Ok";
 			c.TestOk++;
-		// } catch (const std::exception &e) {
-		// 	L_ERROR << "Got error: " << e.what();
-		// 	TestStatus[t.first] = std::make_pair(false, e.what());
-		// 	c.TestFail++;
-		// }
+		} catch (const std::exception &e) {
+			L_ERROR << "Got error: " << e.what();
+			TestStatus[t->first] = std::make_pair(false, e.what());
+			c.TestFail++;
+		}
 	}
 	L_INFO << "================|  Summary  |=====================";
 	L_INFO << "TestOk: " << c.TestOk;
