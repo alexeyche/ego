@@ -130,9 +130,9 @@ namespace NEgo {
         if(isCholesky) {
             Kinv = NLa::CholSolve(Posterior->L, NLa::Eye(Posterior->L.n_rows));
             
-            TMatrixD V = NLa::Solve(NLa::Trans(Posterior->L), NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % Ks);
-            Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
-            // Fs2 = kss - NLa::Trans(NLa::ColSum(NLa::Trans(Ks) * Kinv * Ks));
+            // TMatrixD V = NLa::Solve(NLa::Trans(Posterior->L), NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % Ks);
+            // Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
+            Fs2 = kss - NLa::Trans(NLa::ColSum(NLa::Trans(Ks) * Kinv * Ks));
         } else {
             TMatrixD LKs = Posterior->L * Ks;
             Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % LKs));
@@ -144,15 +144,15 @@ namespace NEgo {
                 [=]() -> TPair<TVectorD, TVectorD> {
                     return MakePair(Fmu, Fs2); 
                 }
+            )
+            .SetArgDeriv(
+                [=]() -> TPair<TVectorD, TVectorD> {
+                    return MakePair(
+                        meanRes.ArgDeriv() + NLa::Trans(covRes.SecondArgDeriv()) * Posterior->Alpha
+                      , NLa::Diag(crossCovRes.SecondArgDeriv()) - NLa::Trans(NLa::ColSum(2.0 * NLa::Trans(Ks) * Kinv * covRes.SecondArgDeriv()))
+                    );
+                }
             );
-            // .SetArgDeriv(
-            //     [=]() -> TPair<TVectorD, TVectorD> {
-            //         return MakePair(
-            //             meanRes.ArgDeriv() + NLa::Trans(covRes.SecondArgDeriv()) * Posterior->Alpha
-            //           , NLa::Diag(crossCovRes.SecondArgDeriv()) - NLa::Trans(NLa::ColSum(2.0 * NLa::Trans(Ks) * Kinv * covRes.SecondArgDeriv()))
-            //         );
-            //     }
-            // );
     }
 
     // Helpers
