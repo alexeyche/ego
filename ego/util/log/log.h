@@ -7,7 +7,6 @@ using std::string;
 #include <ego/base/errors.h>
 #include <ego/contrib/spdlog/spdlog.h>
 
-
 namespace NEgo {
 
 

@@ -1,5 +1,7 @@
 #include "inf.h"
 
+#include <ego/util/log/log.h>
+
 namespace NEgo {
 
 	size_t IInf::GetParametersSize() const {
@@ -22,7 +24,7 @@ namespace NEgo {
         hypSizeIdx += Cov->GetParametersSize();
 
         Lik->SetParameters(TVector<double>(
-        	parameters.begin() + hypSizeIdx, parameters.begin() + hypSizeIdx + Mean->GetParametersSize()
+        	parameters.begin() + hypSizeIdx, parameters.begin() + hypSizeIdx + Lik->GetParametersSize()
         ));
         hypSizeIdx += Lik->GetParametersSize();
     }

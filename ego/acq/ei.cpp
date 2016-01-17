@@ -4,7 +4,7 @@
 
 namespace NEgo {
 
-    TAcqEI::Result TAcqEI::UserCalc(const TVectorD& x) {
+    TAcqEI::Result TAcqEI::UserCalc(const TVectorD& x) const {
     	ENSURE(Model, "Model is not set");
         
         SPtr<IDistr> d = Model->GetPointPrediction(x);

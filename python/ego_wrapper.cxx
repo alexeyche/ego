@@ -250,7 +250,7 @@ void TModelWrap::SetConfig(TModelConfig config) {
 }
 
 TVector<double> TModelWrap::GetParameters() const {
-	return Model.GetHyperParameters();
+	return Model.GetParameters();
 }
 
 TVector<TDistrWrap> TModelWrap::GetPrediction(const TMatWrap &x) {

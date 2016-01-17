@@ -9,7 +9,7 @@ namespace NEgo {
 		{
 		}
 		
-		TSqExp::Result TSqExp::UserCalc(const TMatrixD &r) {
+		TSqExp::Result TSqExp::UserCalc(const TMatrixD &r) const {
 			TMatrixD K = NLa::Exp( - 0.5 * NLa::Pow(r, 2.0));
             return TSqExp::Result()
 				.SetValue(

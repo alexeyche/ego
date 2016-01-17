@@ -1,7 +1,13 @@
 
 
-X =  dlmread('~/rosen.csv', ',');
-Y =  dlmread('~/rosenY.csv', ',');
+%X =  dlmread('~/rosen.csv', ',');
+%Y =  dlmread('~/rosenY.csv', ',');
+
+data = dlmread('/var/tmp/testfuncs.csv');
+
+X = data(:,1:end-1);
+Y = data(:,end);
+
 %Y=(Y-mean(Y))/cov(Y);
 Xtr = X;
 Ytr = Y;
@@ -34,13 +40,13 @@ lik = {@likGauss}; hyp.lik = log(1.0);
 %lik = {@likGaussWarp, 'poly3'}; hyp.lik=log([1.0 1.0 1.0]); % bad
 %lik = {@likGumbel, '-'}; hyp.lik=log(1.0);
 
-%inf = {@infExact};                                  % inference method
-inf = {@infLaplace};
+inf = {@infExact};                                  % inference method
+%inf = {@infLaplace};
 %inf = {@infEP};
 %inf = {@infMCMC};
-hyp.mean = 0.9526773;
-hyp.cov = [0.2156625, 0.5561556];
-hyp.lik = -16.6893519;
+hyp.mean = log(1.0);
+hyp.cov = [log(1.0), log(1.0)];
+hyp.lik = log(1.0);
 [post nlZ dnlZ] = feval(inf{:}, hyp, meanF, covF, lik, Xtr, Ytr);
 
 hyp = minimize(hyp,'gp', -102, inf, meanF, covF, lik, Xtr, Ytr); % opt hypers

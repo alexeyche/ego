@@ -56,11 +56,11 @@ def sq1d(x):
 D, fopt = 2, branin
 
 
-cov = Cov("cSEISO", D)
-mean = Mean("mLinear", D)
-lik = Lik("lGauss", D, [2.0])
+cov = Cov("cSqExpISO", D)
+mean = Mean("mConst", D)
+lik = Lik("lGauss", D)
 inf = Inf("iExact")
-acq = Acq("aEI")
+acq = Acq("aEI", D)
 model = Model(mean, cov, lik, inf, acq)
 
 init_size = 100
@@ -71,6 +71,8 @@ for di in range(D):
     X[:, di] = lhs_sample(init_size, rng)
 
 Y = np.asarray([ fopt(x) for x in X ])
+
+np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, np.asarray([Y]).T)), delimiter=',')
 
 model.setConfig({
     "Seed": seed, 

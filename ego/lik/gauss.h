@@ -10,7 +10,7 @@ namespace NEgo {
 	public:
         TLikGauss(size_t dimSize);
 
-        TLikGauss::Result UserCalc(const TVectorD& Y, const TVectorD& var) override final;
+        TLikGauss::Result UserCalc(const TVectorD& Y, const TVectorD& var) const override final;
 		
 		TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD& mean, const TVectorD& variance) const override final;
 	    

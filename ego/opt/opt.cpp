@@ -7,6 +7,7 @@ namespace NEgo {
 
  		std::map<TString, EMethod> OptMethodMap = {
  			{"CG", CG},
+ 			{"RPROP", RPROP},
  		  	{"GN_DIRECT", GN_DIRECT},
 			{"GN_DIRECT_L", GN_DIRECT_L},
 			{"GN_DIRECT_L_RAND", GN_DIRECT_L_RAND},
@@ -81,20 +82,24 @@ namespace NEgo {
 				case CG:
 					{
 						auto res = CgMinimize(
-					        model.GetHyperParameters(),
+					        model.GetParameters(),
 					        [&] (const TVectorD &x) -> TPair<double, TVectorD> {
 					            auto res = model.GetNegativeLogLik(NLa::VecToStd(x));
 					            return MakePair(res.Value(), NLa::StdToVec(res.ParamDeriv()));
 					        },
 					        TCgMinimizeConfig(config)
 					    );
-					    model.SetHyperParameters(NLa::VecToStd(res.first));
+					    model.SetParameters(NLa::VecToStd(res.first));
 					    return res;
+					}
+				case RPROP:
+					{
+						return MakePair(TVectorD(), 0.0);	
 					}
 				default:
 					{
-						nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(optMethod)-1);
-						return NLoptModelMinimize(model, model.GetHyperParameters(), algo, config);
+						nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(optMethod)-2);
+						return NLoptModelMinimize(model, model.GetParameters(), algo, config);
 					}
 			}
 		}

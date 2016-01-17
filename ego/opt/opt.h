@@ -7,6 +7,7 @@ namespace NEgo {
 
 		enum EMethod {
 			CG = 0,
+			RPROP,
 			GN_DIRECT ,
 			GN_DIRECT_L,
 			GN_DIRECT_L_RAND,

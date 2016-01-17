@@ -26,7 +26,7 @@ namespace NEgo {
 		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, TVectorD init, nlopt::algorithm algo, TOptimizeConfig config) {
 			nlopt::opt optAlg(
 				algo
-			  , model.GetHyperParametersSize()
+			  , model.GetParametersSize()
 			);
 			optAlg.set_min_objective(NLoptModelMinimizer, static_cast<void*>(const_cast<TModel*>(&model)));
 			optAlg.set_ftol_rel(config.Tol);
@@ -35,7 +35,7 @@ namespace NEgo {
 			auto initStd = NLa::VecToStd(init);
 			optAlg.optimize(initStd, best);
 			auto res = MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());
-		    model.SetHyperParameters(initStd);
+		    model.SetParameters(initStd);
 			return res;
 		}
 		

@@ -56,35 +56,34 @@ namespace NEgo {
         
         // NLa::DebugSave(alpha, "alpha");
         // NLa::DebugSave(diagW, "diagW");
-        return TInfExact::Result();
-        // return TInfValue(
-        //     [=]() {
-        //         return NLa::AsScalar(NLa::Trans(Y-m)*(alpha/2)) + NLa::Sum(NLa::Log(NLa::Diag(L))) + n*log(2*M_PI*sl)/2;;
-        //     },
-        //     [=]() {
-        //         TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
-        //         TVectorD dNLogLik(Cov->GetParametersSize() + 1 + Mean->GetHyperParametersSize());
+        return TInfValue(
+            [=]() {
+                return NLa::AsScalar(NLa::Trans(Y-m)*(alpha/2)) + NLa::Sum(NLa::Log(NLa::Diag(L))) + n*log(2*M_PI*sl)/2;;
+            },
+            [=]() {
+                TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
+                TVectorD dNLogLik(Cov->GetParametersSize() + 1 + Mean->GetHyperParametersSize());
 
-        //         size_t hypIdx=0;
+                size_t hypIdx=0;
 
-        //         TMatrixD meanD = meanV.GetDerivative();
-        //         for(size_t meanHypIdx=0; meanHypIdx < Mean->GetHyperParametersSize(); ++meanHypIdx, ++hypIdx) {
-        //             dNLogLik(hypIdx) =  NLa::AsScalar(- NLa::Trans(meanD.col(meanHypIdx)) * alpha);
-        //         }
+                TMatrixD meanD = meanV.GetDerivative();
+                for(size_t meanHypIdx=0; meanHypIdx < Mean->GetHyperParametersSize(); ++meanHypIdx, ++hypIdx) {
+                    dNLogLik(hypIdx) =  NLa::AsScalar(- NLa::Trans(meanD.col(meanHypIdx)) * alpha);
+                }
 
-        //         for(const auto& dKdHyp: covV.ParamDeriv()) {
-        //             dNLogLik(hypIdx) =  NLa::Sum(Q % dKdHyp)/2.0;
-        //             ++hypIdx;
-        //         }
+                for(const auto& dKdHyp: covV.ParamDeriv()) {
+                    dNLogLik(hypIdx) =  NLa::Sum(Q % dKdHyp)/2.0;
+                    ++hypIdx;
+                }
 
-        //         dNLogLik(hypIdx) = sn2 * NLa::Trace(Q);
+                dNLogLik(hypIdx) = sn2 * NLa::Trace(Q);
 
-        //         return dNLogLik;
-        //     },
-        //     [=]() {
-        //         return TPosterior(pL, alpha, diagW);
-        //     }
-        // );
+                return dNLogLik;
+            },
+            [=]() {
+                return TPosterior(pL, alpha, diagW);
+            }
+        );
     }
     
 

@@ -66,4 +66,9 @@ namespace NEgo {
 	  return TTie<T1, T2>(first, second);
 	}
 
+	template <typename T>
+	SPtr<T> MakeShared(T *ptr) {
+		return SPtr<T>(ptr);
+	}
+
 } // namespace NEgo

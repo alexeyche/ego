@@ -1,102 +1,35 @@
 #pragma once
 
+#include "config.h"
+
 #include <ego/base/entities.h>
 #include <ego/base/la.h>
 #include <ego/opt/opt.h>
-#include <ego/protos/config.pb.h>
 
 #include <ego/util/log/log.h>
 #include <ego/util/optional.h>
 
 #include <ego/distr/distr.h>
 
-#include <ctime>
-
 namespace NEgo {
-
-    using TDistrVec = TVector<SPtr<IDistr>>;
-
-    struct TModelConfig {
-        TModelConfig()
-            : Seed(std::time(0))
-            , AcqOptMethod("GN_DIRECT")
-            , HypOptMethod("CG")
-            , MaxEval(20)
-            , HypOptMaxEval(20)
-            , HypOptFreq(1)
-        {
-            
-        }
-
-        TModelConfig(const NEgoProto::TModelConfig &config) {
-            ENSURE(config.has_input() && config.has_output(), "Need input and output data");
-            ENSURE(config.has_cov(), "Need specification of covariance in model config");
-            ENSURE(config.has_mean(), "Need specification of mean in model config");
-            ENSURE(config.has_lik(), "Need specification of likelihood in model config");
-            ENSURE(config.has_inf(), "Need specification of inference method in config");
-            ENSURE(config.has_acq(), "Need specification of acquisition function in config");
-
-            Input = config.input();
-            Output = config.output();
-
-            Cov = config.cov();
-            Mean = config.mean();
-            Lik = config.lik();
-            Inf = config.inf();
-            Acq = config.acq();
-            AcqOptMethod = config.acqopt();
-            HypOptMethod = config.opt();
-
-            if(config.has_seed()) {
-                Seed = config.seed();
-            } else {
-                Seed = std::time(0);
-            }
-        }
-
-        TString Input;
-        TString Output;
-
-        TString Cov;
-        TString Mean;
-        TString Lik;
-        TString Inf;
-        TString Acq;
-
-        TString AcqOptMethod;
-        TString HypOptMethod;
-        ui32 HypOptMaxEval;
-        ui32 HypOptFreq;
-        ui32 Seed;
-
-        ui32 MaxEval;
-    };
 
     class IAcq;
 
     using TOptimCallback = std::function<double(const TVectorD&)>;
 
-    class TModel {
+    class TModel : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD> {
     public:
+        using TParent = TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>;
+        
         static const double ParametersDefault;
 
         TModel(TModelConfig config);
+
         TModel();
-
-        TInfResult GetNegativeLogLik(const TVector<double>& v);
-        TInfResult GetNegativeLogLik() const;
-
-        size_t GetHyperParametersSize() const;
-
-        TVector<double> GetHyperParameters() const;
-
-        void SetHyperParameters(const TVector<double> &v);
-
-        size_t GetDimSize() const;
-
-        TDistrVec GetPrediction(const TMatrixD &Xnew);
-
-        SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew);
+        
+        TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, TMatrixD x, TVectorD y);
+        
+        // Setters
 
         void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq);
 
@@ -106,11 +39,31 @@ namespace NEgo {
 
         void SetConfig(TModelConfig config);
 
-        void Optimize(TOptimCallback cb);
-
         const double& GetMinimum() const;
         
         void SetMinimum(double v);
+
+        // Functor methods
+        
+        size_t GetParametersSize() const override;
+
+        TVector<double> GetParameters() const override;
+
+        void SetParameters(const TVector<double> &v) override;
+
+        TModel::Result UserCalc(const TMatrixD& Xnew) const override;
+
+        // Helpers
+
+        void Optimize(TOptimCallback cb);
+
+        TInfResult GetNegativeLogLik(const TVector<double>& v);
+    
+        TInfResult GetNegativeLogLik() const;
+
+        TDistrVec GetPrediction(const TMatrixD &Xnew);
+
+        SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew);
 
     private:
         TMatrixD X;
@@ -124,7 +77,7 @@ namespace NEgo {
         
         TModelConfig Config;
 
-        // TOptional<TPosterior> Posterior;
+        TOptional<TPosterior> Posterior;
 
         double MinF;
     };

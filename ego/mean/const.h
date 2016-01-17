@@ -11,7 +11,7 @@ namespace NEgo {
     public:
         TMeanConst(size_t dim_size);
 
-        TMeanConst::Result UserCalc(const TMatrixD &m) override final;
+        TMeanConst::Result UserCalc(const TMatrixD &m) const override final;
 
         size_t GetParametersSize() const override final;
     };

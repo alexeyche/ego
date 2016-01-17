@@ -41,7 +41,7 @@ namespace NEgo {
 		using TReturn = T;
 		using Result = R;
 
-		virtual Result UserCalc(const A& arg) = 0;
+		virtual Result UserCalc(const A& arg) const = 0;
 
 		TOneArgFunctor(size_t dimSize)
 			: TFunctorBase<T>(dimSize)
@@ -52,13 +52,13 @@ namespace NEgo {
 
 		virtual size_t GetParametersSize() const { return 0; }
 
-        Result Calc(const A& arg) {
+        Result Calc(const A& arg) const {
         	ENSURE(TFunctorBase<T>::MetaEntity || TFunctorBase<T>::Parameters.size() == GetParametersSize(),
         		"Parameters are not satisfying to functor parameter size: " << TFunctorBase<T>::Parameters.size() << " != " << GetParametersSize());
         	return UserCalc(arg);
         }
 
-        Result operator()(const A& arg) {
+        Result operator()(const A& arg) const {
         	return Calc(arg);
         }
 	};

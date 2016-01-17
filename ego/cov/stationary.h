@@ -7,7 +7,6 @@
 #include <ego/base/errors.h>
 #include <ego/base/factory.h>
 #include <ego/util/log/log.h>
-#include <ego/util/pretty_print.h>
 
 #include <ego/base/la.h>
 
@@ -28,7 +27,7 @@ namespace NEgo {
 		{
 		}
 
-		TSquareDistFunctor::Result UserCalc(const TMatrixD &left, const TMatrixD &right) override final {
+		TSquareDistFunctor::Result UserCalc(const TMatrixD &left, const TMatrixD &right) const override final {
 			TVectorD left2sum = NLa::RowSum(left % left);
             TVectorD right2sum = NLa::RowSum(right % right);
             TMatrixD leftSums = NLa::RepMat(left2sum, 1, right.n_rows);
@@ -83,12 +82,12 @@ namespace NEgo {
         {
         }
 
-        TCovStationaryISO::Result UserCalc(const TMatrixD &left, const TMatrixD &right) override final {
+        TCovStationaryISO::Result UserCalc(const TMatrixD &left, const TMatrixD &right) const override final {
         	ENSURE(left.n_cols == DimSize, "Col size of left input matrix are not satisfy to kernel params: " << DimSize << " != " << left.n_cols);
 	        ENSURE(right.n_cols == DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize << " != " << right.n_cols);
 
-	        const double& l = Parameters[0];
-        	const double& var = Parameters[1];
+	        double l = exp(Parameters[0]);
+        	double var = exp(2.0 * Parameters[1]);
 
 	        auto sqDistRes = SqDistFunctor(left, right);
             TMatrixD r = sqDistRes.Value();
@@ -107,8 +106,8 @@ namespace NEgo {
 		            [=]() -> TVector<TMatrixD> {
 		            	TVector<TMatrixD> dK(GetParametersSize());
 
-		                dK[0] = - var * dKdArg % r / (l*l);
-		                dK[1] = K;
+		                dK[0] = - var * dKdArg % r / l;
+		                dK[1] = 2.0 * var * K;
 		                return dK;
 		            }
 		        )

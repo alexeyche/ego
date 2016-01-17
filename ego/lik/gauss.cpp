@@ -9,7 +9,7 @@ namespace NEgo {
    	{
     }
 
-	TLikGauss::Result TLikGauss::UserCalc(const TVectorD& Y, const TVectorD& var) {
+	TLikGauss::Result TLikGauss::UserCalc(const TVectorD& Y, const TVectorD& var) const {
         const double& sn2 = Parameters[0];
         
         TVectorD logP = - (Y % Y) / ((sn2+var) * 2.0) - NLa::Log(2.0 * M_PI * (sn2+var))/2.0;

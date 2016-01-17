@@ -15,7 +15,7 @@ namespace NEgo {
         {
         }
 		
-        TAcqEI::Result UserCalc(const TVectorD& x) override final;
+        TAcqEI::Result UserCalc(const TVectorD& x) const override final;
 
     private:
     	ui32 Exp;

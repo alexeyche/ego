@@ -62,17 +62,17 @@ namespace NEgo {
 
 		virtual ~TTwoArgFunctor() {}
 		
-		virtual Result UserCalc(const A1& firstArg, const A2& secondArg) = 0;
+		virtual Result UserCalc(const A1& firstArg, const A2& secondArg) const = 0;
 
 		virtual size_t GetParametersSize() const { return 0; }
 
-		Result Calc(const A1& firstArg, const A2& secondArg) {
+		Result Calc(const A1& firstArg, const A2& secondArg) const {
 			ENSURE(TFunctorBase<T>::MetaEntity || TFunctorBase<T>::Parameters.size() == GetParametersSize(),
         		"Parameters are not satisfying to functor parameter size: " << TFunctorBase<T>::Parameters.size() << " != " << GetParametersSize());
         	return UserCalc(firstArg, secondArg);
 		}
 
-        Result operator()(const A1& firstArg, const A2& secondArg) {
+        Result operator()(const A1& firstArg, const A2& secondArg) const {
         	return Calc(firstArg, secondArg);
         }
 

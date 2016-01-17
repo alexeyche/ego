@@ -10,7 +10,7 @@ namespace NEgo {
     {
     }
 
-    TMeanConst::Result TMeanConst::UserCalc(const TMatrixD &m) {
+    TMeanConst::Result TMeanConst::UserCalc(const TMatrixD &m) const {
         TVectorD ones = NLa::Ones(m.n_rows);
         return TMeanConst::Result()
             .SetValue(

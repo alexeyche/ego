@@ -11,7 +11,7 @@ namespace NEgo {
 
 			TSqExp(size_t dimSize);
 			
-    		TSqExp::Result UserCalc(const TMatrixD &r) override final;
+    		TSqExp::Result UserCalc(const TMatrixD &r) const override final;
     	};
 
     } // namespace NKernels
