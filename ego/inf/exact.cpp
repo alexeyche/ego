@@ -27,11 +27,32 @@ namespace NEgo {
         
         double sn2 = exp(2.0 * Lik->GetParameters()[0]);
         
-        TMatrixD L = NLa::Chol(K + (sn2+1e-08) * NLa::Eye(n));
-    	TMatrixD Kinv = NLa::CholSolve(L, NLa::Eye(n));
+     //    TMatrixD L = NLa::Chol(K + (sn2+1e-08) * NLa::Eye(n));
+    	// TMatrixD Kinv = NLa::CholSolve(L, NLa::Eye(n));
 
-        TVectorD alpha = NLa::AsVector(Kinv * (Y-m));
-    	TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
+     //    TVectorD alpha = NLa::AsVector(Kinv * (Y-m));
+    	// TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
+
+        TMatrixD L;
+        TMatrixD pL;
+        double sl;
+
+        if(fabs(sn2) < 1e-06) { // very tiny sn2 can lead to numerical trouble
+            sn2 = std::max(sn2, 1e-10);
+            L = NLa::Chol(K + sn2 * NLa::Eye(n));
+            sl = 1.0;
+            pL = - NLa::CholSolve(L, NLa::Eye(n));
+        } else {
+            L = NLa::Chol(K/sn2 + NLa::Eye(n));
+            sl = sn2;
+            pL = L;
+        }
+
+        // NLa::DebugSave(L, "L");
+        // NLa::DebugSave(pL, "pL");
+        
+        TVectorD alpha = NLa::AsVector(NLa::CholSolve(L, Y-m)/sl);
+        TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
 
     	return TInfResult()
     		.SetValue(
@@ -39,13 +60,14 @@ namespace NEgo {
                     return 0.5 * (
                         NLa::AsScalar(NLa::Trans(Y-m) * alpha) + 
                         2.0 * NLa::Sum(NLa::Log(NLa::Diag(L))) + 
-                        n * Log2Pi
+                        n * log(2.0 * M_PI * sl)
                     );
             	}
     		)
     		.SetParamDeriv(
 				[=]() -> TVector<double> {
-	                TMatrixD Q  = Kinv - alpha * NLa::Trans(alpha);
+                    TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
+	                // TMatrixD Q  = Kinv - alpha * NLa::Trans(alpha);
 	                TVector<double> dNLogLik(Mean->GetParametersSize() + Cov->GetParametersSize() + 1);
 
 	                size_t hypIdx = 0;

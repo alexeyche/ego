@@ -23,7 +23,7 @@ meanF = {@meanConst}; hyp.mean = 1.0;
 %covF = {@covGaborard}; hyp.cov = log(ones(2*D,1));
 %covF = {@covMaterniso, 5}; hyp.cov = [1.0 1.0];
 %covF = {@covMaternard, 1}; hyp.cov = ones(D+1, 1);
-covF = {@covSEiso}; hyp.cov = [1.0 1.0]; %log([1.0 1.0]);
+covF = {@covSEiso}; hyp.cov = log([1.0 1.0]);
 %covF = {@covSEard}; hyp.cov = ones(D+1,1);
 
 %covF = {@covSum, {{@covMaternard, 1}, {@covRQard}}}; hyp.cov = log(ones((D+1)*2 + 1, 1));
@@ -44,13 +44,11 @@ inf = {@infExact};                                  % inference method
 %inf = {@infLaplace};
 %inf = {@infEP};
 %inf = {@infMCMC};
-hyp.mean = log(1.0);
-hyp.cov = [log(1.0), log(1.0)];
-hyp.lik = log(1.0);
+
 [post nlZ dnlZ] = feval(inf{:}, hyp, meanF, covF, lik, Xtr, Ytr);
 
 hyp = minimize(hyp,'gp', -102, inf, meanF, covF, lik, Xtr, Ytr); % opt hypers
 
-Xte = [0.5 0.5; 0.166667 0.5];
+Xte = [0.5, 0.6]'; %[0.5 0.5; 0.166667 0.5];
 
 [yte_mu, yte_s2] = gp(hyp, inf, meanF, covF, lik, Xtr, Ytr, Xte);  % predict

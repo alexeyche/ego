@@ -9,7 +9,7 @@
 using namespace NEgo;
 
 constexpr double Epsilon = 1e-4;
-constexpr double LilEpsilon = 1e-5;
+constexpr double LilEpsilon = 1e-4;
 constexpr ui32 DimSize = 5;
 constexpr ui32 SampleSize = 15;
 
@@ -18,7 +18,7 @@ void CheckDerivativeSanity(T derivVal, T leftVal, T rightVal, std::string name) 
 	T approxDeriv = (rightVal - leftVal)/(2.0*Epsilon);
 	double res = NLa::Sum(derivVal - approxDeriv);
 	res = std::abs(res);
-	if(res >= LilEpsilon) {
+	if(res >= LilEpsilon || std::isnan(res)) {
 		L_ERROR << name << ", Derivative is bad: " << res << " >= " << LilEpsilon;
 		L_ERROR << "Those values are not almost equal:";
 		L_ERROR << "Proposed exact value:";
@@ -37,7 +37,7 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 	{
 		double res = NLa::Sum(derivVal.first - approxDerivFirst);
 		res = std::abs(res);
-		if(res >= LilEpsilon) {
+		if(res >= LilEpsilon || std::isnan(res)) {
 			L_ERROR << name << ", Derivative of first element of pair is bad: " << res << " >= " << LilEpsilon;
 			L_ERROR << "Those values are not almost equal:";
 			L_ERROR << "Proposed exact value:";
@@ -46,12 +46,12 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 			L_ERROR << "\n" << approxDerivSecond;
 			throw TEgoException() << "Derivative sanity check failed for first element of pair";
 		}
-		L_INFO << name << ", Got derivative sanity check ok: " << res << " < " << LilEpsilon;
+		L_INFO << name << ", Got derivative sanity check ok for first element of pair: " << res << " < " << LilEpsilon;
 	}
 	{
 		double res = NLa::Sum(derivVal.second - approxDerivSecond);
 		res = std::abs(res);
-		if(res >= LilEpsilon) {
+		if(res >= LilEpsilon || std::isnan(res)) {
 			L_ERROR << name << ", Derivative second element of pair is bad: " << res << " >= " << LilEpsilon;
 			L_ERROR << "Those values are not almost equal:";
 			L_ERROR << "Proposed exact value:";
@@ -60,7 +60,7 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 			L_ERROR << "\n" << approxDerivSecond;
 			throw TEgoException() << "Derivative sanity check failed for second element of pair";
 		}
-		L_INFO << name << ", Got derivative sanity check ok: " << res << " < " << LilEpsilon;
+		L_INFO << name << ", Got derivative sanity check ok for second element of pair: " << res << " < " << LilEpsilon;
 	}
 }
 
@@ -220,9 +220,9 @@ void TwoArgFunctorTester(std::string functorName, Params ... params) {
 	TEST(Typename ## DerivativeSanityCheck) { \
 		TwoArgFunctorTester<Typename, SPtr<IMean>, SPtr<ICov>, SPtr<ILik>>( \
 			#Typename \
-		  , SPtr<IMean>(new MeanTypename(DimSize)) \
-		  , SPtr<ICov>(new CovTypename(DimSize)) \
-		  , SPtr<ILik>(new LikTypename(DimSize)) \
+		  , MakeShared(new MeanTypename(DimSize)) \
+		  , MakeShared(new CovTypename(DimSize)) \
+		  , MakeShared(new LikTypename(DimSize)) \
 		); \
 	} \
 

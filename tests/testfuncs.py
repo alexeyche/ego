@@ -51,9 +51,9 @@ def periodic1d(x):
     return (x-0.3)*(x-0.3) + sin(20*x)*0.2
 
 def sq1d(x):
-    return (0.5-x[0])**2
+    return (0.5-x)**2
 
-D, fopt = 2, branin
+D, fopt = 1, sq1d
 
 
 cov = Cov("cSqExpISO", D)
@@ -63,16 +63,18 @@ inf = Inf("iExact")
 acq = Acq("aEI", D)
 model = Model(mean, cov, lik, inf, acq)
 
-init_size = 100
+init_size = 30
 
 X = np.zeros((init_size, D))
 
 for di in range(D):
     X[:, di] = lhs_sample(init_size, rng)
 
+
 Y = np.asarray([ fopt(x) for x in X ])
 
-np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, np.asarray([Y]).T)), delimiter=',')
+#np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, np.asarray([Y]).T)), delimiter=',')
+np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, Y)), delimiter=',')
 
 model.setConfig({
     "Seed": seed, 
@@ -86,6 +88,7 @@ model.setConfig({
 model.setData(X, Y)
 
 gridSize = pow(1000, 1.0/D)
+#gridSize = 100
 
 grid = list()
 for di in range(D):
@@ -109,11 +112,11 @@ if D == 1:
     plt.figure(1)       
     plt.plot(points, Ymean, '-', color='green', linewidth=2.0)
     plt.plot(points, Ygrid, '-', color='blue')
-    plt.fill_between(points, Ymean-Ysd, Ymean+Ysd, facecolor='green', interpolate=True, alpha=0.2)
-    plt.plot(points, ev, '-', color='red')
+    #plt.fill_between(points, Ymean-Ysd, Ymean+Ysd, facecolor='green', interpolate=True, alpha=0.2)
+    #plt.plot(points, ev, '-', color='red')
     plt.plot(X, Y, 'bp')
-    plt.plot(points[np.where(Ygrid == min(Ygrid))], min(Ygrid), 'bd')
-    plt.plot(points[np.where(ev == min(ev))[0]], min(ev), 'rd')
+    #plt.plot(points[np.where(Ygrid == min(Ygrid))], min(Ygrid), 'bd')
+    #plt.plot(points[np.where(ev == min(ev))[0]], min(ev), 'rd')
 
 else:
     ev = ev.reshape((gridSize, gridSize))

@@ -12,15 +12,22 @@ namespace NEgo {
 
     TMeanConst::Result TMeanConst::UserCalc(const TMatrixD &m) const {
         TVectorD ones = NLa::Ones(m.n_rows);
+        const double& c = Parameters[0];
+        
         return TMeanConst::Result()
             .SetValue(
                 [=]() -> TVectorD {
-                    return Parameters[0] * ones;
+                    return c * ones;
                 }
             )
             .SetParamDeriv(
                 [=]() -> TVector<TVectorD> {
                     return {ones};
+                }
+            )
+            .SetArgDeriv(
+                [=]() -> TVectorD {
+                    return NLa::Zeros(m.n_rows);
                 }
             );
     }

@@ -42,7 +42,12 @@ int main(int argc, const char** argv) {
     TModel model(config);
 
     auto res = model.GetNegativeLogLik();
-    L_DEBUG << res.Value();
+    L_DEBUG << "Negative log lik: " << res.Value();
+    size_t i = 0;
+    for(const auto& v: res.ParamDeriv()) {
+        L_DEBUG << "Param " << i << " derivative: " << v;
+        ++i;
+    }
     NOpt::OptimizeModelLogLik(model, NOpt::MethodFromString(config.opt()));
     return 0;
 }

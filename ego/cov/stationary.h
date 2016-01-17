@@ -48,7 +48,13 @@ namespace NEgo {
                         TMatrixD dR(left.n_rows, right.n_rows);
                         for(size_t ri=0; ri < left.n_rows; ++ri) {
                             for(size_t rj=0; rj < right.n_rows; ++rj) {
-                                dR(ri, rj) = NLa::Sum(left.row(ri) - right.row(rj))/r(ri, rj);
+                            	double sum = NLa::Sum(left.row(ri) - right.row(rj));
+                            	if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
+                            		dR(ri, rj) = 0.0;	
+                            	} else {
+                            		dR(ri, rj) = sum/r(ri, rj);	
+                            	}
+                                
                             }
                         }
                         return dR;
@@ -59,7 +65,12 @@ namespace NEgo {
                         TMatrixD dR(left.n_rows, right.n_rows);
                         for(size_t ri=0; ri < left.n_rows; ++ri) {
                             for(size_t rj=0; rj < right.n_rows; ++rj) {
-                                dR(ri, rj) = - NLa::Sum(left.row(ri) - right.row(rj))/r(ri, rj);
+                            	double sum = - NLa::Sum(left.row(ri) - right.row(rj));
+                                if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
+                            		dR(ri, rj) = 0.0;	
+                            	} else {
+                            		dR(ri, rj) = sum/r(ri, rj);	
+                            	}
                             }
                         }
                         return dR;

@@ -16,8 +16,8 @@ ONE_ARG_FUN_TEST(TMeanConst);
 INF_TEST(TInfExact, TMeanConst, TCovSqExpISO, TLikGauss);
 
 TEST(ModelTest) {
-	TMatrixD X(SampleSize, DimSize, arma::fill::randn);
-	TVectorD Y(SampleSize, arma::fill::randn);
+	TMatrixD X(5*SampleSize, DimSize, arma::fill::randn);
+	TVectorD Y(5*SampleSize, arma::fill::randn);
 
 	SPtr<IMean> mean = MakeShared(new TMeanConst(DimSize));
 	SPtr<ICov> cov = MakeShared(new TCovSqExpISO(DimSize));

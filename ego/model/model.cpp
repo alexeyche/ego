@@ -63,7 +63,7 @@ namespace NEgo {
         L_DEBUG << "Got input values with size [" << X.n_rows << "x" << X.n_cols << "] and " << " target values with size [" << Y.n_rows << "x" << Y.n_cols << "] with minimum target " << MinF;
 
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
-        // NOpt::OptimizeModelLogLik(*this, NOpt::MethodFromString(Config.HypOptMethod), NOpt::TOptimizeConfig(Config.HypOptMaxEval));
+        NOpt::OptimizeModelLogLik(*this, NOpt::MethodFromString(Config.HypOptMethod), NOpt::TOptimizeConfig(Config.HypOptMaxEval));
     }
 
     void TModel::SetConfig(TModelConfig config) {
@@ -110,10 +110,14 @@ namespace NEgo {
         ENSURE(Posterior, "Posterior must be calculated before calling prediction methods");
         ENSURE(Posterior->L.n_rows == X.n_rows, "Posterior must be recalculated for new data");
 
-        TVectorD kss = NLa::Diag(Cov->CrossCovariance(Xnew).Value());
+        
+        auto crossCovRes = Cov->CrossCovariance(Xnew);
         auto covRes = Cov->Calc(X, Xnew);
+        auto meanRes = Mean->Calc(Xnew);
+
         TMatrixD Ks = covRes.Value();
-        TVectorD ms = Mean->Calc(Xnew).Value();
+        TVectorD ms = meanRes.Value();
+        TVectorD kss = NLa::Diag(crossCovRes.Value());
         
         bool isCholesky = false;
         if(NLa::Sum(NLa::TriangLow(Posterior->L, true)) < std::numeric_limits<double>::epsilon()) {
@@ -122,9 +126,13 @@ namespace NEgo {
 
         TVectorD Fmu = ms + NLa::Trans(Ks) * Posterior->Alpha;
         TVectorD Fs2;
+        TMatrixD Kinv;
         if(isCholesky) {
+            Kinv = NLa::CholSolve(Posterior->L, NLa::Eye(Posterior->L.n_rows));
+            
             TMatrixD V = NLa::Solve(NLa::Trans(Posterior->L), NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % Ks);
             Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
+            // Fs2 = kss - NLa::Trans(NLa::ColSum(NLa::Trans(Ks) * Kinv * Ks));
         } else {
             TMatrixD LKs = Posterior->L * Ks;
             Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % LKs));
@@ -136,17 +144,15 @@ namespace NEgo {
                 [=]() -> TPair<TVectorD, TVectorD> {
                     return MakePair(Fmu, Fs2); 
                 }
-            )
-            .SetArgDeriv(
-                [=]() -> TPair<TVectorD, TVectorD> {
-                    TMatrixD V = NLa::Solve(NLa::Trans(Posterior->L), NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % Ks);
-                    TVectorD CinvK = NLa::Trans(NLa::ColSum(V % V));
-                    TMatrixD dKdX = covRes.SecondArgDeriv();
-                    TVectorD dsdX = dKdX * CinvK / Fs2;
-                    TVectorD dudX = (dKdX * Posterior->Alpha - Fmu % dsdX)/Fs2;
-                    return MakePair(dsdX, dudX);
-                }
             );
+            // .SetArgDeriv(
+            //     [=]() -> TPair<TVectorD, TVectorD> {
+            //         return MakePair(
+            //             meanRes.ArgDeriv() + NLa::Trans(covRes.SecondArgDeriv()) * Posterior->Alpha
+            //           , NLa::Diag(crossCovRes.SecondArgDeriv()) - NLa::Trans(NLa::ColSum(2.0 * NLa::Trans(Ks) * Kinv * covRes.SecondArgDeriv()))
+            //         );
+            //     }
+            // );
     }
 
     // Helpers
@@ -157,7 +163,7 @@ namespace NEgo {
     }
 
     TInfResult TModel::GetNegativeLogLik() const {
-        return Inf->Calc(X,Y);
+        return Inf->Calc(X, Y);
     }
 
 
