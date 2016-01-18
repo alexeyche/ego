@@ -14,6 +14,8 @@ namespace NEgo {
         }
 
         ICov::Result CrossCovariance(const TMatrixD &m);
+
+        TVector Sample(const TMatrixD &x);
         
     };
 

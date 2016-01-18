@@ -56,10 +56,8 @@ cdef extern from "ego_wrapper.h":
         vector[double] GetParameters() # except +
         void Optimize(FOptimCallback, void*) # except +
         pair[TMatWrap, TMatWrap] GetData() # except +
+        void OptimizeHyp() # except +
         
 cdef extern from "ego_wrapper.h":
     void SetDebugLogLevel()
-
-cdef extern from "ego_wrapper.h":
-    void OptimizeModel(TModelWrap *model, const char* p, TOptimizeConfig config) # except +
 

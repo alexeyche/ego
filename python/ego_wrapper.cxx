@@ -273,8 +273,6 @@ TPair<TMatWrap, TMatWrap> TModelWrap::GetData() const {
 	return MakePair(TMatWrap::FromMatrix(data.first), TMatWrap::FromMatrix(data.second));
 }
 
-void OptimizeModel(TModelWrap *model, const char* optMethod, NOpt::TOptimizeConfig config) {
-	NOpt::OptimizeModelLogLik(model->GetModel(), NOpt::MethodFromString(optMethod), config);
+void TModelWrap::OptimizeHyp() {
+	Model.OptimizeHyp();
 }
-
-

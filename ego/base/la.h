@@ -211,7 +211,7 @@ namespace NEgo {
 
         void AddCholeskyRow(TMatrixD &L, const TVectorD &v);
 
-
+        TMatrixD SampleMultivariateGauss(const TVectorD &mu, const TMatrixD &cov, ui32 nsamp);
 
     } // namespace NLa
 

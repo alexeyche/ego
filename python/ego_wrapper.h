@@ -148,8 +148,7 @@ public:
 
 	void Optimize(FOptimCallback cb, void *userData);
 
+	void OptimizeHyp();
 private:
 	TModel Model;
 };
-
-void OptimizeModel(TModelWrap *model, const char* method, NOpt::TOptimizeConfig config);

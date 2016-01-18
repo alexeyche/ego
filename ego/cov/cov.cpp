@@ -7,4 +7,8 @@ namespace NEgo {
 		return TParent::Calc(m, m);
 	}
 
+	TVector ICov::Sample(const TMatrixD &x) {
+		return NLa::SampleMultivariateGauss(NLa::Zeros())
+	}
+
 } // namespace NEgo

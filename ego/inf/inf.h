@@ -10,18 +10,26 @@
 namespace NEgo {
 
     struct TPosterior {
-        TPosterior() {}
+        TPosterior() 
+            : IsCholesky(false) 
+        {
+        }
 
         TPosterior(const TMatrixD &l, const TVectorD &alpha, const TVectorD &diagW)
             : L(l)
             , Alpha(alpha)
             , DiagW(diagW)
         {
+            IsCholesky = NLa::Sum(NLa::TriangLow(L, true)) < std::numeric_limits<double>::epsilon();
+            Linv = NLa::Trans(NLa::Solve(L, NLa::Eye(L.n_rows)));
         }
 
-        TMatrixD L;
+        TMatrixD L; // Given
         TVectorD Alpha;
         TVectorD DiagW;
+        
+        bool IsCholesky; // Calculated
+        TMatrixD Linv;        
     };
 
 

@@ -9,10 +9,15 @@
 
 using namespace NKernels;
 
-ONE_ARG_FUN_TEST(TSqExp);
-TWO_ARG_FUN_TEST(TCovSqExpISO);
-TWO_ARG_FUN_TEST(TSquareDistFunctor);
 ONE_ARG_FUN_TEST(TMeanConst);
+
+TWO_ARG_FUN_TEST(TSquareDistFunctor);
+
+ONE_ARG_FUN_TEST(TSqExp);
+ONE_ARG_FUN_TEST(TExp);
+TWO_ARG_FUN_TEST(TCovSqExpISO);
+TWO_ARG_FUN_TEST(TCovExpISO);
+
 INF_TEST(TInfExact, TMeanConst, TCovSqExpISO, TLikGauss);
 
 TEST(ModelTest) {

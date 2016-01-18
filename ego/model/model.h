@@ -54,6 +54,8 @@ namespace NEgo {
         TModel::Result UserCalc(const TMatrixD& Xnew) const override;
 
         // Helpers
+        
+        void OptimizeHyp();
 
         void Optimize(TOptimCallback cb);
 

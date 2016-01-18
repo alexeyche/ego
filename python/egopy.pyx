@@ -146,9 +146,8 @@ cdef class Model:
         d = self.obj.GetData()
         return fromMatWrapToNumpy(d.first), fromMatWrapToNumpy(d.second)
 
-
+    def optimizeHyp(self):
+        self.obj.OptimizeHyp()
+        
 def setDebugLogLevel():
     SetDebugLogLevel()
-
-def optimizeModel(Model m, str meth, dict params):
-    OptimizeModel(m.obj, meth, optParamsFromDict(params))
