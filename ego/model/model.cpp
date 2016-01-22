@@ -108,7 +108,6 @@ namespace NEgo {
         ENSURE(X.n_rows>0, "Data is not set");
         ENSURE(Posterior, "Posterior must be calculated before calling prediction methods");
         ENSURE(Posterior->L.n_rows == X.n_rows, "Posterior must be recalculated for new data");
-
         
         auto crossCovRes = Cov->CrossCovariance(Xnew);
         auto covRes = Cov->Calc(X, Xnew);
@@ -129,7 +128,7 @@ namespace NEgo {
         } else {
             V = Posterior->L * Ks;
             Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % V));
-            NLa::ForEach(Fs2, [](double &v) { if(v < 0.0) v = 0; });
+            NLa::ForEach(Fs2, [](double& v) { if(v < 0.0) v = 0; });
         }
 
         return TModel::Result()

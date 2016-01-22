@@ -11,14 +11,10 @@ namespace NEgo {
 	public:
 		TAcqEI(size_t dimSize)
             : IAcq(dimSize)
-            , Exp(1)
         {
         }
 		
         TAcqEI::Result UserCalc(const TVectorD& x) const override final;
-
-    private:
-    	ui32 Exp;
 	};
 
 
