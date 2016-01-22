@@ -487,16 +487,5 @@ namespace NEgo {
             L(n-1, n-1) = sqrt(L_j);
         }
         
-        
-        TMatrixD SampleMultivariateGauss(const TVectorD &mu, const TMatrixD &cov, ui32 nsamp) {
-            ENSURE(mu.size() == cov.n_cols, "Mean and covariance are not in consistent state");
-            TMatrixD sample(nsamp, mu.size(), arma::fill::randn);
-            TVectorD eigval;
-            TMatrixD eigvec;
-            arma::eig_sym(eigval, eigvec, cov);
-            TVectorD coeffs = sample * NLa::Sqrt(eigval);
-            return NLa::RepMat(NLa::Trans(mu), nsamp, mu.size()) * mu  + coeffs * NLa::Trans(eigvec);
-        }
-
     } // namespace NLa
 } //namespace NEgo
