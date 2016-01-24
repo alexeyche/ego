@@ -24,12 +24,12 @@ int main(int argc, const char** argv) {
     if(!opts.Parse(config)) {
         return 0;
     }
-    
+
     if(config.listentities()) {
         Factory.PrintEntities();
         return 0;
     }
-    
+
     if(config.listmethods()) {
         NOpt::PrintMethods();
         return 0;
@@ -48,6 +48,6 @@ int main(int argc, const char** argv) {
         L_DEBUG << "Param " << i << " derivative: " << v;
         ++i;
     }
-    NOpt::OptimizeModelLogLik(model, NOpt::MethodFromString(config.opt()));
+    // NOpt::OptimizeModelLogLik(model, NOpt::MethodFromString(config.opt()));
     return 0;
 }

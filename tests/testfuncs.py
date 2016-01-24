@@ -17,7 +17,13 @@ def scale_to(x, minv=None, maxv=None, a=0.0, b=1.0):
         maxv = max(x)
     return ((b-a)*(x - minv)/(maxv-minv)) + a
 
-seed = 1
+def plot_mins(X, Y, plot_spec):
+    minY = min(Y)
+    minYIds = np.where(Y == minY)[0]
+    plt.plot(X[minYIds], [minY]*minYIds.shape[0], plot_spec)
+    
+
+seed = 9
 if not seed is None:
     rng = np.random.RandomState(seed)
 else:
@@ -47,7 +53,6 @@ def periodic1d(x):
     """
     Opt: 0.23719
     """
-    x = x[0]    
     return (x-0.3)*(x-0.3) + sin(20*x)*0.2
 
 def sq1d(x):
@@ -55,15 +60,14 @@ def sq1d(x):
 
 D, fopt = 1, sq1d
 
-
-cov = Cov("cSqExpISO", D)
-mean = Mean("mConst", D)
-lik = Lik("lGauss", D)
+cov = Cov("cSqExpISO", D, [np.log(1.0), np.log(1.0)])
+mean = Mean("mConst", D, [1.0])
+lik = Lik("lGauss", D, [np.log(0.01)])
 inf = Inf("iExact")
 acq = Acq("aEI", D)
 model = Model(mean, cov, lik, inf, acq)
 
-init_size = 30
+init_size = 5
 
 X = np.zeros((init_size, D))
 
@@ -79,45 +83,47 @@ np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, Y)), delimiter=',')
 model.setConfig({
     "Seed": seed, 
     "HypOptMethod": "CG",
-    "HypOptMaxEval": 100,
+    "HypOptMaxEval": 10,
     "HypOptFreq": 1,
     "AcqOptMethod" : "GN_DIRECT",
-    "MaxEval": 50
+    "MaxEval": 10
 })
 
 model.setData(X, Y)
+model.optimizeHyp()
 
-gridSize = pow(1000, 1.0/D)
+#gridSize = pow(1000, 1.0/D)
+gridSize = 1000
 #gridSize = 100
 
 grid = list()
 for di in range(D):
     grid.append(np.linspace(0.0, 1.0, gridSize))
 
-if D>1:    
+if D>1:
     points = np.vstack(np.meshgrid(*grid)).reshape(len(grid), -1).T
 else:
     points = grid[0]
 
 Ygrid = np.asarray([ fopt(x) for x in points ])
 
-
 preds = model.getPrediction(points)
 Ymean = np.asarray([ y.getMean() for y in preds ])
 Ysd = np.asarray([ y.getSd() for y in preds ])
 ev, dev = acq.evaluateCriteria(points)
-ev = scale_to(ev)
+ev = ev.reshape(len(ev))
 
+    
 if D == 1:
     plt.figure(1)       
     plt.plot(points, Ymean, '-', color='green', linewidth=2.0)
     plt.plot(points, Ygrid, '-', color='blue')
-    #plt.fill_between(points, Ymean-Ysd, Ymean+Ysd, facecolor='green', interpolate=True, alpha=0.2)
-    #plt.plot(points, ev, '-', color='red')
+    plt.fill_between(points, Ymean-Ysd, Ymean+Ysd, facecolor='green', interpolate=True, alpha=0.2)
     plt.plot(X, Y, 'bp')
-    #plt.plot(points[np.where(Ygrid == min(Ygrid))], min(Ygrid), 'bd')
-    #plt.plot(points[np.where(ev == min(ev))[0]], min(ev), 'rd')
-
+    plt.plot(points, ev, '-', color='red')
+    plot_mins(points, ev, 'rd')
+    plot_mins(points, Ymean, 'bd')
+    
 else:
     ev = ev.reshape((gridSize, gridSize))
     Ymean = Ymean.reshape((gridSize, gridSize))
@@ -136,5 +142,4 @@ else:
 #model.optimize(fopt)
 
 #X, Y = model.getData()
-
 

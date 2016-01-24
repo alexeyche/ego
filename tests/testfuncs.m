@@ -18,7 +18,7 @@ Ytr = Y;
 
 %meanF = {@meanSum, {@meanLinear, @meanConst}}; hyp.mean = ones(D+1, 1);
 %meanF = {@meanLinear}; hyp.mean = ones(D, 1);
-meanF = {@meanConst}; hyp.mean = 1.0;
+meanF = {@meanConst}; hyp.mean = 0.0;
 %covF = {@covMaternard, 5}; 
 %covF = {@covGaborard}; hyp.cov = log(ones(2*D,1));
 %covF = {@covMaterniso, 5}; hyp.cov = [1.0 1.0];
@@ -32,7 +32,7 @@ covF = {@covSEiso}; hyp.cov = log([1.0 1.0]);
 %covF = {@covRQiso}; hyp.cov = log(ones(3, 1))
 %covF = {@covPPard}; hyp.cov = log(ones(D+1,1));
 
-lik = {@likGauss}; hyp.lik = log(1.0);
+lik = {@likGauss}; hyp.lik = log(0.01);
 %lik = {@likT}; hyp.lik = log([0.1 0.1]);
 %lik = {@likGamma, 'logistic'}; Ytr = abs(Ytr); Yte = abs(Yte); hyp.lik = log(0.1);
 %lik = {@likExp, 'logistic'}; Ytr = abs(Ytr); Yte = abs(Yte); hyp.lik = [];
@@ -40,15 +40,25 @@ lik = {@likGauss}; hyp.lik = log(1.0);
 %lik = {@likGaussWarp, 'poly3'}; hyp.lik=log([1.0 1.0 1.0]); % bad
 %lik = {@likGumbel, '-'}; hyp.lik=log(1.0);
 
-inf = {@infExact};                                  % inference method
+inf = {@infExact};                          % inference method
 %inf = {@infLaplace};
 %inf = {@infEP};
 %inf = {@infMCMC};
+%m = feval(meanF{:}, hyp.mean, Xtr);
+%K = feval(covF{:}, hyp.cov, Xtr);
 
 [post nlZ dnlZ] = feval(inf{:}, hyp, meanF, covF, lik, Xtr, Ytr);
 
-hyp = minimize(hyp,'gp', -102, inf, meanF, covF, lik, Xtr, Ytr); % opt hypers
 
-Xte = [0.5, 0.6]'; %[0.5 0.5; 0.166667 0.5];
+hyp = minimize(hyp,'gp', -100, inf, meanF, covF, lik, Xtr, Ytr); % opt hypers
+
+%Xte = [0.5, 0.6]'; %[0.5 0.5; 0.166667 0.5];
+
+Xte = linspace(0,1, 10)';
 
 [yte_mu, yte_s2] = gp(hyp, inf, meanF, covF, lik, Xtr, Ytr, Xte);  % predict
+figure(2); hold on;
+plot(X, Y, 'd');
+plot(Xte, yte_mu);
+plot(Xte, yte_mu - sqrt(yte_s2), '-r');
+plot(Xte, yte_mu + sqrt(yte_s2), '-r');

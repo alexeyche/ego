@@ -8,7 +8,8 @@ cdef TOptimizeConfig optParamsFromDict(dict d):
 
 cdef TModelConfig modelConfigFromDict(dict d):
     cdef TModelConfig c
-    c.Seed = d.get("Seed", c.Seed)
+
+    c.Seed = d.get("Seed") if d.get("Seed") else c.Seed
     c.AcqOptMethod = d.get("AcqOptMethod", c.AcqOptMethod)
     c.HypOptMethod = d.get("HypOptMethod", c.HypOptMethod)
     c.HypOptMaxEval = d.get("HypOptMaxEval", c.HypOptMaxEval)

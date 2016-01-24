@@ -5,9 +5,9 @@
 namespace NEgo {
 	namespace NOpt {
 		using TCallback = std::function<TPair<double, TVectorD>(const TVectorD&)>;
-		
+
 		struct TOptimizeConfig;
-		
+
 		struct TCgMinimizeConfig {
 			TCgMinimizeConfig();
 
@@ -23,7 +23,7 @@ namespace NEgo {
 			double Rho = 0.05;
 			double FirstReduction = 1.0;
 		};
-		
+
 		TPair<TVectorD, double> CgMinimize(const TVectorD &X, TCallback f, TCgMinimizeConfig config = TCgMinimizeConfig());
 
 	} // namespace NOpt

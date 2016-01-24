@@ -52,14 +52,14 @@ namespace NEgo {
 			LD_CCSAQ,
 			GN_ESCH
 		};
-		
+
 		EMethod MethodFromString(TString s);
 
  		TString MethodToString(EMethod m);
 
  		void PrintMethods();
 
-		
+
 		TPair<TVectorD, double> OptimizeModelLogLik(TModel &self, EMethod optMethod, TOptimizeConfig = TOptimizeConfig());
 
 		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, EMethod optMethod, TOptimizeConfig config = TOptimizeConfig());

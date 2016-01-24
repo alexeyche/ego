@@ -36,7 +36,7 @@ namespace NEgo {
         TMatrixD MatrixFromConstant(size_t r, size_t c, double val);
 
         TVectorD VectorFromConstant(size_t vsize, double val);
-        
+
         TMatrixD Log(const TMatrixD &m);
 
         double Log(double v);
@@ -96,7 +96,7 @@ namespace NEgo {
         TMatrixD Ones(size_t r, size_t c);
 
         TVectorD Zeros(size_t n);
-        
+
         TMatrixD Zeros(size_t r, size_t c);
 
         TMatrixD Eye(size_t n);
@@ -155,10 +155,10 @@ namespace NEgo {
             struct U {};
             struct P {};
         };
-        
+
         using TLuTup = TTagTuple<
-            NLuTup::L, TMatrixD, 
-            NLuTup::U, TMatrixD, 
+            NLuTup::L, TMatrixD,
+            NLuTup::U, TMatrixD,
             NLuTup::P, TMatrixD
         >;
 
@@ -178,9 +178,9 @@ namespace NEgo {
         double Norm(const TVectorD &v);
 
         TVectorD MaxOverCols(const TMatrixD &m);
-        
+
         double Max(const TVectorD& m);
-        
+
         double Min(const TVectorD& m);
 
         TVectorD LogExpAx(const TMatrixD &A, const TVectorD &x);
@@ -200,13 +200,13 @@ namespace NEgo {
         TMatrixD Pow(const TMatrixD& m, double pow);
 
         TVectorD LogSumExp(const TMatrixD &v);
-        
+
         double Erf(double x);
 
-        double NormPdf(double x, double mu = 0.0, double sigma = 1.0);
-        
-        double NormCdf(double x, double mu = 0.0, double sigma = 1.0);
-        
+        double NormPdf(double x);
+
+        double NormCdf(double x);
+
         double Factorial(ui32 val);
 
         void AddCholeskyRow(TMatrixD &L, const TVectorD &v);

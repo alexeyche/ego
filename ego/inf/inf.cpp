@@ -1,6 +1,7 @@
 #include "inf.h"
 
 #include <ego/util/log/log.h>
+#include <ego/util/pretty_print.h>
 
 namespace NEgo {
 
@@ -10,7 +11,7 @@ namespace NEgo {
             Cov->GetParametersSize() +
             Lik->GetParametersSize();
 	}
-    
+
     void IInf::SetParameters(const TVector<double>& parameters) {
     	size_t hypSizeIdx = 0;
         Mean->SetParameters(TVector<double>(
@@ -33,7 +34,7 @@ namespace NEgo {
     	auto meanHyps = Mean->GetParameters();
     	auto covHyps = Cov->GetParameters();
     	auto likHyps = Lik->GetParameters();
-    	
+
     	TVector<double> params;
     	params.insert(params.end(), meanHyps.begin(), meanHyps.end());
     	params.insert(params.end(), covHyps.begin(), covHyps.end());

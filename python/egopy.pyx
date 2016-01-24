@@ -90,7 +90,7 @@ cdef class Distr:
 
     cdef setDistr(self, TDistrWrap d):
         del self.obj
-        self.obj = new TDistrWrap(d) 
+        self.obj = new TDistrWrap(d)
 
     def getMean(self):
         return self.obj.GetMean()
@@ -116,7 +116,7 @@ cdef class Model:
             X = np.asmatrix(X).T
         if len(Y.shape) == 1:
             Y = np.asmatrix(Y).T
-        
+
         self.obj.SetData(fromNumpyToMatWrap(X), fromNumpyToMatWrap(Y))
 
     def setConfig(self, d):
@@ -148,6 +148,14 @@ cdef class Model:
 
     def optimizeHyp(self):
         self.obj.OptimizeHyp()
-        
+
 def setDebugLogLevel():
     SetDebugLogLevel()
+
+def normPdf(x):
+    return NormPdf(x)
+
+def normCdf(x):
+    return NormCdf(x)
+
+

@@ -15,7 +15,7 @@ namespace NEgo {
 
     TInfResult TInfExact::UserCalc(const TMatrixD& X, const TVectorD& Y) const {
         ENSURE(X.n_rows == Y.n_rows, "Need X and Y with the same number of rows");
-        
+
         size_t n = X.n_rows;
     	size_t D = X.n_cols;
 
@@ -24,14 +24,8 @@ namespace NEgo {
 
         auto K = covV.Value();
     	auto m = meanV.Value();
-        
-        double sn2 = exp(2.0 * Lik->GetParameters()[0]);
-        
-     //    TMatrixD L = NLa::Chol(K + (sn2+1e-08) * NLa::Eye(n));
-    	// TMatrixD Kinv = NLa::CholSolve(L, NLa::Eye(n));
 
-     //    TVectorD alpha = NLa::AsVector(Kinv * (Y-m));
-    	// TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
+        double sn2 = exp(2.0 * Lik->GetParameters()[0]);
 
         TMatrixD L;
         TMatrixD pL;
@@ -48,9 +42,6 @@ namespace NEgo {
             pL = L;
         }
 
-        // NLa::DebugSave(L, "L");
-        // NLa::DebugSave(pL, "pL");
-        
         TVectorD alpha = NLa::AsVector(NLa::CholSolve(L, Y-m)/sl);
         TVectorD diagW = NLa::Ones(n)/sqrt(sn2);
 
@@ -58,16 +49,15 @@ namespace NEgo {
     		.SetValue(
     			[=]() {
                     return 0.5 * (
-                        NLa::AsScalar(NLa::Trans(Y-m) * alpha) + 
-                        2.0 * NLa::Sum(NLa::Log(NLa::Diag(L))) + 
+                        NLa::AsScalar(NLa::Trans(Y-m) * alpha) +
+                        2.0 * NLa::Sum(NLa::Log(NLa::Diag(L))) +
                         n * log(2.0 * M_PI * sl)
                     );
             	}
     		)
     		.SetParamDeriv(
 				[=]() -> TVector<double> {
-                    TMatrixD Q = NLa::CholSolve(pL, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
-	                // TMatrixD Q  = Kinv - alpha * NLa::Trans(alpha);
+                    TMatrixD Q = NLa::CholSolve(L, NLa::Eye(n))/sl - alpha * NLa::Trans(alpha);
 	                TVector<double> dNLogLik(Mean->GetParametersSize() + Cov->GetParametersSize() + 1);
 
 	                size_t hypIdx = 0;
@@ -88,9 +78,9 @@ namespace NEgo {
     		)
     		.SetPosterior(
     			[=]() {
-            	    return TPosterior(L, alpha, diagW);
+            	    return TPosterior(pL, alpha, diagW);
             	}
 			);
     }
-  
+
 } // namespace NEgo

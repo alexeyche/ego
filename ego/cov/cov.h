@@ -7,7 +7,7 @@ namespace NEgo {
     class ICov : public TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD> {
     public:
         using TParent = TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD>;
-        
+
         ICov(size_t dimSize)
             : TParent(dimSize)
         {
@@ -15,8 +15,6 @@ namespace NEgo {
 
         ICov::Result CrossCovariance(const TMatrixD &m);
 
-        TVector Sample(const TMatrixD &x);
-        
     };
 
 

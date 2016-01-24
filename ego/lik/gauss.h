@@ -11,11 +11,11 @@ namespace NEgo {
         TLikGauss(size_t dimSize);
 
         TLikGauss::Result UserCalc(const TVectorD& Y, const TVectorD& var) const override final;
-		
-		TPair<TVectorD, TVectorD> GetMarginalMeanAndVariance(const TVectorD& mean, const TVectorD& variance) const override final;
-	    
+
+		TLikGauss::StatResult GetMarginalMeanAndVariance(const TVectorD& mean, const TVectorD& variance) const override final;
+
 	    SPtr<IDistr> GetDistribution(double mean, double sd, ui32 seed) const override final;
-	    
+
 	    size_t GetParametersSize() const override final;
     };
 

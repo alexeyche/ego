@@ -135,11 +135,11 @@ public:
 	TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* wrap, TAcqWrap* acq);
 
 	void SetData(const TMatWrap &x, const TMatWrap &y);
-	
+
 	void SetConfig(TModelConfig config);
-	
+
 	TModel& GetModel();
-	
+
 	TVector<double> GetParameters() const;
 
 	TPair<TMatWrap, TMatWrap> GetData() const;

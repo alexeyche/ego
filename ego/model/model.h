@@ -20,15 +20,15 @@ namespace NEgo {
     class TModel : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD> {
     public:
         using TParent = TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>;
-        
+
         static const double ParametersDefault;
 
         TModel(TModelConfig config);
 
         TModel();
-        
+
         TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, TMatrixD x, TVectorD y);
-        
+
         // Setters
 
         void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq);
@@ -40,11 +40,11 @@ namespace NEgo {
         void SetConfig(TModelConfig config);
 
         const double& GetMinimum() const;
-        
+
         void SetMinimum(double v);
 
         // Functor methods
-        
+
         size_t GetParametersSize() const override;
 
         TVector<double> GetParameters() const override;
@@ -54,16 +54,18 @@ namespace NEgo {
         TModel::Result UserCalc(const TMatrixD& Xnew) const override;
 
         // Helpers
-        
+
         void OptimizeHyp();
 
         void Optimize(TOptimCallback cb);
 
         TInfResult GetNegativeLogLik(const TVector<double>& v);
-    
+
         TInfResult GetNegativeLogLik() const;
 
         TDistrVec GetPrediction(const TMatrixD &Xnew);
+
+        TDistrVec GetPredictionWithDerivative(const TMatrixD &Xnew);
 
         SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew);
 
@@ -76,7 +78,7 @@ namespace NEgo {
         SPtr<ILik> Lik;
         SPtr<IInf> Inf;
         SPtr<IAcq> Acq;
-        
+
         TModelConfig Config;
 
         TOptional<TPosterior> Posterior;

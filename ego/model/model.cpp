@@ -7,9 +7,9 @@ namespace NEgo {
 
     const double TModel::ParametersDefault = 0.0; // log(1.0)
 
-    TModel::TModel() 
+    TModel::TModel()
         : TParent(0)
-        , MinF(std::numeric_limits<double>::max()) 
+        , MinF(std::numeric_limits<double>::max())
     {
         MetaEntity = true;
     }
@@ -23,7 +23,7 @@ namespace NEgo {
         TMatrixD inputData = NLa::ReadCsv(Config.Input);
         X = NLa::HeadCols(inputData, inputData.n_cols-1);
         Y = NLa::TailCols(inputData, 1);
-        
+
         size_t D = X.n_cols;
 
         Mean = Factory.CreateMean(Config.Mean, D);
@@ -39,16 +39,16 @@ namespace NEgo {
         SetData(X, Y);
     }
 
-    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, TMatrixD x, TVectorD y) 
+    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, TMatrixD x, TVectorD y)
         : TParent(0)
-        , MinF(std::numeric_limits<double>::max()) 
+        , MinF(std::numeric_limits<double>::max())
     {
         MetaEntity = true;
         SetModel(mean, cov, lik, inf, acq);
-        
+
         TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
         SetParameters(v);
-        
+
         SetData(x, y);
     }
 
@@ -72,11 +72,11 @@ namespace NEgo {
     const double& TModel::GetMinimum() const {
         return MinF;
     }
-    
+
     void TModel::SetMinimum(double v) {
         MinF = v;
     }
-    
+
     void TModel::SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
         Mean = mean;
         Cov = cov;
@@ -108,7 +108,7 @@ namespace NEgo {
         ENSURE(X.n_rows>0, "Data is not set");
         ENSURE(Posterior, "Posterior must be calculated before calling prediction methods");
         ENSURE(Posterior->L.n_rows == X.n_rows, "Posterior must be recalculated for new data");
-        
+
         auto crossCovRes = Cov->CrossCovariance(Xnew);
         auto covRes = Cov->Calc(X, Xnew);
         auto meanRes = Mean->Calc(Xnew);
@@ -116,7 +116,7 @@ namespace NEgo {
         TMatrixD Ks = covRes.Value();
         TVectorD ms = meanRes.Value();
         TVectorD kss = NLa::Diag(crossCovRes.Value());
-        
+
         TVectorD Fmu = ms + NLa::Trans(Ks) * Posterior->Alpha;
 
         TVectorD Fs2;
@@ -131,10 +131,14 @@ namespace NEgo {
             NLa::ForEach(Fs2, [](double& v) { if(v < 0.0) v = 0; });
         }
 
+        auto likRes = Lik->GetMarginalMeanAndVariance(Fmu, Fs2);
+
+        TPair<TVectorD, TVectorD> distr = likRes.Value();
+
         return TModel::Result()
             .SetValue(
                 [=]() -> TPair<TVectorD, TVectorD> {
-                    return MakePair(Fmu, Fs2); 
+                    return distr;
                 }
             )
             .SetArgDeriv(
@@ -150,8 +154,8 @@ namespace NEgo {
                         Fs2Deriv = NLa::Diag(crossCovRes.SecondArgDeriv()) + NLa::Trans(NLa::ColSum(V % KsDeriv + Vderiv % Ks));
                     }
                     return MakePair(
-                        FmuDeriv
-                      , Fs2Deriv
+                        FmuDeriv % likRes.FirstArgDeriv().first
+                      , Fs2Deriv % likRes.SecondArgDeriv().second
                     );
                 }
             );
@@ -170,14 +174,19 @@ namespace NEgo {
 
     void TModel::OptimizeHyp() {
         NOpt::OptimizeModelLogLik(*this, NOpt::MethodFromString(Config.HypOptMethod), NOpt::TOptimizeConfig(Config.HypOptMaxEval));
+        Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
 
-
     TDistrVec TModel::GetPrediction(const TMatrixD &Xnew) {
-        TVectorD Fmu, Fs2;
-        Tie(Fmu, Fs2) = Calc(Xnew).Value();
-        auto predDistrParams = Lik->CalculatePredictiveDistribution(Fmu, Fs2);
-        return Lik->GetPredictiveDistributions(predDistrParams, Config.Seed);
+        auto calcRes = Calc(Xnew).Value();
+        return Lik->GetPredictiveDistributions(calcRes.first, calcRes.second, Config.Seed);
+    }
+
+    TDistrVec TModel::GetPredictionWithDerivative(const TMatrixD &Xnew) {
+        auto calcRes = Calc(Xnew);
+        auto preds = calcRes.Value();
+        auto predsDeriv = calcRes.ArgDeriv();
+        return Lik->GetPredictiveDistributions(preds.first, preds.second, predsDeriv.first, predsDeriv.second, Config.Seed);
     }
 
     SPtr<IDistr> TModel::GetPointPrediction(const TVectorD& Xnew) {
@@ -185,7 +194,7 @@ namespace NEgo {
         ENSURE(v.size() == 1, "UB");
         return v[0];
     }
-    
+
     void TModel::Optimize(TOptimCallback cb) {
         for(size_t iterNum=0; iterNum < Config.MaxEval; ++iterNum) {
             L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
@@ -194,7 +203,7 @@ namespace NEgo {
             TVectorD x;
             double crit;
             Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Acq, NOpt::MethodFromString(Config.AcqOptMethod));
-            
+
             L_DEBUG << "Found criteria value: " << crit;
             double res = cb(x);
 
@@ -204,17 +213,17 @@ namespace NEgo {
                 L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
                 SetMinimum(res);
             }
-            
+
             L_DEBUG << "Updating posterior";
-            
+
             X = NLa::RowBind(X, NLa::Trans(x));
             Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, res));
 
             Posterior.emplace(Inf->Calc(X, Y).Posterior());
             if((iterNum+1) % Config.HypOptFreq == 0) {
                 NOpt::OptimizeModelLogLik(
-                    *this, 
-                    NOpt::MethodFromString(Config.HypOptMethod), 
+                    *this,
+                    NOpt::MethodFromString(Config.HypOptMethod),
                     NOpt::TOptimizeConfig(Config.HypOptMaxEval)
                 );
             }

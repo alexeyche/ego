@@ -3,29 +3,37 @@
 
 namespace NEgo {
 
-
-	TPredictiveDistributionParams ILik::CalculatePredictiveDistribution(const TVectorD &mean, const TVectorD &variance) const {
-		TVectorD Y = NLa::Zeros(mean.n_rows);
-		return CalculatePredictiveDistribution(Y, mean, variance);
-	}
-
-
-	TPredictiveDistributionParams ILik::CalculatePredictiveDistribution(const TVectorD &Y, const TVectorD &mean, const TVectorD &variance) const {
-		TPredictiveDistributionParams ret;
-		ret.LogP = Calc(Y-mean, variance).Value();
-		Tie(ret.Mean, ret.Variance) = GetMarginalMeanAndVariance(mean, variance);
-		return ret;
-	}
-
-	TDistrVec ILik::GetPredictiveDistributions(TPredictiveDistributionParams params, ui32 seed) {
+    TDistrVec ILik::GetPredictiveDistributions(const TVectorD& mean, const TVectorD& variance, ui32 seed) {
 		TDistrVec dvec;
-        for(size_t pi=0; pi<params.Mean.size(); ++pi) {
-            double mean = params.Mean(pi);
-            double sd = sqrt(params.Variance(pi));
-            dvec.push_back(GetDistribution(mean, sd, seed));
+        for(size_t pi=0; pi<mean.size(); ++pi) {
+            const double& var = variance(pi);
+            ENSURE(var>=0.0, "Got negative variance, something wrong in system");
+            dvec.push_back(GetDistribution(mean(pi), sqrt(var), seed));
         }
         return dvec;
 	}
+
+    TDistrVec ILik::GetPredictiveDistributionsWithDerivative(
+        const TVectorD& mean, const TVectorD& variance,
+        const TVectorD& meanDeriv, const TVectorD& varianceDeriv, ui32 seed)
+    {
+        TDistrVec dvec;
+        for(size_t pi=0; pi<mean.size(); ++pi) {
+            const double& var = variance(pi);
+            ENSURE(var>=0.0, "Got negative variance, something wrong in system");
+            double sd = sqrt(var);
+            SPtr<IDistr> d = GetDistribution(
+                mean(pi)
+              , sd
+              , meanDeriv(pi)
+              , 0.5 * varianceDeriv(pi) / sd
+              , seed
+            );
+
+            dvec.push_back(d);
+        }
+        return dvec;
+    }
 
 
 } // namespace NEgo

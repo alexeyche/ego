@@ -20,13 +20,13 @@ namespace NEgo {
 			TVectorD df0;
 
 			Tie(f0, df0) = f(X);
-			
+
 			TVectorD Z = X;
 			double fX = f0;
 			ui32 i = 0;
 			L_DEBUG<< "Line search " << i << ", function value " << fX;
 			i++;
-			
+
 			TVectorD s = -df0;
 			double d0 = NLa::AsScalar(- NLa::Trans(s) * s);
 			double x3 = config.FirstReduction/(1-d0);
@@ -68,7 +68,7 @@ namespace NEgo {
 								throw TEgoException() << "Got nans";
 							}
 							L_DEBUG<< "Line search " << i << ", function value " << f3;
-							
+
 							lineSearchSuccess = true;
 							// L_DEBUG<< "Line search good with function value " << f3;
 						} catch(const TEgoException &e) {

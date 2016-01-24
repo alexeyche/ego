@@ -46,7 +46,7 @@ namespace NEgo {
 	template <typename T>
 	class TTwoArgFunctorResult : public TTwoArgFunctorResultBase<T, TTwoArgFunctorResult<T>> {
 	};
-	
+
 	template <typename T, typename A1, typename A2, typename R = TTwoArgFunctorResult<T>>
 	class TTwoArgFunctor : public TFunctorBase<T> {
 	public:
@@ -54,14 +54,14 @@ namespace NEgo {
 		using TSecond = A2;
 		using TReturn = T;
 		using Result = R;
-		
+
 		TTwoArgFunctor(size_t dimSize)
 			: TFunctorBase<T>(dimSize)
 		{
 		}
 
 		virtual ~TTwoArgFunctor() {}
-		
+
 		virtual Result UserCalc(const A1& firstArg, const A2& secondArg) const = 0;
 
 		virtual size_t GetParametersSize() const { return 0; }

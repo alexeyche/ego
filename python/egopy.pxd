@@ -31,7 +31,7 @@ cdef extern from "ego_wrapper.h":
         TAcqWrap(const char *meanName, size_t dim_size, vector[double]) # except +
         pair[TMatWrap, TMatWrap] EvaluateCriteria(TMatWrap) # except +
         void SetParameters(vector[double]) # except +
-        
+
 cdef extern from "ego_wrapper.h":
     cdef cppclass TInfWrap:
         TInfWrap(const char *infName) # except +
@@ -57,7 +57,11 @@ cdef extern from "ego_wrapper.h":
         void Optimize(FOptimCallback, void*) # except +
         pair[TMatWrap, TMatWrap] GetData() # except +
         void OptimizeHyp() # except +
-        
+
 cdef extern from "ego_wrapper.h":
     void SetDebugLogLevel()
+
+cdef extern from "ego_wrapper.h" namespace "NLa":
+    double NormCdf(double)
+    double NormPdf(double)
 

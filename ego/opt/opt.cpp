@@ -52,13 +52,13 @@ namespace NEgo {
 			{"LD_CCSAQ", LD_CCSAQ},
 			{"GN_ESCH", GN_ESCH}
  		};
- 		
+
  		EMethod MethodFromString(TString s) {
  			auto ptrOpt = OptMethodMap.find(s);
  			ENSURE(ptrOpt != OptMethodMap.end(), "Can't find method " << s);
  			return ptrOpt->second;
  		}
- 		
+
  		TString MethodToString(EMethod m) {
  			static std::map<EMethod, TString> optMethodMapRev;
  			for(const auto& p: OptMethodMap) {
@@ -71,13 +71,13 @@ namespace NEgo {
 
  		void PrintMethods() {
  			for(const auto& p: OptMethodMap) {
- 				std::cout << p.first << "\n"; 
+ 				std::cout << p.first << "\n";
  			}
  		}
 
 
 		TPair<TVectorD, double> OptimizeModelLogLik(TModel &model, EMethod optMethod, TOptimizeConfig config) {
-			L_DEBUG << "Going to minimize model log likelihood with " << MethodToString(optMethod); 
+			L_DEBUG << "Going to minimize model log likelihood with " << MethodToString(optMethod);
 			switch(optMethod) {
 				case CG:
 					{
@@ -94,7 +94,7 @@ namespace NEgo {
 					}
 				case RPROP:
 					{
-						return MakePair(TVectorD(), 0.0);	
+						return MakePair(TVectorD(), 0.0);
 					}
 				default:
 					{
@@ -113,7 +113,7 @@ namespace NEgo {
 						nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(optMethod)-1);
 						return NLoptAcqMinimize(acq, algo, config);
 					}
-			}	
+			}
 		}
 
 	} // namespace NOpt

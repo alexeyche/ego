@@ -10,8 +10,8 @@
 namespace NEgo {
 
     struct TPosterior {
-        TPosterior() 
-            : IsCholesky(false) 
+        TPosterior()
+            : IsCholesky(false)
         {
         }
 
@@ -27,9 +27,9 @@ namespace NEgo {
         TMatrixD L; // Given
         TVectorD Alpha;
         TVectorD DiagW;
-        
+
         bool IsCholesky; // Calculated
-        TMatrixD Linv;        
+        TMatrixD Linv;
     };
 
 
@@ -75,11 +75,11 @@ namespace NEgo {
 
             MetaEntity = true;
         }
-		
+
 		size_t GetParametersSize() const override;
 
 		void SetParameters(const TVector<double>& parameters) override;
-		
+
 		TVector<double> GetParameters() const override;
 
     protected:

@@ -32,7 +32,7 @@ TMatWrap::TMatWrap(const TMatrixD &m)
 	*this = FromMatrix(m);
 }
 
-TMatWrap::TMatWrap(const TMatWrap &m) 
+TMatWrap::TMatWrap(const TMatWrap &m)
 	: V(nullptr)
 	, NRows(0)
 	, NCols(0)
@@ -105,7 +105,7 @@ TCovWrap::TCovWrap(const char* covName, size_t dim_size, vector<double> params) 
 	L_DEBUG << "Creating covariance function: " << covName;
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << params;
-		Cov->SetParameters(params);	
+		Cov->SetParameters(params);
 	} else {
 		TVector<double> p(Cov->GetParametersSize(), TModel::ParametersDefault);
 		L_DEBUG << "Setting default hyperparameters " << p;
@@ -134,7 +134,7 @@ TMeanWrap::TMeanWrap(const char* meanName, size_t dim_size, vector<double> param
 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
-		Mean->SetParameters(params);	
+		Mean->SetParameters(params);
 	} else {
 		TVector<double> p(Mean->GetParametersSize(), TModel::ParametersDefault);
 		L_DEBUG << "Setting default hyperparameters " << p;
@@ -154,13 +154,11 @@ TLikWrap::TLikWrap(const char* likName, size_t dim_size, vector<double> params) 
 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
-		Lik->SetParameters(params);	
+		Lik->SetParameters(params);
 	} else {
-		TVector<double> p(Lik->GetParametersSize(), TModel::ParametersDefault);
-		L_DEBUG << "Setting default hyperparameters " << p;
-		Lik->SetParameters(p);
+		L_DEBUG << "Using default hyperparameters " << Lik->GetParameters();
 	}
-	
+
 }
 
 void TLikWrap::ListEntities() {
@@ -175,7 +173,7 @@ TAcqWrap::TAcqWrap(const char* acqName, size_t dim_size, vector<double> params) 
 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
-		Acq->SetParameters(params);	
+		Acq->SetParameters(params);
 	} else {
 		TVector<double> p(Acq->GetParametersSize(), TModel::ParametersDefault);
 		L_DEBUG << "Setting default hyperparameters " << p;
@@ -188,12 +186,11 @@ TPair<TMatWrap, TMatWrap> TAcqWrap::EvaluateCriteria(const TMatWrap& m) const {
 	std::vector<double> deriv;
 	TMatrixD mIn = m.ToMatrix();
 	for(size_t rowId = 0; rowId < mIn.n_rows; ++rowId) {
-		auto res = Acq->Calc(NLa::Trans(mIn.row(rowId)));	
+		auto res = Acq->Calc(NLa::Trans(mIn.row(rowId)));
 		resacc.push_back(res.Value());
 		deriv.push_back(res.ArgDeriv());
-
 	}
-	return MakePair(TMatWrap(&resacc[0], resacc.size(), 1), TMatWrap::FromMatrix(deriv));
+	return MakePair(TMatWrap::FromMatrix(resacc), TMatWrap::FromMatrix(deriv));
 }
 
 void TAcqWrap::SetParameters(std::vector<double> params) {
