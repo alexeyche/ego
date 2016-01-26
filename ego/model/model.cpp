@@ -186,7 +186,7 @@ namespace NEgo {
         auto calcRes = Calc(Xnew);
         auto preds = calcRes.Value();
         auto predsDeriv = calcRes.ArgDeriv();
-        return Lik->GetPredictiveDistributions(preds.first, preds.second, predsDeriv.first, predsDeriv.second, Config.Seed);
+        return Lik->GetPredictiveDistributionsWithDerivative(preds.first, preds.second, predsDeriv.first, predsDeriv.second, Config.Seed);
     }
 
     SPtr<IDistr> TModel::GetPointPrediction(const TVectorD& Xnew) {

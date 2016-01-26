@@ -25,11 +25,11 @@ namespace NEgo {
             SPtr<IDistr> d = GetDistribution(
                 mean(pi)
               , sd
-              , meanDeriv(pi)
-              , 0.5 * varianceDeriv(pi) / sd
               , seed
             );
-
+            d->Set
+        meanDeriv(pi)
+              , 0.5 * varianceDeriv(pi) / sd
             dvec.push_back(d);
         }
         return dvec;
