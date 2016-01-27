@@ -194,10 +194,15 @@ namespace NEgo {
         ENSURE(v.size() == 1, "UB");
         return v[0];
     }
+    SPtr<IDistr> TModel::GetPointPredictionWithDerivative(const TVectorD& Xnew) {
+        TDistrVec v = GetPredictionWithDerivative(NLa::Trans(Xnew));
+        ENSURE(v.size() == 1, "UB");
+        return v[0];
+    }
 
     void TModel::Optimize(TOptimCallback cb) {
         for(size_t iterNum=0; iterNum < Config.MaxEval; ++iterNum) {
-            L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
+            L_DEBUG << "I*teration number " << iterNum << ", best " << GetMinimum();
             L_DEBUG << "Optimizing acquisition function ...";
 
             TVectorD x;

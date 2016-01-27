@@ -18,4 +18,8 @@ namespace NEgo {
     	return Distr(Generator);
     }
 
+    double TDistrGauss::StandardPdfDeriv(double x) const {
+    	return - x * StandardPdf(x);
+    }
+
 } // namespace NEgo

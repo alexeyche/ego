@@ -69,6 +69,8 @@ namespace NEgo {
 
         SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew);
 
+        SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew);
+
     private:
         TMatrixD X;
         TVectorD Y;

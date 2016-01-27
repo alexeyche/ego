@@ -35,6 +35,13 @@ namespace NEgo {
 
 	    virtual double StandardCdf(double x) const = 0;
 
+	    virtual double StandardPdfDeriv(double x) const = 0;
+
+	    double StandardCdfDeriv(double x) const {
+	    	return StandardPdf(x);
+	    }
+
+
 	    virtual double Sample() = 0;
 
 	    const double& GetMean() const {
@@ -51,6 +58,14 @@ namespace NEgo {
 
 	    const double& GetSdDeriv() const {
 	    	return SdDeriv;
+	    }
+
+		void SetMeanDeriv(double md) {
+	    	MeanDeriv = md;
+	    }
+
+	    void SetSdDeriv(double sdd) {
+	    	SdDeriv = sdd;
 	    }
 
 	protected:

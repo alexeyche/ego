@@ -11,9 +11,12 @@ namespace NEgo {
 		TAcqEI(size_t dimSize)
             : IAcq(dimSize)
         {
+        	Parameters = {0.0};
         }
 
         TAcqEI::Result UserCalc(const TVectorD& x) const override final;
+        
+        size_t GetParametersSize() const override final;
 	};
 
 

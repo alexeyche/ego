@@ -16,6 +16,8 @@ namespace NEgo {
 		
 		
 		double StandardPdf(double x) const override final;
+
+		double StandardPdfDeriv(double x) const override final;
 	    
 	    double StandardCdf(double x) const override final;
     	

@@ -27,9 +27,8 @@ namespace NEgo {
               , sd
               , seed
             );
-            d->Set
-        meanDeriv(pi)
-              , 0.5 * varianceDeriv(pi) / sd
+            d->SetMeanDeriv(meanDeriv(pi));
+            d->SetSdDeriv(0.5 * varianceDeriv(pi) / sd);
             dvec.push_back(d);
         }
         return dvec;

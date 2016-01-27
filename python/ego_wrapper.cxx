@@ -175,9 +175,7 @@ TAcqWrap::TAcqWrap(const char* acqName, size_t dim_size, vector<double> params) 
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
 		Acq->SetParameters(params);
 	} else {
-		TVector<double> p(Acq->GetParametersSize(), TModel::ParametersDefault);
-		L_DEBUG << "Setting default hyperparameters " << p;
-		Acq->SetParameters(p);
+		L_DEBUG << "Using default parameters for Acq: " << Acq->GetParameters();
 	}
 }
 

@@ -444,7 +444,7 @@ namespace NEgo {
         }
 
         double NormPdf(double x) {
-            return std::exp( -1 * x * x / 2.0) / std::sqrt(2 * M_PI);
+            return std::exp( - x * x / 2.0) / std::sqrt(2 * M_PI);
         }
 
         double NormCdf(double x) {

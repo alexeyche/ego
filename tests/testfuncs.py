@@ -64,7 +64,7 @@ cov = Cov("cSqExpISO", D, [np.log(1.0), np.log(1.0)])
 mean = Mean("mConst", D, [1.0])
 lik = Lik("lGauss", D, [np.log(0.01)])
 inf = Inf("iExact")
-acq = Acq("aEI", D)
+acq = Acq("aEI", D, [0.0])
 model = Model(mean, cov, lik, inf, acq)
 
 init_size = 5
@@ -111,6 +111,7 @@ preds = model.getPrediction(points)
 Ymean = np.asarray([ y.getMean() for y in preds ])
 Ysd = np.asarray([ y.getSd() for y in preds ])
 ev, dev = acq.evaluateCriteria(points)
+ev = scale_to(ev)
 ev = ev.reshape(len(ev))
 
     

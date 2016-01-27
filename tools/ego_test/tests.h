@@ -82,17 +82,23 @@ TVectorD CreateTestData<TVectorD>() {
 }
 
 
-template <typename Functor, typename ... Params>
-void OneArgFunctorTester(std::string functorName, Params ... params) {
-	UPtr<Functor> f = UPtr<Functor>(new Functor(std::forward<Params>(params) ... ));
+TVectorD CreateTestDataVectorY() {
+	return CreateTestData<TVectorD>();
+}
 
+TVectorD CreateTestDataVectorX() {
+	arma::arma_rng::set_seed_random();
+	return TVectorD(DimSize, arma::fill::randn);
+}
+
+
+template <typename Functor>
+void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Functor::TArg a = CreateTestData<typename Functor::TArg>()) {
 	if(f->GetParametersSize()>0) {
 		arma::arma_rng::set_seed_random();
 		TVectorD paramV(f->GetParametersSize(), arma::fill::randu);
 		f->SetParameters(NLa::VecToStd(paramV));
 	}
-
-	typename Functor::TArg a = CreateTestData<typename Functor::TArg>();
 
 	auto resCenter = f->Calc(a);
 	auto resLeftEps = f->Calc(a - Epsilon);
@@ -135,18 +141,16 @@ void OneArgFunctorTester(std::string functorName, Params ... params) {
 	}
 }
 
-template <typename Functor, typename ... Params>
-void TwoArgFunctorTester(std::string functorName, Params ... params) {
-	UPtr<Functor> f = UPtr<Functor>(new Functor(std::forward<Params>(params) ... ));
-
+template <typename Functor>
+void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f, 
+	typename Functor::TFirst first = CreateTestData<typename Functor::TFirst>(),
+	typename Functor::TSecond second = CreateTestData<typename Functor::TSecond>()) 
+{
 	if (f->GetParametersSize()>0) {
 		arma::arma_rng::set_seed_random();
 		TVectorD paramV(f->GetParametersSize(), arma::fill::randu);
 		f->SetParameters(NLa::VecToStd(paramV));
 	}
-
-	typename Functor::TFirst first = CreateTestData<typename Functor::TFirst>();
-	typename Functor::TSecond second = CreateTestData<typename Functor::TSecond>();
 
 	auto resCenter = f->Calc(first, second);
 
@@ -208,22 +212,57 @@ void TwoArgFunctorTester(std::string functorName, Params ... params) {
 
 #define ONE_ARG_FUN_TEST(Typename) \
 	TEST(Typename ## DerivativeSanityCheck) { \
-		OneArgFunctorTester<Typename, size_t>(#Typename, DimSize); \
+		OneArgFunctorTester<Typename>(#Typename, MakeShared(new Typename(DimSize)), CreateTestData<Typename::TArg>()); \
 	} \
 
 #define TWO_ARG_FUN_TEST(Typename) \
 	TEST(Typename ## DerivativeSanityCheck) { \
-		TwoArgFunctorTester<Typename, size_t>(#Typename, DimSize); \
+		TwoArgFunctorTester<Typename>(#Typename, MakeShared(new Typename(DimSize))); \
 	} \
 
 #define INF_TEST(Typename, MeanTypename, CovTypename, LikTypename) \
 	TEST(Typename ## DerivativeSanityCheck) { \
-		TwoArgFunctorTester<Typename, SPtr<IMean>, SPtr<ICov>, SPtr<ILik>>( \
-			#Typename \
-		  , MakeShared(new MeanTypename(DimSize)) \
-		  , MakeShared(new CovTypename(DimSize)) \
-		  , MakeShared(new LikTypename(DimSize)) \
+		TwoArgFunctorTester<Typename>( \
+			#Typename, \
+			MakeShared(new Typename( \
+			    MakeShared(new MeanTypename(DimSize)), \
+			    MakeShared(new CovTypename(DimSize)), \
+			    MakeShared(new LikTypename(DimSize)) \
+			)) \
 		); \
+	} \
+
+
+
+
+#define MODEL_TEST(Typename, MeanTypename, CovTypename, LikTypename, InfTypename, AcqTypename) \
+	TEST(Typename ## DerivativeSanityCheck) { \
+		TMatrixD X(5*SampleSize, DimSize, arma::fill::randn); \
+		TVectorD Y(5*SampleSize, arma::fill::randn); \
+		\
+		SPtr<IMean> mean = MakeShared(new MeanTypename(DimSize)); \
+		SPtr<ICov> cov = MakeShared(new CovTypename(DimSize)); \
+		SPtr<ILik> lik = MakeShared(new LikTypename(DimSize)); \
+		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
+		SPtr<IAcq> acq = MakeShared(new AcqTypename(DimSize)); \
+		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq, X, Y)); \
+		\
+		OneArgFunctorTester<Typename>(#Typename, model);\
+	} \
+
+#define ACQ_TEST(AcqTypename, MeanTypename, CovTypename, LikTypename, InfTypename, ModelTypename) \
+	TEST(AcqTypename ## DerivativeSanityCheck) { \
+		TMatrixD X(5*SampleSize, DimSize, arma::fill::randn); \
+		TVectorD Y(5*SampleSize, arma::fill::randn); \
+		\
+		SPtr<IMean> mean = MakeShared(new MeanTypename(DimSize)); \
+		SPtr<ICov> cov = MakeShared(new CovTypename(DimSize)); \
+		SPtr<ILik> lik = MakeShared(new LikTypename(DimSize)); \
+		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
+		SPtr<AcqTypename> acq = MakeShared(new AcqTypename(DimSize)); \
+		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq, X, Y)); \
+		\
+		OneArgFunctorTester<AcqTypename>(#AcqTypename, acq, CreateTestDataVectorX());\
 	} \
 
 
