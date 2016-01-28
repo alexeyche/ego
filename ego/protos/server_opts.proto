@@ -1,0 +1,15 @@
+import "extension.proto";
+
+package NEgoProto;
+
+message TServerOpts {
+    optional string Port = 1 [
+        (description) = "Port",
+        (default_value) = "8080"
+    ];
+    
+    optional bool Verbose = 2 [
+        (description) = "Turn on extra logging",
+        (short_option) = "-v"
+    ];
+}
