@@ -10,7 +10,7 @@ namespace NEgo {
 		TCgMinimizeConfig::TCgMinimizeConfig() {
 		}
 
-		TCgMinimizeConfig::TCgMinimizeConfig(TOptimizeConfig config)
+		TCgMinimizeConfig::TCgMinimizeConfig(const TOptConfig& config)
 			: MaxEval(config.MaxEval)
 		{
 		}

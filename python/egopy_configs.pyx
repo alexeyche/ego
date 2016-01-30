@@ -1,18 +1,16 @@
 
 
-cdef TOptimizeConfig optParamsFromDict(dict d):
-    cdef TOptimizeConfig p
+cdef TOptConfig optParamsFromDict(dict d):
+    cdef TOptConfig p
+    p.Method = d.get("Method", p.Method)
+    p.MinimizersNum = d.get("MinimizersNum", p.MinimizersNum)
     p.MaxEval = d.get("MaxEval", p.MaxEval)
-    p.Tol = d.get("Tol", p.Tol)
+    p.Tolerance = d.get("Tolerance", p.Tolerance)
     return p
 
 cdef TModelConfig modelConfigFromDict(dict d):
     cdef TModelConfig c
-
     c.Seed = d.get("Seed") if d.get("Seed") else c.Seed
-    c.AcqOptMethod = d.get("AcqOptMethod", c.AcqOptMethod)
-    c.HypOptMethod = d.get("HypOptMethod", c.HypOptMethod)
-    c.HypOptMaxEval = d.get("HypOptMaxEval", c.HypOptMaxEval)
-    c.HypOptFreq = d.get("HypOptFreq", c.HypOptFreq)
-    c.MaxEval = d.get("MaxEval", c.MaxEval)
+    c.HyperOpt = optParamsFromDict(d.get("HyperOpt", {}))
+    c.HyperOpt = optParamsFromDict(d.get("AcqOpt", {}))
     return c

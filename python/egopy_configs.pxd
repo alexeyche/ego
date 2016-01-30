@@ -3,20 +3,19 @@
 from libcpp.string cimport string
 from libcpp cimport bool
 
-cdef extern from "ego_wrapper.h" namespace "NOpt":
-    cdef struct TOptimizeConfig:
+cdef extern from "ego_wrapper.h":
+    cdef struct TOptConfig:
+        string Method
+        int MinimizersNum
         int MaxEval
-        double Tol
+        double Tolerance
 
 cdef extern from "ego_wrapper.h":
     cdef struct TModelConfig:
         int Seed
-        string AcqOptMethod
-        string HypOptMethod
-        int MaxEval
-        int HypOptMaxEval
-        int HypOptFreq
+        TOptConfig HyperOpt
+        TOptConfig AcqOpt
 
 
 cdef TModelConfig modelConfigFromDict(dict d)
-cdef TOptimizeConfig optParamsFromDict(dict d)
+cdef TOptConfig optParamsFromDict(dict d)

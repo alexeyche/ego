@@ -59,10 +59,9 @@ namespace NEgo {
 
  		void PrintMethods();
 
+		TPair<TVectorD, double> OptimizeModelLogLik(TModel &self, const TOptConfig& config);
 
-		TPair<TVectorD, double> OptimizeModelLogLik(TModel &self, EMethod optMethod, TOptimizeConfig = TOptimizeConfig());
-
-		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, EMethod optMethod, TOptimizeConfig config = TOptimizeConfig());
+		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, const TOptConfig& config);
 
 	} // namespace NOpt
 } // namespace NEgo

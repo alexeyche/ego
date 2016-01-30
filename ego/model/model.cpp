@@ -14,32 +14,22 @@ namespace NEgo {
         MetaEntity = true;
     }
 
-    TModel::TModel(TModelConfig config)
+    TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y)
         : TParent(0)
         , Config(config)
         , MinF(std::numeric_limits<double>::max())
     {
         MetaEntity = true;
-        TMatrixD inputData = NLa::ReadCsv(Config.Input);
-        X = NLa::HeadCols(inputData, inputData.n_cols-1);
-        Y = NLa::TailCols(inputData, 1);
 
-        size_t D = X.n_cols;
-
-        Mean = Factory.CreateMean(Config.Mean, D);
-        Cov = Factory.CreateCov(Config.Cov, D);
-        Lik = Factory.CreateLik(Config.Lik, D);
-        Inf = Factory.CreateInf(Config.Inf, Mean, Cov, Lik);
-        Acq = Factory.CreateAcq(Config.Acq, D);
-        Acq->SetModel(*this);
+        size_t D = x.n_cols;
+        InitWithConfig(Config, D);
 
         TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
         SetParameters(v);
-
-        SetData(X, Y);
+        SetData(x, y);
     }
 
-    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, TMatrixD x, TVectorD y)
+    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, const TMatrixD& x, const TVectorD& y)
         : TParent(0)
         , MinF(std::numeric_limits<double>::max())
     {
@@ -52,6 +42,25 @@ namespace NEgo {
         SetData(x, y);
     }
 
+    TModel::TModel(const TModel& model) 
+        : TParent(0)
+    {
+        MetaEntity = true;
+
+        InitWithConfig(model.Config, model.GetDimSize());
+        SetParameters(model.GetParameters());
+        SetData(model.X, model.Y);
+    }
+
+    void TModel::InitWithConfig(const TModelConfig& config, ui32 D) {
+        Config = config;
+        auto mean = Factory.CreateMean(Config.Mean, D);
+        auto cov = Factory.CreateCov(Config.Cov, D);
+        auto lik = Factory.CreateLik(Config.Lik, D);
+        auto inf = Factory.CreateInf(Config.Inf, mean, cov, lik);
+        auto acq = Factory.CreateAcq(Config.Acq, D);
+        SetModel(mean, cov, lik, inf, acq);
+    }
     // Setters
 
     void TModel::SetData(const TMatrixD &x, const TVectorD &y) {
@@ -65,7 +74,7 @@ namespace NEgo {
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
 
-    void TModel::SetConfig(TModelConfig config) {
+    void TModel::SetConfig(const TModelConfig& config) {
         Config = config;
     }
 
@@ -89,7 +98,10 @@ namespace NEgo {
     TPair<TMatrixD, TVectorD> TModel::GetData() const {
         return MakePair(X, Y);
     }
-
+    
+    ui32 TModel::GetDimSize() const {
+        return X.n_cols;
+    }
     // Functor methods
 
     size_t TModel::GetParametersSize() const {
@@ -173,7 +185,7 @@ namespace NEgo {
     }
 
     void TModel::OptimizeHyp() {
-        NOpt::OptimizeModelLogLik(*this, NOpt::MethodFromString(Config.HypOptMethod), NOpt::TOptimizeConfig(Config.HypOptMaxEval));
+        NOpt::OptimizeModelLogLik(*this, Config.HyperOpt);
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
 
@@ -200,39 +212,44 @@ namespace NEgo {
         return v[0];
     }
 
+    
     void TModel::Optimize(TOptimCallback cb) {
-        for(size_t iterNum=0; iterNum < Config.MaxEval; ++iterNum) {
-            L_DEBUG << "I*teration number " << iterNum << ", best " << GetMinimum();
-            L_DEBUG << "Optimizing acquisition function ...";
+        for(size_t iterNum=0; iterNum < Config.IterationsNum; ++iterNum) {
+            L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
+            
+            OptimizeStep(cb);
 
-            TVectorD x;
-            double crit;
-            Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Acq, NOpt::MethodFromString(Config.AcqOptMethod));
-
-            L_DEBUG << "Found criteria value: " << crit;
-            double res = cb(x);
-
-            L_DEBUG << "Got result: " << res;
-
-            if(res < GetMinimum()) {
-                L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
-                SetMinimum(res);
-            }
-
-            L_DEBUG << "Updating posterior";
-
-            X = NLa::RowBind(X, NLa::Trans(x));
-            Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, res));
-
-            Posterior.emplace(Inf->Calc(X, Y).Posterior());
-            if((iterNum+1) % Config.HypOptFreq == 0) {
+            if((iterNum+1) % Config.HyperOptFreq == 0) {
                 NOpt::OptimizeModelLogLik(
                     *this,
-                    NOpt::MethodFromString(Config.HypOptMethod),
-                    NOpt::TOptimizeConfig(Config.HypOptMaxEval)
+                    Config.HyperOpt
                 );
             }
         }
+    }
+
+    void TModel::OptimizeStep(TOptimCallback cb) {
+        L_DEBUG << "Optimizing acquisition function ...";
+
+        TVectorD x;
+        double crit;
+        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Acq, Config.AcqOpt);
+        L_DEBUG << "Found criteria value: " << crit;
+        double res = cb(x);
+
+        L_DEBUG << "Got result: " << res;
+
+        if(res < GetMinimum()) {
+            L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
+            SetMinimum(res);
+        }
+
+        L_DEBUG << "Updating posterior";
+
+        X = NLa::RowBind(X, NLa::Trans(x));
+        Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, res));
+
+        Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
 
 } // namespace NEgo

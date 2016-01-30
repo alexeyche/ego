@@ -5,8 +5,11 @@
 #include <ego/base/la.h>
 
 #include <nlopt/api/nlopt.hpp>
+#include <ego/model/config.h>
 
 #include <functional>
+
+
 
 namespace NEgo {
 	class TModel;
@@ -15,23 +18,13 @@ namespace NEgo {
 	namespace NOpt {
 		using TCallback = std::function<TPair<double, TVectorD>(const TVectorD&)>;
 
-		struct TOptimizeConfig {
-			TOptimizeConfig() {}
-			TOptimizeConfig(ui32 maxEval)
-				: MaxEval(maxEval)
-			{}
-
-			ui32 MaxEval = 100;
-			double Tol = 1e-10;
-		};
-
 		double NLoptModelMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data);
 
 		double NLoptAcqMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data);
 
-		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, TVectorD init, nlopt::algorithm algo, TOptimizeConfig config);
+		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, const TOptConfig& config);
 
-		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, nlopt::algorithm algo, TOptimizeConfig config);
+		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, const TOptConfig& config);
 
 	} // namespace NOpt
 } // namespace NEgo

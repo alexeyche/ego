@@ -2,7 +2,7 @@
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 
-from egopy_configs cimport TOptimizeConfig
+from egopy_configs cimport TOptConfig
 from egopy_configs cimport TModelConfig
 
 cdef extern from "ego_wrapper.h":

@@ -23,16 +23,17 @@ namespace NEgo {
 			}
 		}
 
-		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, TVectorD init, nlopt::algorithm algo, TOptimizeConfig config) {
+		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, const TOptConfig& config) {
+			nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(MethodFromString(config.Method))-1);
 			nlopt::opt optAlg(
 				algo
 			  , model.GetParametersSize()
 			);
 			optAlg.set_min_objective(NLoptModelMinimizer, static_cast<void*>(const_cast<TModel*>(&model)));
-			optAlg.set_ftol_rel(config.Tol);
+			optAlg.set_ftol_rel(config.Tolerance);
 			optAlg.set_maxeval(config.MaxEval);
 			double best = std::numeric_limits<double>::max();
-			auto initStd = NLa::VecToStd(init);
+			auto initStd = NLa::VecToStd(model.GetParameters());
 			optAlg.optimize(initStd, best);
 			auto res = MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());
 		    model.SetParameters(initStd);
@@ -50,13 +51,14 @@ namespace NEgo {
 			
 		}
 
-		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, nlopt::algorithm algo, TOptimizeConfig config) {
+		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, const TOptConfig& config) {
+			nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(MethodFromString(config.Method))-1);
 			nlopt::opt optAlg(
 				algo
 			  , acq->GetDimSize()
 			);
 			optAlg.set_min_objective(NLoptAcqMinimizer, static_cast<void*>(acq.get()));
-			optAlg.set_ftol_rel(config.Tol);
+			optAlg.set_ftol_rel(config.Tolerance);
 			optAlg.set_maxeval(config.MaxEval);
 			optAlg.set_lower_bounds(0.0);
 			optAlg.set_upper_bounds(1.0);

@@ -1,0 +1,6 @@
+ModelConfig {
+    Cov: "cExpISO"
+
+    Seed: 10
+    IterationsNum: 10
+}

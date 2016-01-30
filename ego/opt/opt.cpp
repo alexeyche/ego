@@ -76,9 +76,9 @@ namespace NEgo {
  		}
 
 
-		TPair<TVectorD, double> OptimizeModelLogLik(TModel &model, EMethod optMethod, TOptimizeConfig config) {
-			L_DEBUG << "Going to minimize model log likelihood with " << MethodToString(optMethod);
-			switch(optMethod) {
+		TPair<TVectorD, double> OptimizeModelLogLik(TModel &model, const TOptConfig& config) {
+			L_DEBUG << "Going to minimize model log likelihood with " << config.Method;
+			switch(MethodFromString(config.Method)) {
 				case CG:
 					{
 						auto res = CgMinimize(
@@ -98,20 +98,18 @@ namespace NEgo {
 					}
 				default:
 					{
-						nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(optMethod)-2);
-						return NLoptModelMinimize(model, model.GetParameters(), algo, config);
+						return NLoptModelMinimize(model, config);
 					}
 			}
 		}
 
-		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, EMethod optMethod, TOptimizeConfig config) {
-			switch(optMethod) {
+		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, const TOptConfig& config) {
+			switch(MethodFromString(config.Method)) {
 				case CG:
 					throw TEgoException() << "Need to use derivative free methods\n";
 				default:
 					{
-						nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(optMethod)-1);
-						return NLoptAcqMinimize(acq, algo, config);
+						return NLoptAcqMinimize(acq, config);
 					}
 			}
 		}

@@ -2,63 +2,30 @@ import "extension.proto";
 
 package NEgoProto;
 
+message TOptConfig {
+    optional string Method = 1;
+    optional uint32 MinimizersNum = 2;
+    optional uint32 MaxEval = 3 [default = 100];
+    optional double Tolerance = 4 [default = 1e-10];
+}
+
+
 message TModelConfig {
-    optional string Cov = 1 [
-        (description) = "Covariance kernel name",
-        (default_value) = "cMaternARD1"
-    ];
-    optional string Mean = 2 [
-        (description) = "Mean function name",
-        (default_value) = "mLinear"
-    ];
-    optional string Inf = 3 [
-        (description) = "Inference method name",
-        (default_value) = "iExact"
-    ];
-    optional string Lik = 4 [
-        (description) = "Likelihood function name",
-        (default_value) = "lGauss"
-    ];
-    optional string Acq = 5 [
-        (description) = "Acquisition function name",
-        (default_value) = "aEI"
-    ];
-    optional string Opt = 6 [
-        (description) = "Optimization method for hyperparameters",
-        (default_value) = "CG",
-        (short_option) = "-op"
-    ];
-    optional string AcqOpt = 7 [
-        (description) = "Optimization method for acquisition function",
-        (default_value) = "GN_DIRECT",
-        (short_option) = "-aop"
-    ];
+    optional string Cov = 1 [default = "cExpISO"];
+    optional string Mean = 2 [default = "mConst"];
+    optional string Inf = 3 [default = "iExact"];
+    optional string Lik = 4 [default = "lGauss"];
+    optional string Acq = 5 [default = "aEI"];
+    
+    optional uint32 Seed = 6 [default = 0];
+    
+    optional TOptConfig HyperOpt = 7;
+    optional TOptConfig AcqOpt = 8;
 
-
-    optional uint32 Seed = 8 [
-        (description) = "Seed of random generator",
-        (short_option) = "-s"
-    ];
-    optional string Input = 9 [
-        (description) = "Input file name *.csv supported",
-        (short_option) = "-i"
-    ];
-    optional string Output = 10 [
-        (description) = "Output file name",
-        (short_option) = "-o"
-    ];
-    optional bool ListEntities = 11 [
-        (description) = "List available entities in system and quit",
-        (short_option) = "-l"
-    ];
-    optional bool ListMethods = 12 [
-        (description) = "List available optimization methods and quit",
-        (short_option) = "-lopt"
-    ];
-    optional bool Verbose = 13 [
-        (description) = "Turn on extra logging",
-        (short_option) = "-v"
-    ];
+    optional uint32 IterationsNum = 9 [default = 100];
+    optional uint32 HyperOptFreq = 10 [default = 1];
 };
 
-
+message TModelConfigMessage {
+    optional TModelConfig ModelConfig = 1;
+}

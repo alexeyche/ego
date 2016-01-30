@@ -23,11 +23,15 @@ namespace NEgo {
 
         static const double ParametersDefault;
 
-        TModel(TModelConfig config);
+        TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y);
 
         TModel();
 
-        TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, TMatrixD x, TVectorD y);
+        TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, const TMatrixD& x, const TVectorD& y);
+
+        TModel(const TModel& model);
+
+        void InitWithConfig(const TModelConfig& config, ui32 D);
 
         // Setters
 
@@ -37,11 +41,13 @@ namespace NEgo {
 
         TPair<TMatrixD, TVectorD> GetData() const;
 
-        void SetConfig(TModelConfig config);
+        void SetConfig(const TModelConfig& config);
 
         const double& GetMinimum() const;
 
         void SetMinimum(double v);
+
+        ui32 GetDimSize() const;
 
         // Functor methods
 
@@ -59,6 +65,8 @@ namespace NEgo {
 
         void Optimize(TOptimCallback cb);
 
+        void OptimizeStep(TOptimCallback cb);
+
         TInfResult GetNegativeLogLik(const TVector<double>& v);
 
         TInfResult GetNegativeLogLik() const;
@@ -71,6 +79,7 @@ namespace NEgo {
 
         SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew);
 
+    
     private:
         TMatrixD X;
         TVectorD Y;

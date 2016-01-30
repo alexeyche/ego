@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ego/base/la.h>
+#include <ego/model/config.h>
 
 namespace NEgo {
 	namespace NOpt {
@@ -11,7 +12,7 @@ namespace NEgo {
 		struct TCgMinimizeConfig {
 			TCgMinimizeConfig();
 
-			TCgMinimizeConfig(TOptimizeConfig config);
+			TCgMinimizeConfig(const TOptConfig& config);
 
 			ui32 LineSearchNum = 10;
 			ui32 MaxEval = 100;

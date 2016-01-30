@@ -1,0 +1,31 @@
+import "extension.proto";
+
+package NEgoProto;
+
+
+message TEgoOptions {
+    optional string Config = 1 [
+        (description) = "Model config proto file",
+        (short_option) = "-c"
+    ];
+    optional string Input = 3 [
+        (description) = "Input file name *.csv supported",
+        (short_option) = "-i"
+    ];
+    optional string Output = 4 [
+        (description) = "Output file name",
+        (short_option) = "-o"
+    ];
+    optional bool ListEntities = 5 [
+        (description) = "List available entities in system and quit",
+        (short_option) = "-l"
+    ];
+    optional bool ListMethods = 6 [
+        (description) = "List available optimization methods and quit",
+        (short_option) = "-lopt"
+    ];
+    optional bool Verbose = 7 [
+        (description) = "Turn on extra logging",
+        (short_option) = "-v"
+    ];
+}

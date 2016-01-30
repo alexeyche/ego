@@ -14,6 +14,7 @@ set(SOURCES
     parse_parenthesis.cpp
     fs.cpp
     pretty_print.cpp
+    protobuf.cpp
 )
 
 set(DIR_SRCS)
