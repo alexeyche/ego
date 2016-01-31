@@ -183,9 +183,16 @@ namespace NEgo {
 
         TResponseBuilder& NotFound() {
             Response.Code = 404;
-            Response.Status = "Not found";
+            Response.Status = "Not Found";
             return *this;
         }
+
+        TResponseBuilder& BadRequest() {
+            Response.Code = 400;
+            Response.Status = "Bad Request";
+            return *this;
+        }
+
 
         TResponseBuilder& InternalError() {
             Response.Code = 500;

@@ -136,15 +136,15 @@ namespace NEgo {
 
 				L_DEBUG << "Server: got connection from " << s;
 
-				Receive(new_fd);
-        		close(new_fd);
+				// Receive(new_fd);
+        		// close(new_fd);
 
-	            // std::thread(
-	            // 	[new_fd, this]() {
-	            // 		Receive(new_fd);
-	            // 		close(new_fd);
-	            // 	}
-	            // ).detach();
+	            std::thread(
+	            	[new_fd, this]() {
+	            		Receive(new_fd);
+	            		close(new_fd);
+	            	}
+	            ).detach();
 			}
 		}
 
@@ -210,6 +210,11 @@ namespace NEgo {
 					.Body(e.what())
 					.NotFound()
 				    .FormResponse();
+			} catch (const TEgoLogicError& e) {
+				resp = respBuilder
+					.Body(e.what())
+					.BadRequest()
+					.FormResponse();
 			} catch (const std::exception& e) {
 				L_DEBUG << "Internal error: " << e.what();
 				resp = respBuilder

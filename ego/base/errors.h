@@ -70,4 +70,23 @@ namespace NEgo {
         stringstream ss;
     };
 
+    struct TEgoLogicError : public std::exception
+    {
+        TEgoLogicError() {}
+        TEgoLogicError(TEgoLogicError &exc) {
+            ss << exc.ss.str();
+        }
+
+        template <typename T>
+        TEgoLogicError& operator << (const T& s) {
+            ss << s;
+            return *this;
+        }
+        const char * what () const throw () {
+            return ss.str().c_str();
+        }
+        stringstream ss;
+    };
+
+
 } // namespace NEgo

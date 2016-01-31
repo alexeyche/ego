@@ -22,6 +22,7 @@ function submitProblem() {
     var data = {
         name: problemName
     }
+
     var lastAlert = $("#submit-problem-form div").last();
     if (lastAlert.hasClass("alert")) {
         lastAlert.remove();
@@ -42,7 +43,7 @@ function submitProblem() {
     ).fail(
         function(jqXHR, textStatus, errorThrown) {
             $("#submit-problem-form").append(
-                "<div class='alert alert-danger'><strong>Post request failed!</strong>"+JSON.stringify(jqXHR)+".</div>"
+                "<div class='alert alert-danger'><strong>Post request failed!</strong> "+jqXHR["responseText"]+"</div>"
             );
             console.log(textStatus);
             console.log(errorThrown);

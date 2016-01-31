@@ -15,6 +15,7 @@ set(SOURCES
     fs.cpp
     pretty_print.cpp
     protobuf.cpp
+    json.cpp
 )
 
 set(DIR_SRCS)

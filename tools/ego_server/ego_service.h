@@ -3,31 +3,30 @@
 #include "server.h"
 
 #include <ego/model/model.h>
+#include <ego/util/json.h>
 
-#include <ego/contrib/rapidjson/writer.h>
-#include <ego/contrib/rapidjson/document.h>
-#include <ego/contrib/rapidjson/prettywriter.h>
-
-namespace NJson = rapidjson;
 
 namespace NEgo {
 
 	class TProblem {
-		TProblem() {
+	public:
+		TProblem(TString name)
+			: Name(name) 
+		{
 		}
 
 		TString GetName() const {
 			return Name;
 		}
 
-		TModel& GetModel() {
-			return Model;
-		}
+		// TModel& GetModel() {
+		// 	return Model;
+		// }
 
 	private:
 		TString Name;
 
-		TModel Model;
+		// TModel Model;
 	};
 
 	class TEgoService {
@@ -61,30 +60,25 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/list_problems",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						NJson::Document d;
-						NJson::Value array(NJson::kArrayType);
+						TJsonDocument jsonDoc;
 						for (const auto& p: Problems) {
-							NJson::Value s;
-							s.SetString(p.first.c_str(), p.first.size(), d.GetAllocator());
-							array.PushBack(s, d.GetAllocator());
+							jsonDoc.PushBack(p.first);
 						}
-
-						NJson::Value s;
-						s.SetString("Test");
-						array.PushBack(s, d.GetAllocator());
-
-						NJson::StringBuffer buffer;
-						NJson::PrettyWriter<NJson::StringBuffer> writer(buffer);
-						array.Accept(writer);
-						resp.Body() = buffer.GetString();
-						resp.Body() += "\n";
+						resp.Body() += jsonDoc.GetPrettyString();
 						resp.Good();
 					}
 				)
 				.AddCallback(
 					"POST", "api/submit_problem",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						L_DEBUG << req.Body;
+						TJsonDocument jsonDoc(req.Body);
+						TString name = jsonDoc.Get<TString>("name");
+
+						auto res = Problems.insert(MakePair(name, TProblem(name)));
+						if (!res.second) {
+							throw TEgoLogicError() << "Problem with the name `" << name << "' is already exist";
+						}
+
 						resp.Body("{}");
 						resp.Accepted();
 					}
