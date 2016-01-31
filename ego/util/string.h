@@ -15,6 +15,8 @@ namespace NEgo {
 
 	    TString Trim(const TString &strInp, TString symbols = " \t\n\r");
 
+	    TString LStrip(const TString& input, TString symbols = " \t\n\r");
+
 	    TString Strip(const TString& input);
 
 		TVector<TString> SplitInto(const TString &s, char delim, TVector<TString> &elems, ui32 numberOfSplits = std::numeric_limits<ui32>::max());
@@ -40,5 +42,7 @@ namespace NEgo {
 	        stringstream ss;
 	    };
 
+	    bool EndsWith(const TString &str, const TString&& suffix);
+	    
 	} // namespace NStr
 } // namespace NEgo

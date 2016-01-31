@@ -28,4 +28,4 @@ target_link_libraries(ego-server
     ego 
     m
 )
-install(TARGETS RUNTIME DESTINATION bin)
+install(TARGETS ego-server RUNTIME DESTINATION bin)

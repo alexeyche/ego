@@ -7,7 +7,7 @@
 #include <ego/util/log/log.h>
 
 
-#include "server.h"
+#include "ego_service.h"
 
 using namespace NEgo;
 
@@ -24,15 +24,7 @@ int main(int argc, const char** argv) {
         TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
     }
 
-    TServer(std::stoi(config.port()))
-        .AddCallback(
-            "GET", "/",
-            [&](std::ostream &o) {
-                o << "Hello\n";
-            }
-        )
-        .MainLoop();
-
+    TEgoService(std::stoi(config.port()));
 
     return 0;
 }

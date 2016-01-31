@@ -52,4 +52,22 @@ namespace NEgo {
         }\
 
 
+    struct TEgoFileNotFound : public std::exception
+    {
+        TEgoFileNotFound() {}
+        TEgoFileNotFound(TEgoFileNotFound &exc) {
+            ss << exc.ss.str();
+        }
+
+        template <typename T>
+        TEgoFileNotFound& operator << (const T& s) {
+            ss << s;
+            return *this;
+        }
+        const char * what () const throw () {
+            return ss.str().c_str();
+        }
+        stringstream ss;
+    };
+
 } // namespace NEgo

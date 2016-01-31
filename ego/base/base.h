@@ -71,4 +71,6 @@ namespace NEgo {
 		return SPtr<T>(ptr);
 	}
 
+	using TOutputStream = std::ostream;
+
 } // namespace NEgo

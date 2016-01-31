@@ -2,6 +2,10 @@
 
 #include "http.h"
 
+#include <ego/util/log/log.h>
+#include <ego/util/string.h>
+#include <ego/util/optional.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -12,23 +16,14 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#include <ego/util/log/log.h>
-#include <ego/util/string.h>
+#include <future>
 
 namespace NEgo {
-
-	void sigchld_handler(int s) {
-	    // waitpid() might overwrite errno, so we save and restore it:
-	    int saved_errno = errno;
-
-	    while(waitpid(-1, NULL, WNOHANG) > 0);
-
-	    errno = saved_errno;
-	}
 
 	class TServer {
 	private:
 		static constexpr ui32 ReceiveChunkSize = 1024;
+		static constexpr ui32 SendChunkSize = 1024;
 
 		static void* GetInAddr(struct sockaddr *sa)
 		{
@@ -39,8 +34,27 @@ namespace NEgo {
 		    return &(((struct sockaddr_in6*)sa)->sin6_addr);
 		}
 
+		static int SendAll(int s, const char *buf, int *len) {
+		    int total = 0;        // how many bytes we've sent
+		    int bytesleft = *len; // how many we have left to send
+		    int n;
+
+		    while(total < *len) {
+		        n = send(s, buf+total, bytesleft, 0);
+		        if (n == -1) { break; }
+		        total += n;
+		        bytesleft -= n;
+		    }
+
+		    *len = total; // return number actually sent here
+
+		    return n==-1?-1:0; // return -1 on failure, 0 on success
+		} 
+		
+	
 	public:
-		using TRequestCallback = std::function<void(std::ostream&)>;
+
+		using TRequestCallback = std::function<void(const THttpRequest&, TResponseBuilder&)>;
 
 		TServer(ui32 port, ui32 max_connections = 10) {
 			int status;
@@ -89,17 +103,6 @@ namespace NEgo {
 				listen(SocketNum, max_connections) >= 0,
 				"Failed to listen"
 			);
-
-			struct sigaction sa;
-			sa.sa_handler = sigchld_handler; // reap all dead processes
-		    sigemptyset(&sa.sa_mask);
-		    sa.sa_flags = SA_RESTART;
-		    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-		        perror("sigaction");
-		        exit(1);
-		    }
-
-
 		}
 
 		TServer& AddCallback(TString method, TString path, TRequestCallback cb) {
@@ -112,6 +115,12 @@ namespace NEgo {
 			return *this;
 		}
 
+		TServer& AddCallback(TString method, TRequestCallback cb) {
+			auto res = DefaultCallbacks.insert(MakePair(method, cb));
+			ENSURE(res.second, "Found duplicates for default callback for method " << method);
+			return *this;
+		} 
+		
 		void MainLoop() {
 			while (true) {
 				struct sockaddr_storage their_addr;
@@ -127,13 +136,15 @@ namespace NEgo {
 
 				L_DEBUG << "Server: got connection from " << s;
 
-				if (!fork()) { // this is the child process
-		            close(SocketNum); // child doesn't need the listener
-		            Receive(new_fd);
-		            close(new_fd);
-		            exit(0);
-		        }
+				Receive(new_fd);
         		close(new_fd);
+
+	            // std::thread(
+	            // 	[new_fd, this]() {
+	            // 		Receive(new_fd);
+	            // 		close(new_fd);
+	            // 	}
+	            // ).detach();
 			}
 		}
 
@@ -164,9 +175,56 @@ namespace NEgo {
 					ss << std::string(chunk);
 				}
 			}
-			THttpRequest req = ParseHttpRequest(ss.str());
+			L_DEBUG << "Bytes received: " << bytesReceived;
 
-			L_DEBUG << req;
+			THttpRequest req = ParseHttpRequest(ss.str());
+			
+			TString path = NStr::LStrip(req.Path, "/");
+			
+			TOptional<TRequestCallback> cb;
+			auto methodCbPtr = Callbacks.find(req.Method);
+			if (methodCbPtr != Callbacks.end()) {
+				auto pathCbPtr = methodCbPtr->second.find(path);
+				if (pathCbPtr != methodCbPtr->second.end()) {
+					cb = pathCbPtr->second;
+				}
+			}
+			if (!cb) {
+				auto defCbPtr = DefaultCallbacks.find(req.Method);
+				ENSURE(defCbPtr != DefaultCallbacks.end(), "Can't find appropriate callback for method " << req.Method);
+				cb = defCbPtr->second;
+			}
+			
+			TResponseBuilder respBuilder(req);
+			THttpResponse resp;
+			
+			try {
+				(*cb)(req, respBuilder);
+				resp = respBuilder
+					.Good()
+				    .FormResponse();
+			} catch (const TEgoFileNotFound& e) {
+				resp = respBuilder
+					.Body(e.what())
+					.NotFound()
+				    .FormResponse();
+			} catch (const std::exception& e) {
+				L_DEBUG << "Internal error: " << e.what();
+				resp = respBuilder
+					.Body(e.what())
+					.InternalError()
+				    .FormResponse();
+			}
+			
+			L_DEBUG << req.Method << " " << req.Path << " -> " << resp.Code << " " << resp.Status;
+
+			std::ostringstream respStr;
+			respStr << resp;
+			TString respStrInst = respStr.str();
+			const char *respStrArray = respStrInst.c_str();
+			int len = respStrInst.size();
+			ENSURE(SendAll(socket, respStrArray, &len) >= 0, "Failed to send data");
+			L_DEBUG << "Successfully sent " << respStrInst.size() << " bytes of full message size and " << resp.Body.size() << " bytes of content length";
 		}
 
 		~TServer() {
@@ -175,6 +233,7 @@ namespace NEgo {
 
 	private:
 		int SocketNum;
+		std::map<TString, TRequestCallback> DefaultCallbacks;
 		std::map<TString, std::map<TString, TRequestCallback>> Callbacks;
 	};
 

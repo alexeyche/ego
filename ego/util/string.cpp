@@ -40,6 +40,7 @@ namespace NEgo {
                     }
                 } else {
                     meatFound = true;
+                    endpos = strInp.size();
                 }
             }
             return strInp.substr(startpos, endpos);
@@ -50,6 +51,15 @@ namespace NEgo {
            size_t b = input.find_first_not_of(' ');
            if (b == TString::npos) b = 0;
            return input.substr(b, input.find_last_not_of(' ') + 1 - b);
+        }
+        
+        TString LStrip(const TString& input, TString symbols) {
+            size_t b = input.find_first_not_of(symbols);
+            if (b != TString::npos) {
+                return input.substr(b, TString::npos);
+            } else {
+                return input;
+            }
         }
 
         TVector<TString> SplitInto(const TString &s, char delim, TVector<TString> &elems, ui32 numberOfSplits) {
@@ -114,6 +124,14 @@ namespace NEgo {
             }
             out.push_back(Trim(s));
             return out;
+        }
+
+        bool EndsWith(const TString &str, const TString&& suffix) {
+            if (str.length() >= suffix.length()) {
+               return (0 == str.compare (str.length() - suffix.length(), suffix.length(), suffix));
+            } else {
+                return false;
+            }
         }
 
     } // namespace NStr
