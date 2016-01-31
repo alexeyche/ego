@@ -20,9 +20,14 @@ namespace NEgo {
 
         double parenVal = (u * cdf_u + pdf_u);
         double criteria = - d->GetSd() * parenVal;
-        
+
         double dudx = - d->GetMeanDeriv() / d->GetSd() - d->GetSdDeriv() * diff / (d->GetSd() * d->GetSd());
-        double deriv = d->GetSd() * dudx * (d->StandardPdfDeriv(u) + u * d->StandardCdfDeriv(u) + cdf_u) + d->GetSdDeriv() * parenVal;
+        double deriv = d->GetSd() * dudx * (
+                            d->StandardPdfDeriv(u) +
+                            u * d->StandardCdfDeriv(u) +
+                            cdf_u
+                        ) +
+                        d->GetSdDeriv() * parenVal;
 
         return TAcqEI::Result()
             .SetValue(

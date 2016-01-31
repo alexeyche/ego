@@ -9,8 +9,6 @@
 
 namespace NEgo {
 
-
-
     struct TOptConfig {
         TOptConfig() {}
 
@@ -30,7 +28,7 @@ namespace NEgo {
 
     struct TModelConfig {
         TModelConfig()
-            : Seed(std::time(0))            
+            : Seed(std::time(0))
         {
         }
 
@@ -43,7 +41,7 @@ namespace NEgo {
             IterationsNum = config.iterationsnum();
             HyperOptFreq = config.hyperoptfreq();
 
-            if(config.has_seed()) {
+            if(config.has_seed() || config.seed()>0) {
                 Seed = config.seed();
             } else {
                 Seed = std::time(0);

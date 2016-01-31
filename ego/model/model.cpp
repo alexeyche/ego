@@ -42,7 +42,7 @@ namespace NEgo {
         SetData(x, y);
     }
 
-    TModel::TModel(const TModel& model) 
+    TModel::TModel(const TModel& model)
         : TParent(0)
     {
         MetaEntity = true;
@@ -98,7 +98,7 @@ namespace NEgo {
     TPair<TMatrixD, TVectorD> TModel::GetData() const {
         return MakePair(X, Y);
     }
-    
+
     ui32 TModel::GetDimSize() const {
         return X.n_cols;
     }
@@ -212,11 +212,11 @@ namespace NEgo {
         return v[0];
     }
 
-    
+
     void TModel::Optimize(TOptimCallback cb) {
         for(size_t iterNum=0; iterNum < Config.IterationsNum; ++iterNum) {
             L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
-            
+
             OptimizeStep(cb);
 
             if((iterNum+1) % Config.HyperOptFreq == 0) {

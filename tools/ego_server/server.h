@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ego/base/base.h>
+#include "http.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -13,6 +13,7 @@
 #include <signal.h>
 
 #include <ego/util/log/log.h>
+#include <ego/util/string.h>
 
 namespace NEgo {
 
@@ -27,6 +28,7 @@ namespace NEgo {
 
 	class TServer {
 	private:
+		static constexpr ui32 ReceiveChunkSize = 1024;
 
 		static void* GetInAddr(struct sockaddr *sa)
 		{
@@ -35,13 +37,15 @@ namespace NEgo {
 		    }
 
 		    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-		}	
-	
+		}
+
 	public:
+		using TRequestCallback = std::function<void(std::ostream&)>;
+
 		TServer(ui32 port, ui32 max_connections = 10) {
 			int status;
 			struct addrinfo hints;
-			
+
 			memset(&hints, 0, sizeof hints); // make sure the struct is empty
 			hints.ai_family = AF_UNSPEC;     // don't care IPv4 or IPv6
 			hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
@@ -50,27 +54,39 @@ namespace NEgo {
 			std::stringstream pss;
 			pss << port;
 			std::string ps = pss.str();
-			if ((status = getaddrinfo(NULL, ps.c_str(), &hints, &Servinfo)) != 0) {
+
+			struct addrinfo *servinfo;
+			if ((status = getaddrinfo(NULL, ps.c_str(), &hints, &servinfo)) != 0) {
 			    fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
 			    exit(1);
 			}
 
-			SocketNum = socket(Servinfo->ai_family, Servinfo->ai_socktype, Servinfo->ai_protocol);
-			ENSURE(SocketNum != -1, "Failed to create socket");
+			for(struct addrinfo* p = servinfo; p != NULL; p = p->ai_next) {
+		        if ((SocketNum = socket(p->ai_family, p->ai_socktype,
+		                p->ai_protocol)) == -1) {
+		            perror("server: socket");
+		            continue;
+		        }
 
-			int yes=1;
-			if (setsockopt(SocketNum, SOL_SOCKET,SO_REUSEADDR, &yes,sizeof(int)) == -1) {
-			    perror("setsockopt");
-			    exit(1);
-			} 
+				int yes=1;
+		        if (setsockopt(SocketNum, SOL_SOCKET, SO_REUSEADDR, &yes,
+		                sizeof(int)) == -1) {
+		            perror("setsockopt");
+		            exit(1);
+		        }
+
+		        if (bind(SocketNum, p->ai_addr, p->ai_addrlen) == -1) {
+		            close(SocketNum);
+		            perror("server: bind");
+		            continue;
+		        }
+
+		        break;
+		    }
+			freeaddrinfo(servinfo);
 
 			ENSURE(
-				bind(SocketNum, Servinfo->ai_addr, Servinfo->ai_addrlen) >= 0, 
-				"Failed to bind socket"
-			);
-
-			ENSURE(
-				listen(SocketNum, max_connections) >= 0, 
+				listen(SocketNum, max_connections) >= 0,
 				"Failed to listen"
 			);
 
@@ -81,12 +97,26 @@ namespace NEgo {
 		    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
 		        perror("sigaction");
 		        exit(1);
-		    }		
+		    }
 
+
+		}
+
+		TServer& AddCallback(TString method, TString path, TRequestCallback cb) {
+			auto pathsPtr = Callbacks.find(method);
+			if(pathsPtr == Callbacks.end()) {
+				pathsPtr = Callbacks.insert(MakePair(method, std::map<TString, TRequestCallback>())).first;
+			}
+			auto res = pathsPtr->second.insert(MakePair(path, cb));
+			ENSURE(res.second, "Found duplicates for callbacks " << method << "->" << path);
+			return *this;
+		}
+
+		void MainLoop() {
 			while (true) {
 				struct sockaddr_storage their_addr;
 				socklen_t addr_size = sizeof(their_addr);
-				
+
 				int new_fd = accept(SocketNum, (struct sockaddr *)&their_addr, &addr_size);
 				ENSURE(new_fd >= 0, "Failed to accept to socket");
 
@@ -94,29 +124,58 @@ namespace NEgo {
 				inet_ntop(their_addr.ss_family,
             		GetInAddr((struct sockaddr *)&their_addr),
             		s, sizeof s);
-				
+
 				L_DEBUG << "Server: got connection from " << s;
 
 				if (!fork()) { // this is the child process
 		            close(SocketNum); // child doesn't need the listener
-		            if (send(new_fd, "Hello, world!", 13, 0) == -1) {
-		            	perror("send");
-		            }
+		            Receive(new_fd);
 		            close(new_fd);
 		            exit(0);
 		        }
         		close(new_fd);
-        		
 			}
+		}
+
+		void Receive(int socket) {
+			std::stringstream ss;
+			ui32 bytesReceived = 0;
+			while (true) {
+				char chunk[ReceiveChunkSize+1];
+
+				int chunkReceived = recv(socket, chunk, ReceiveChunkSize, 0);
+				if (chunkReceived < 0) {
+					perror("Some errors while reading recv socket");
+					exit(0);
+				}
+
+				if (chunkReceived == 0) {
+					break;
+				}
+
+				bytesReceived += chunkReceived;
+
+				if (chunkReceived < ReceiveChunkSize) {
+					chunk[chunkReceived] = '\0';
+					ss << std::string(chunk);
+					break;
+				} else {
+					chunk[chunkReceived+1] = '\0';
+					ss << std::string(chunk);
+				}
+			}
+			THttpRequest req = ParseHttpRequest(ss.str());
+
+			L_DEBUG << req;
 		}
 
 		~TServer() {
 			close(SocketNum);
-			freeaddrinfo(Servinfo);
 		}
 
+	private:
 		int SocketNum;
-		struct addrinfo *Servinfo;  
+		std::map<TString, std::map<TString, TRequestCallback>> Callbacks;
 	};
 
 } // namespace NEgo

@@ -16,9 +16,9 @@ message TModelConfig {
     optional string Inf = 3 [default = "iExact"];
     optional string Lik = 4 [default = "lGauss"];
     optional string Acq = 5 [default = "aEI"];
-    
+
     optional uint32 Seed = 6 [default = 0];
-    
+
     optional TOptConfig HyperOpt = 7;
     optional TOptConfig AcqOpt = 8;
 

@@ -15,7 +15,7 @@ using namespace NEgo;
 
 int main(int argc, const char** argv) {
     TProtoOptions<NEgoProto::TServerOpts> opts(argc, argv, "Ego server binary");
-    
+
     NEgoProto::TServerOpts config;
     if(!opts.Parse(config)) {
         return 0;
@@ -24,6 +24,15 @@ int main(int argc, const char** argv) {
         TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
     }
 
-    TServer server(std::stoi(config.port()));
+    TServer(std::stoi(config.port()))
+        .AddCallback(
+            "GET", "/",
+            [&](std::ostream &o) {
+                o << "Hello\n";
+            }
+        )
+        .MainLoop();
+
+
     return 0;
 }

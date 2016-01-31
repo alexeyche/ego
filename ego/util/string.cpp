@@ -4,7 +4,7 @@
 
 namespace NEgo {
     namespace NStr {
-    
+
         TString CamelCaseToOption(TString s) {
             std::regex e("([a-z])([A-Z])");
             std::string res = std::regex_replace(s, e, "$1-$2");
@@ -27,19 +27,22 @@ namespace NEgo {
         }
 
 
-        TString Trim(const TString &strInp, TString symbols) {
-            TString str(strInp);
-            size_t endpos = str.find_last_not_of(symbols);
-            if( TString::npos != endpos )
-            {
-                str = str.substr( 0, endpos+1 );
+        TString Trim(const TString& strInp, TString symbols) {
+            size_t startpos = 0;
+            size_t endpos = strInp.size();
+            bool meatFound = false;
+            for (auto iter = strInp.begin(); iter != strInp.end(); ++iter) {
+                if (symbols.find_first_of(*iter) != TString::npos) {
+                    if (!meatFound) {
+                        startpos++;
+                    } else {
+                        endpos--;
+                    }
+                } else {
+                    meatFound = true;
+                }
             }
-            size_t startpos = str.find_first_not_of(symbols);
-            if( TString::npos != startpos )
-            {
-                str = str.substr( startpos );
-            }
-            return str;
+            return strInp.substr(startpos, endpos);
         }
 
 
@@ -49,19 +52,30 @@ namespace NEgo {
            return input.substr(b, input.find_last_not_of(' ') + 1 - b);
         }
 
-        TVector<TString> SplitInto(const TString &s, char delim, TVector<TString> &elems) {
+        TVector<TString> SplitInto(const TString &s, char delim, TVector<TString> &elems, ui32 numberOfSplits) {
             std::stringstream ss(s);
             TString item;
+
+            ui32 iter = 0;
             while (std::getline(ss, item, delim)) {
                 elems.push_back(item);
+                iter++;
+                if (iter >= numberOfSplits) {
+                    TString rest;
+                    while (std::getline(ss, item)) {
+                        rest += item;
+                    }
+                    elems.push_back(rest);
+                    break;
+                }
             }
             return elems;
         }
 
 
-        TVector<TString> Split(const TString &s, char delim) {
+        TVector<TString> Split(const TString &s, char delim, ui32 numberOfSplits) {
             TVector<TString> elems;
-            SplitInto(s, delim, elems);
+            SplitInto(s, delim, elems, numberOfSplits);
             return elems;
         }
 
@@ -71,7 +85,7 @@ namespace NEgo {
             if(s_inp.empty()) {
                 return out;
             }
-            
+
             size_t pos = 0;
             std::string acc_token;
             std::string token;
@@ -101,6 +115,6 @@ namespace NEgo {
             out.push_back(Trim(s));
             return out;
         }
-    
+
     } // namespace NStr
 } // namespace NEgo
