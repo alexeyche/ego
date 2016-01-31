@@ -41,24 +41,21 @@ namespace NEgo {
 					"GET", "/",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						resp.StaticFile("index.html");
-					}
-				)
-				.AddCallback(
-					"GET", "create",
-					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						resp.StaticFile("create.html");
+						resp.Good();
 					}
 				)
 				.AddCallback(
 					"GET", "problem/{problem_name}",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						resp.StaticFile("problem.html");
+						resp.Good();
 					}
 				)
 				.AddCallback(
 					"GET",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						resp.StaticFile(req.Path);
+						resp.Good();
 					}
 				)
 				.AddCallback(
@@ -71,7 +68,7 @@ namespace NEgo {
 							s.SetString(p.first.c_str(), p.first.size(), d.GetAllocator());
 							array.PushBack(s, d.GetAllocator());
 						}
-						
+
 						NJson::Value s;
 						s.SetString("Test");
 						array.PushBack(s, d.GetAllocator());
@@ -81,6 +78,15 @@ namespace NEgo {
 						array.Accept(writer);
 						resp.Body() = buffer.GetString();
 						resp.Body() += "\n";
+						resp.Good();
+					}
+				)
+				.AddCallback(
+					"POST", "api/submit_problem",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						L_DEBUG << req.Body;
+						resp.Body("{}");
+						resp.Accepted();
 					}
 				)
 				.MainLoop();
@@ -90,7 +96,7 @@ namespace NEgo {
 
 	private:
 		std::map<TString, TProblem> Problems;
-		
+
 		TServer Server;
 	};
 

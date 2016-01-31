@@ -1,5 +1,7 @@
 #include "string.h"
 
+#include <ego/util/log/log.h>
+
 #include <iostream>
 
 namespace NEgo {
@@ -52,7 +54,7 @@ namespace NEgo {
            if (b == TString::npos) b = 0;
            return input.substr(b, input.find_last_not_of(' ') + 1 - b);
         }
-        
+
         TString LStrip(const TString& input, TString symbols) {
             size_t b = input.find_first_not_of(symbols);
             if (b != TString::npos) {

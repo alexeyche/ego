@@ -49,9 +49,9 @@ namespace NEgo {
 		    *len = total; // return number actually sent here
 
 		    return n==-1?-1:0; // return -1 on failure, 0 on success
-		} 
-		
-	
+		}
+
+
 	public:
 
 		using TRequestCallback = std::function<void(const THttpRequest&, TResponseBuilder&)>;
@@ -119,8 +119,8 @@ namespace NEgo {
 			auto res = DefaultCallbacks.insert(MakePair(method, cb));
 			ENSURE(res.second, "Found duplicates for default callback for method " << method);
 			return *this;
-		} 
-		
+		}
+
 		void MainLoop() {
 			while (true) {
 				struct sockaddr_storage their_addr;
@@ -175,16 +175,19 @@ namespace NEgo {
 					ss << std::string(chunk);
 				}
 			}
-			L_DEBUG << "Bytes received: " << bytesReceived;
+			if (bytesReceived == 0) {
+				L_DEBUG << "Received zero bytes from socket. Ignoring";
+				return;
+			}
+
 
 			THttpRequest req = ParseHttpRequest(ss.str());
-			
-			TString path = NStr::LStrip(req.Path, "/");
-			
+
+
 			TOptional<TRequestCallback> cb;
 			auto methodCbPtr = Callbacks.find(req.Method);
 			if (methodCbPtr != Callbacks.end()) {
-				auto pathCbPtr = methodCbPtr->second.find(path);
+				auto pathCbPtr = methodCbPtr->second.find(req.Path);
 				if (pathCbPtr != methodCbPtr->second.end()) {
 					cb = pathCbPtr->second;
 				}
@@ -194,14 +197,13 @@ namespace NEgo {
 				ENSURE(defCbPtr != DefaultCallbacks.end(), "Can't find appropriate callback for method " << req.Method);
 				cb = defCbPtr->second;
 			}
-			
+
 			TResponseBuilder respBuilder(req);
 			THttpResponse resp;
-			
+
 			try {
 				(*cb)(req, respBuilder);
 				resp = respBuilder
-					.Good()
 				    .FormResponse();
 			} catch (const TEgoFileNotFound& e) {
 				resp = respBuilder
@@ -215,7 +217,7 @@ namespace NEgo {
 					.InternalError()
 				    .FormResponse();
 			}
-			
+
 			L_DEBUG << req.Method << " " << req.Path << " -> " << resp.Code << " " << resp.Status;
 
 			std::ostringstream respStr;

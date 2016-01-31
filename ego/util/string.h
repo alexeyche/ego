@@ -43,6 +43,6 @@ namespace NEgo {
 	    };
 
 	    bool EndsWith(const TString &str, const TString&& suffix);
-	    
+
 	} // namespace NStr
 } // namespace NEgo

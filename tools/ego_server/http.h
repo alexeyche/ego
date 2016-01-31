@@ -9,8 +9,11 @@ namespace NEgo {
 
     struct THttpRequest {
         TString Method;
-        TString Path;
+        TString RawPath;
         TString Version;
+
+        TString Path;
+        TVector<TString> UrlArgs;
 
         TVector<TPair<TString, TString>> Headers;
 
@@ -28,7 +31,7 @@ namespace NEgo {
     };
 
     std::ostream& operator<< (std::ostream& stream, const THttpRequest& httpReq) {
-        stream << httpReq.Method << " " << httpReq.Path << " " << httpReq.Version << "\r\n";
+        stream << httpReq.Method << " " << httpReq.RawPath << " " << httpReq.Version << "\r\n";
         for(const auto& h: httpReq.Headers) {
             stream << h.first << ": " << h.second << "\r\n";
         }
@@ -59,7 +62,7 @@ namespace NEgo {
 
         ENSURE(httpSpec.size() >= 3, "Bad http specifications: " << httpSpecString);
         request.Method = httpSpec[0];
-        request.Path = httpSpec[1];
+        request.RawPath = httpSpec[1];
         request.Version = httpSpec[2];
 
         TVector<TPair<TString, TString>> headers;
@@ -80,6 +83,13 @@ namespace NEgo {
         TString line;
         while (std::getline(inpStream, line)) {
             request.Body += line;
+        }
+
+        TString path = NStr::LStrip(request.RawPath, "/");
+        TVector<TString> pathSpl = NStr::Split(path, '?', 1);
+        request.Path = NStr::Trim(pathSpl[0]);
+        if (request.Path.empty()) {
+            request.Path = "/";
         }
         return request;
     }
@@ -102,10 +112,8 @@ namespace NEgo {
             Response.Version = req.Version;
         }
 
-        TResponseBuilder& StaticFile(TString path) {
-            TVector<TString> pathSpl = NStr::Split(path, '?', 1);
-            TString file = NStr::LStrip(pathSpl[0], "/");
-            
+        TResponseBuilder& StaticFile(TString file) {
+
             std::ifstream f(file);
             if(!f) {
                 throw TEgoFileNotFound() << "Failed to read file " << file;
@@ -121,43 +129,58 @@ namespace NEgo {
                         L_DEBUG << "SSI for " << includeFile;
                         StaticFile(includeFile);
                     }
-                    Response.Body += line;    
+                    Response.Body += line;
                 }
             } else {
-                Response.Body += TString((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());    
+                Response.Body += TString((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
             }
-            
+
             DeduceMimeTypeFromFile(file);
             return *this;
         }
-        
+
         void DeduceMimeTypeFromFile(TString path) {
             if (NStr::EndsWith(path, ".css")) {
-                Response.Headers.push_back(MakePair("Content-Type", "text/css"));    
-            } else 
+                Response.Headers.push_back(MakePair("Content-Type", "text/css"));
+            } else
             if (NStr::EndsWith(path, ".html")) {
-                Response.Headers.push_back(MakePair("Content-Type", "text/html"));    
-            } else 
+                Response.Headers.push_back(MakePair("Content-Type", "text/html"));
+            } else
             if (NStr::EndsWith(path, ".js")) {
-                Response.Headers.push_back(MakePair("Content-Type", "application/javascript"));    
-            } else 
+                Response.Headers.push_back(MakePair("Content-Type", "application/javascript"));
+            } else
             if (NStr::EndsWith(path, ".woff")) {
-                Response.Headers.push_back(MakePair("Content-Type", "application/x-font-woff"));    
+                Response.Headers.push_back(MakePair("Content-Type", "application/x-font-woff"));
             } else
             if (NStr::EndsWith(path, ".ttf")) {
-                Response.Headers.push_back(MakePair("Content-Type", "application/octet-stream"));    
+                Response.Headers.push_back(MakePair("Content-Type", "application/octet-stream"));
+            } else
+            if (NStr::EndsWith(path, ".ico")) {
+                Response.Headers.push_back(MakePair("Content-Type", "image/x-icon"));
             } else {
                 L_DEBUG << "Can't deduce mime type for " << path;
-                Response.Headers.push_back(MakePair("Content-Type", "text/html"));    
+                Response.Headers.push_back(MakePair("Content-Type", "text/html"));
             }
         }
-        
+
         TResponseBuilder& Good() {
             Response.Code = 200;
             Response.Status = "OK";
             return *this;
         }
-        
+
+        TResponseBuilder& Created() {
+            Response.Code = 201;
+            Response.Status = "Created";
+            return *this;
+        }
+
+        TResponseBuilder& Accepted() {
+            Response.Code = 202;
+            Response.Status = "Accepted";
+            return *this;
+        }
+
         TResponseBuilder& NotFound() {
             Response.Code = 404;
             Response.Status = "Not found";
