@@ -15,5 +15,10 @@ namespace NEgo {
 		return v.GetString();
 	}
 
+	template <>
+	int TJsonDocument::GetValue(NJson::Value& v) {
+		return v.GetInt();
+	}
+
 
 } // namespace NEgo 

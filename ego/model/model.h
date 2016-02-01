@@ -23,11 +23,11 @@ namespace NEgo {
 
         static const double ParametersDefault;
 
+        TModel(const TModelConfig& config, ui32 D);
+
         TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y);
 
-        TModel();
-
-        TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, const TMatrixD& x, const TVectorD& y);
+        TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq);
 
         TModel(const TModel& model);
 

@@ -27,12 +27,7 @@ namespace NEgo {
 
 
     struct TModelConfig {
-        TModelConfig()
-            : Seed(std::time(0))
-        {
-        }
-
-        TModelConfig(const NEgoProto::TModelConfig &config) {
+        TModelConfig(NEgoProto::TModelConfig config = NEgoProto::TModelConfig()) {
             Cov = config.cov();
             Mean = config.mean();
             Lik = config.lik();

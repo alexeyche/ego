@@ -245,7 +245,8 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 		SPtr<ILik> lik = MakeShared(new LikTypename(DimSize)); \
 		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
 		SPtr<IAcq> acq = MakeShared(new AcqTypename(DimSize)); \
-		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq, X, Y)); \
+		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq)); \
+		model->SetData(X, Y); \
 		\
 		OneArgFunctorTester<Typename>(#Typename, model);\
 	} \
@@ -260,7 +261,8 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 		SPtr<ILik> lik = MakeShared(new LikTypename(DimSize)); \
 		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
 		SPtr<AcqTypename> acq = MakeShared(new AcqTypename(DimSize)); \
-		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq, X, Y)); \
+		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq)); \
+		model->SetData(X, Y); \
 		\
 		OneArgFunctorTester<AcqTypename>(#AcqTypename, acq, CreateTestDataVectorX());\
 	} \

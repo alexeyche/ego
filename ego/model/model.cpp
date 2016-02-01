@@ -7,11 +7,17 @@ namespace NEgo {
 
     const double TModel::ParametersDefault = 0.0; // log(1.0)
 
-    TModel::TModel()
+    TModel::TModel(const TModelConfig& config, ui32 D)
         : TParent(0)
+        , Config(config)
         , MinF(std::numeric_limits<double>::max())
     {
         MetaEntity = true;
+
+        InitWithConfig(Config, D);
+
+        TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
+        SetParameters(v);
     }
 
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y)
@@ -29,7 +35,7 @@ namespace NEgo {
         SetData(x, y);
     }
 
-    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq, const TMatrixD& x, const TVectorD& y)
+    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq)
         : TParent(0)
         , MinF(std::numeric_limits<double>::max())
     {
@@ -38,8 +44,6 @@ namespace NEgo {
 
         TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
         SetParameters(v);
-
-        SetData(x, y);
     }
 
     TModel::TModel(const TModel& model)
@@ -49,7 +53,9 @@ namespace NEgo {
 
         InitWithConfig(model.Config, model.GetDimSize());
         SetParameters(model.GetParameters());
-        SetData(model.X, model.Y);
+        if (model.X.size()>0) {
+            SetData(model.X, model.Y);    
+        }
     }
 
     void TModel::InitWithConfig(const TModelConfig& config, ui32 D) {

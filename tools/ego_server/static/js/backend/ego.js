@@ -18,9 +18,11 @@ function submitProblem() {
     }
 
     var problemName = $("#problem-name").val();
-
+    var problemSize = parseInt($("#problem-size").val());
+    
     var data = {
-        name: problemName
+        name: problemName,
+        D: problemSize
     }
 
     var lastAlert = $("#submit-problem-form div").last();

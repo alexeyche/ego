@@ -10,8 +10,9 @@ namespace NEgo {
 
 	class TProblem {
 	public:
-		TProblem(TString name)
-			: Name(name) 
+		TProblem(TString name, TModelConfig config, ui32 D)
+			: Name(name)
+			, Model(config, D)
 		{
 		}
 
@@ -19,14 +20,14 @@ namespace NEgo {
 			return Name;
 		}
 
-		// TModel& GetModel() {
-		// 	return Model;
-		// }
+		TModel& GetModel() {
+			return Model;
+		}
 
 	private:
 		TString Name;
 
-		// TModel Model;
+		TModel Model;
 	};
 
 	class TEgoService {
@@ -73,8 +74,12 @@ namespace NEgo {
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TJsonDocument jsonDoc(req.Body);
 						TString name = jsonDoc.Get<TString>("name");
-
-						auto res = Problems.insert(MakePair(name, TProblem(name)));
+						int D = jsonDoc.Get<int>("D");
+						
+						if (D<=0) {
+							throw TEgoLogicError() << "Incorrect dimension size";
+						}
+						auto res = Problems.insert(MakePair(name, TProblem(name, TModelConfig(), D)));
 						if (!res.second) {
 							throw TEgoLogicError() << "Problem with the name `" << name << "' is already exist";
 						}

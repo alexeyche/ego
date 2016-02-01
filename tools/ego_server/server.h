@@ -136,15 +136,15 @@ namespace NEgo {
 
 				L_DEBUG << "Server: got connection from " << s;
 
-				// Receive(new_fd);
-        		// close(new_fd);
+				Receive(new_fd);
+        		close(new_fd);
 
-	            std::thread(
-	            	[new_fd, this]() {
-	            		Receive(new_fd);
-	            		close(new_fd);
-	            	}
-	            ).detach();
+	            // std::thread(
+	            // 	[new_fd, this]() {
+	            // 		Receive(new_fd);
+	            // 		close(new_fd);
+	            // 	}
+	            // ).detach();
 			}
 		}
 
@@ -201,27 +201,28 @@ namespace NEgo {
 			TResponseBuilder respBuilder(req);
 			THttpResponse resp;
 
-			try {
+			// try {
 				(*cb)(req, respBuilder);
 				resp = respBuilder
 				    .FormResponse();
-			} catch (const TEgoFileNotFound& e) {
-				resp = respBuilder
-					.Body(e.what())
-					.NotFound()
-				    .FormResponse();
-			} catch (const TEgoLogicError& e) {
-				resp = respBuilder
-					.Body(e.what())
-					.BadRequest()
-					.FormResponse();
-			} catch (const std::exception& e) {
-				L_DEBUG << "Internal error: " << e.what();
-				resp = respBuilder
-					.Body(e.what())
-					.InternalError()
-				    .FormResponse();
-			}
+				    
+			// } catch (const TEgoFileNotFound& e) {
+			// 	resp = respBuilder
+			// 		.Body(e.what())
+			// 		.NotFound()
+			// 	    .FormResponse();
+			// } catch (const TEgoLogicError& e) {
+			// 	resp = respBuilder
+			// 		.Body(e.what())
+			// 		.BadRequest()
+			// 		.FormResponse();
+			// } catch (const std::exception& e) {
+			// 	L_DEBUG << "Internal error: " << e.what();
+			// 	resp = respBuilder
+			// 		.Body(e.what())
+			// 		.InternalError()
+			// 	    .FormResponse();
+			// }
 
 			L_DEBUG << req.Method << " " << req.Path << " -> " << resp.Code << " " << resp.Status;
 
