@@ -25,7 +25,11 @@ include_directories(${CMAKE_SOURCE_DIR}/ego)
 # link dependencies of executable
 target_link_libraries(ego-server
 	${PROTOBUF_LIBRARY}
-    ego 
+    ego
     m
 )
 install(TARGETS ego-server RUNTIME DESTINATION bin)
+install(DIRECTORY static DESTINATION ego-server)
+install(CODE
+    "EXECUTE_PROCESS(COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/bin/ego-server ${CMAKE_INSTALL_PREFIX}/ego-server/static)"
+)

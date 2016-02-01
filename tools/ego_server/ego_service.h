@@ -32,8 +32,8 @@ namespace NEgo {
 
 	class TEgoService {
 	public:
-		TEgoService(ui32 port)
-			: Server(port)
+		TEgoService(ui32 port, bool debugMode)
+			: Server(port, 10, debugMode)
 		{
 
 			Server
@@ -75,7 +75,7 @@ namespace NEgo {
 						TJsonDocument jsonDoc(req.Body);
 						TString name = jsonDoc.Get<TString>("name");
 						int D = jsonDoc.Get<int>("D");
-						
+
 						if (D<=0) {
 							throw TEgoLogicError() << "Incorrect dimension size";
 						}

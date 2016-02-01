@@ -13,4 +13,9 @@ message TServerOpts {
         (description) = "Turn on extra logging",
         (short_option) = "-v"
     ];
+
+    optional bool Debug = 3 [
+        (description) = "Run in debug mode",
+        (short_option) = "-d"
+    ];
 }

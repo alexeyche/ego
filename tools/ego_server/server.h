@@ -56,7 +56,9 @@ namespace NEgo {
 
 		using TRequestCallback = std::function<void(const THttpRequest&, TResponseBuilder&)>;
 
-		TServer(ui32 port, ui32 max_connections = 10) {
+		TServer(ui32 port, ui32 max_connections = 10, bool debugMode = false)
+			: DebugMode(debugMode)
+		{
 			int status;
 			struct addrinfo hints;
 
@@ -136,15 +138,17 @@ namespace NEgo {
 
 				L_DEBUG << "Server: got connection from " << s;
 
-				Receive(new_fd);
-        		close(new_fd);
-
-	            // std::thread(
-	            // 	[new_fd, this]() {
-	            // 		Receive(new_fd);
-	            // 		close(new_fd);
-	            // 	}
-	            // ).detach();
+				if (DebugMode) {
+					Receive(new_fd);
+        			close(new_fd);
+				} else {
+		            std::thread(
+		            	[new_fd, this]() {
+		            		Receive(new_fd);
+		            		close(new_fd);
+		            	}
+		            ).detach();
+				}
 			}
 		}
 
@@ -201,28 +205,30 @@ namespace NEgo {
 			TResponseBuilder respBuilder(req);
 			THttpResponse resp;
 
-			// try {
+			try {
 				(*cb)(req, respBuilder);
 				resp = respBuilder
 				    .FormResponse();
-				    
-			// } catch (const TEgoFileNotFound& e) {
-			// 	resp = respBuilder
-			// 		.Body(e.what())
-			// 		.NotFound()
-			// 	    .FormResponse();
-			// } catch (const TEgoLogicError& e) {
-			// 	resp = respBuilder
-			// 		.Body(e.what())
-			// 		.BadRequest()
-			// 		.FormResponse();
-			// } catch (const std::exception& e) {
-			// 	L_DEBUG << "Internal error: " << e.what();
-			// 	resp = respBuilder
-			// 		.Body(e.what())
-			// 		.InternalError()
-			// 	    .FormResponse();
-			// }
+			} catch (const TEgoFileNotFound& e) {
+				resp = respBuilder
+					.Body(e.what())
+					.NotFound()
+				    .FormResponse();
+			    if (DebugMode) throw;
+			} catch (const TEgoLogicError& e) {
+				resp = respBuilder
+					.Body(e.what())
+					.BadRequest()
+					.FormResponse();
+				if (DebugMode) throw;
+			} catch (const std::exception& e) {
+				L_DEBUG << "Internal error: " << e.what();
+				resp = respBuilder
+					.Body(e.what())
+					.InternalError()
+				    .FormResponse();
+				if (DebugMode) throw;
+			}
 
 			L_DEBUG << req.Method << " " << req.Path << " -> " << resp.Code << " " << resp.Status;
 
@@ -240,6 +246,8 @@ namespace NEgo {
 		}
 
 	private:
+		bool DebugMode;
+
 		int SocketNum;
 		std::map<TString, TRequestCallback> DefaultCallbacks;
 		std::map<TString, std::map<TString, TRequestCallback>> Callbacks;
