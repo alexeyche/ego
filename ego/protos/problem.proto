@@ -1,0 +1,22 @@
+
+package NEgoProto;
+
+enum EVariableType {
+	FLOAT = 0;
+	INT = 1;
+	ENUM = 2;	
+}
+
+message TVariable {
+	
+
+	optional string Name = 1;
+	optional double Min = 2;
+	optional double Max = 3;
+	optional EVariableType Type = 4;
+	repeated string Options = 5;
+}
+
+message TProblemConfig {
+	repeated TVariable Variable = 1;
+}

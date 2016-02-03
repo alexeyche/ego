@@ -3,33 +3,13 @@
 #include "server.h"
 
 #include <ego/model/model.h>
+#include <ego/problem/config.h>
 #include <ego/util/json.h>
 
 
 namespace NEgo {
 
-	class TProblem {
-	public:
-		TProblem(TString name, TModelConfig config, ui32 D)
-			: Name(name)
-			, Model(config, D)
-		{
-		}
-
-		TString GetName() const {
-			return Name;
-		}
-
-		TModel& GetModel() {
-			return Model;
-		}
-
-	private:
-		TString Name;
-
-		TModel Model;
-	};
-
+	
 	class TEgoService {
 	public:
 		TEgoService(ui32 port, bool debugMode)
@@ -74,12 +54,8 @@ namespace NEgo {
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TJsonDocument jsonDoc(req.Body);
 						TString name = jsonDoc.Get<TString>("name");
-						int D = jsonDoc.Get<int>("D");
-
-						if (D<=0) {
-							throw TEgoLogicError() << "Incorrect dimension size";
-						}
-						auto res = Problems.insert(MakePair(name, TProblem(name, TModelConfig(), D)));
+			
+						auto res = Problems.insert(MakePair(name, TProblemConfig()));
 						if (!res.second) {
 							throw TEgoLogicError() << "Problem with the name `" << name << "' is already exist";
 						}
@@ -94,7 +70,7 @@ namespace NEgo {
 
 
 	private:
-		std::map<TString, TProblem> Problems;
+		std::map<TString, TProblemConfig> Problems;
 
 		TServer Server;
 	};

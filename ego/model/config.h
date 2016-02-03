@@ -2,7 +2,7 @@
 
 #include <ego/base/base.h>
 #include <ego/base/errors.h>
-#include <ego/protos/config.pb.h>
+#include <ego/protos/model.pb.h>
 
 #include <ctime>
 

@@ -24,7 +24,7 @@ message TModelConfig {
 
     optional uint32 IterationsNum = 9 [default = 100];
     optional uint32 HyperOptFreq = 10 [default = 1];
-};
+}
 
 message TModelConfigMessage {
     optional TModelConfig ModelConfig = 1;
