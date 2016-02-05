@@ -13,7 +13,8 @@
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="css/sb-admin.css" rel="stylesheet">
+    <link href="css/plugins/morris.css" rel="stylesheet">
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
@@ -39,7 +40,6 @@
                             <i class="fa fa-fw fa-dashboard"></i> Problems
                             <i class="fa fa-fw fa-caret-down"></i></a>
                         <ul id="problem-list" class="collapse in">
-
                         </ul>
                     </li>
                 </ul>
@@ -74,31 +74,92 @@
 
         <div id="page-wrapper" class="hidden">
             <div id="create-problem-page" class="container-fluid">
-
-                <div class="row-fluid">
-                    <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-md-8">
                         <form data-toggle="validator" role="form" id="submit-problem-form">
-                            <div class="form-group col-sm-3">
-                                <label>Name of problem</label>
-                                <input class="form-control" id="problem-name" placeholder="Enter name" required>
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label>Name of problem</label>
+                                    <input class="form-control" id="problem-name" placeholder="Enter the name of the problem" required>
+                                </div>
                             </div>
-                            <label>Dimension of problem</label>
-                            <div class="form-group col-sm-3">
+                            <label>Problem variables</label>
+                                        
+                            <div class="form-group">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <table class="table" id="variable-table">
+                                            <thead>
+                                                <tr>
+                                                    <th width="5%">#</th>
+                                                    <th width="30%">Name</th>
+                                                    <th width="30%">Type</th>
+                                                    <th width="30%">Options</th>
+                                                    <th width="5%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" id="variable-name" placeholder="Enter the variable name" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                  <button type="button" class="btn btn-default active" data-toggle="button" id="double-variable-type">Double</button>
+                                                  <button type="button" class="btn btn-default" data-toggle="button" id="int-variable-type">Int</button>
+                                                  <button type="button" class="btn btn-default" data-toggle="button" id="enum-variable-type">Enum</button>
+                                                </div>
+                                            </div>
+                                            <div id="min-max-inputs">
+                                                <div class="col-md-2"> 
+                                                    <div class="input-group">
+                                                        <div class="input-group-addon">Min</div>        
+                                                        <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-min" placeholder="0" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="input-group">
+                                                        <div class="input-group-addon">Max</div>        
+                                                        <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-max" placeholder="1" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="enum-inputs" class="hidden">
+                                                <div class="col-md-4">
+                                                    <input class="form-control" id="enum-choices" placeholder="Choices separated by ;" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="col-md-4"> 
+                                            <button type="button" class="btn btn-default" id="add-variable-button">+ Add variable</button>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- 
+                            <div class="form-group">
                                 <input type="text" pattern="^[0-9]+$" maxlength="3" class="form-control" id="problem-size" placeholder="1" required>
                             </div>
+                             -->
                             <div class="form-group">
                                 <button type="submit" id="submit-problem-btn" class="btn btn-primary" onclick="submitProblem();">Submit</button>
                             </div>
-                        </form>
+                        </form>                        
                     </div>
                 </div>
 
             </div>
         </div>
-
-
-
-
     </div>
 
 
@@ -113,9 +174,9 @@
     <script src="js/plugins/morris/morris.min.js"></script>
     <script src="js/plugins/validator.min.js"></script>
 
-    <!-- Backend -->
     <script src="js/backend/ego.js"></script>
     <script src="js/toggler.js"></script>
+    <script src="js/form.js"></script>
 
     <script type="text/javascript">
         var h = document.location.hash;
@@ -145,3 +206,4 @@
 
 </body>
 </html>
+

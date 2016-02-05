@@ -8,6 +8,7 @@
 
 body {
     margin-top: 100px;
+    background-color: #fff;
 }
 
 @media(min-width:768px) {
