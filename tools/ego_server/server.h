@@ -17,11 +17,26 @@
 #include <signal.h>
 
 #include <future>
+#include <regex>
+#include <deque>
 
 namespace NEgo {
 
+
 	class TServer {
+	public:
+		using TRequestCallback = std::function<void(const THttpRequest&, TResponseBuilder&)>;
+
 	private:
+		struct TCallbackPath {
+			TString Path;
+			TString MatchingString;
+			bool RegExp = false;
+			
+			std::deque<TString> Keywords;
+			TRequestCallback Callback;
+		};
+
 		static constexpr ui32 ReceiveChunkSize = 1024;
 		static constexpr ui32 SendChunkSize = 1024;
 
@@ -53,9 +68,6 @@ namespace NEgo {
 
 
 	public:
-
-		using TRequestCallback = std::function<void(const THttpRequest&, TResponseBuilder&)>;
-
 		TServer(ui32 port, ui32 max_connections = 10, bool debugMode = false)
 			: DebugMode(debugMode)
 		{
@@ -110,10 +122,29 @@ namespace NEgo {
 		TServer& AddCallback(TString method, TString path, TRequestCallback cb) {
 			auto pathsPtr = Callbacks.find(method);
 			if(pathsPtr == Callbacks.end()) {
-				pathsPtr = Callbacks.insert(MakePair(method, std::map<TString, TRequestCallback>())).first;
+				pathsPtr = Callbacks.insert(MakePair(method, std::vector<TCallbackPath>())).first;
 			}
-			auto res = pathsPtr->second.insert(MakePair(path, cb));
-			ENSURE(res.second, "Found duplicates for callbacks " << method << "->" << path);
+			TCallbackPath cbPath;
+			std::regex keyRe("\\{([^\\}]+)\\}");
+			std::sregex_iterator next(path.begin(), path.end(), keyRe);
+			std::sregex_iterator end;
+			while (next != end) {
+			    std::smatch match = *next;
+			    L_DEBUG << "Got keyword in callback: " << match[1];
+			    cbPath.Keywords.push_back(match[1]);
+			    next++;
+			}
+			if (cbPath.Keywords.size()>0) {
+				cbPath.MatchingString = NStr::TStringBuilder() << "^" << std::regex_replace(path, keyRe, "([-.a-zA-Z0-9]+)") << "$"; 
+				cbPath.RegExp = true;
+				L_DEBUG << "Callback path regexp: " << cbPath.MatchingString;
+			} else {
+				cbPath.MatchingString = path;
+				cbPath.RegExp = false;
+				L_DEBUG << "Callback path simple match: " << cbPath.MatchingString;
+			}
+			cbPath.Callback = cb;
+			pathsPtr->second.push_back(cbPath);
 			return *this;
 		}
 
@@ -189,11 +220,37 @@ namespace NEgo {
 
 
 			TOptional<TRequestCallback> cb;
+			
 			auto methodCbPtr = Callbacks.find(req.Method);
 			if (methodCbPtr != Callbacks.end()) {
-				auto pathCbPtr = methodCbPtr->second.find(req.Path);
-				if (pathCbPtr != methodCbPtr->second.end()) {
-					cb = pathCbPtr->second;
+				for (const auto& cbPath: methodCbPtr->second) {
+					if (!cbPath.RegExp  && (cbPath.MatchingString == req.Path)) {
+						cb = cbPath.Callback;
+						break;
+					} else
+					if (cbPath.RegExp) {
+						std::map<TString, TString> keywordMap;
+						std::deque<TString> keys = cbPath.Keywords;
+
+						std::regex cbPathRe(cbPath.MatchingString);
+						L_DEBUG << "Matching " << req.Path << " with " << cbPath.MatchingString;
+						std::sregex_iterator next(req.Path.begin(), req.Path.end(), cbPathRe);
+						std::sregex_iterator end;
+						while (next != end) {
+						    std::smatch match = *next;
+						    ENSURE(keys.size() > 0, "Got extra keys in path: " << req.Path << ", key: " << match[1]);
+						    keywordMap.insert(MakePair(keys.front(), match[1]));
+						    L_DEBUG << "Got keywords in path " << keys.front() << " -> " << match[1];
+						    keys.pop_front();
+						    next++;
+						}
+
+						if (keywordMap.size()>0) {
+							cb = cbPath.Callback;
+							req.KeywordsMap = keywordMap;
+							break;
+						}	
+					}
 				}
 			}
 			if (!cb) {
@@ -250,7 +307,7 @@ namespace NEgo {
 
 		int SocketNum;
 		std::map<TString, TRequestCallback> DefaultCallbacks;
-		std::map<TString, std::map<TString, TRequestCallback>> Callbacks;
+		std::map<TString, std::vector<TCallbackPath>> Callbacks;
 	};
 
 } // namespace NEgo

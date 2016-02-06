@@ -8,15 +8,19 @@ enum EVariableType {
 }
 
 message TVariable {
-	
-
 	optional string Name = 1;
 	optional double Min = 2;
 	optional double Max = 3;
 	optional EVariableType Type = 4;
-	repeated string Options = 5;
+	repeated string Option = 5;
 }
 
 message TProblemConfig {
-	repeated TVariable Variable = 1;
+	optional string Name = 1;
+	repeated TVariable Variable = 2;
+}
+
+
+message TProblemConfigMessage {
+	optional TProblemConfig ProblemConfig = 1;
 }

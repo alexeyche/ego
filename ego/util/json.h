@@ -15,6 +15,12 @@ namespace NEgo {
 		TJsonDocument() {
 		}
 
+		static TJsonDocument Array() {
+			TJsonDocument doc;
+			doc.Doc.SetArray();
+			return doc;
+		}
+
 		TJsonDocument(const TString& json) {
 			Doc.Parse(json.c_str());
 		}

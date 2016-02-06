@@ -84,7 +84,6 @@
                                 </div>
                             </div>
                             <label>Problem variables</label>
-                                        
                             <div class="form-group">
                                 <div class="panel panel-default">
                                     <div class="panel-body">
@@ -109,7 +108,7 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="btn-group" role="group" aria-label="...">
-                                                  <button type="button" class="btn btn-default active" data-toggle="button" id="double-variable-type">Double</button>
+                                                  <button type="button" class="btn btn-default active" data-toggle="button" id="float-variable-type">Float</button>
                                                   <button type="button" class="btn btn-default" data-toggle="button" id="int-variable-type">Int</button>
                                                   <button type="button" class="btn btn-default" data-toggle="button" id="enum-variable-type">Enum</button>
                                                 </div>
@@ -118,13 +117,13 @@
                                                 <div class="col-md-2"> 
                                                     <div class="input-group">
                                                         <div class="input-group-addon">Min</div>        
-                                                        <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-min" placeholder="0" required>
+                                                        <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-min" value="0" required>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2">
                                                     <div class="input-group">
                                                         <div class="input-group-addon">Max</div>        
-                                                        <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-max" placeholder="1" required>
+                                                        <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-max" value="1" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -146,14 +145,13 @@
 
                                 </div>
                             </div>
-                            <!-- 
                             <div class="form-group">
-                                <input type="text" pattern="^[0-9]+$" maxlength="3" class="form-control" id="problem-size" placeholder="1" required>
+                                <button type="submit" id="submit-problem-btn" class="btn btn-primary">Submit</button>
+                                <button id="show-problem-config-btn" class="btn btn-default">Show config</button>
                             </div>
-                             -->
-                            <div class="form-group">
-                                <button type="submit" id="submit-problem-btn" class="btn btn-primary" onclick="submitProblem();">Submit</button>
-                            </div>
+                            <textarea rows="10" cols="50" id="textarea-problem-config" class="hidden">
+                            </textarea>
+                            
                         </form>                        
                     </div>
                 </div>

@@ -13,6 +13,8 @@ namespace NEgo {
         TString Version;
 
         TString Path;
+        std::map<TString, TString> KeywordsMap;
+
         TVector<TString> UrlArgs;
 
         TVector<TPair<TString, TString>> Headers;

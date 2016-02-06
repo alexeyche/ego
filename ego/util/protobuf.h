@@ -5,6 +5,8 @@
 
 namespace NEgo {
 
-	void ReadProtoTextFromFile(const TString file, google::protobuf::Message &message);
+	void ReadProtoTextFromFile(const TString file, google::protobuf::Message& message);
+
+	void ReadProtoText(const TString& messageStr, google::protobuf::Message& message);
 
 } // namespace NEgo

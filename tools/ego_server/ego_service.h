@@ -5,6 +5,7 @@
 #include <ego/model/model.h>
 #include <ego/problem/config.h>
 #include <ego/util/json.h>
+#include <ego/util/protobuf.h>
 
 
 namespace NEgo {
@@ -41,7 +42,8 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/list_problems",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						TJsonDocument jsonDoc;
+						TJsonDocument jsonDoc = TJsonDocument::Array();
+
 						for (const auto& p: Problems) {
 							jsonDoc.PushBack(p.first);
 						}
@@ -52,12 +54,14 @@ namespace NEgo {
 				.AddCallback(
 					"POST", "api/submit_problem",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						TJsonDocument jsonDoc(req.Body);
-						TString name = jsonDoc.Get<TString>("name");
-			
-						auto res = Problems.insert(MakePair(name, TProblemConfig()));
+						NEgoProto::TProblemConfigMessage problemMess;
+						L_DEBUG << "Got problem:\n" << req.Body;
+						ReadProtoText(req.Body, problemMess);
+					    TProblemConfig problemConf(problemMess.problemconfig());
+						
+						auto res = Problems.insert(MakePair(problemConf.Name, problemConf));
 						if (!res.second) {
-							throw TEgoLogicError() << "Problem with the name `" << name << "' is already exist";
+							throw TEgoLogicError() << "Problem with the name `" << problemConf.Name << "' is already exist";
 						}
 
 						resp.Body("{}");

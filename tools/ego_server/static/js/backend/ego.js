@@ -13,46 +13,17 @@ $(function() {
 });
 
 function submitProblem() {
-    if($("#submit-problem-btn").hasClass("disabled")) {
-        return;
-    }
-
     var problemName = $("#problem-name").val();
-    var problemSize = parseInt($("#problem-size").val());
+    
+
     
     var data = {
         name: problemName,
         D: problemSize
     }
 
-    var lastAlert = $("#submit-problem-form div").last();
-    if (lastAlert.hasClass("alert")) {
-        lastAlert.remove();
-    }
-
-    $.ajax({
-        type: "POST",
-        url: "/api/submit_problem",
-        data: JSON.stringify(data),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json"
-    }).done(
-        function(data) {
-            $("#submit-problem-form").append(
-                "<div class='alert alert-success'><strong>Success!</strong> Problem was created.</div>"
-            );
-        }
-    ).fail(
-        function(jqXHR, textStatus, errorThrown) {
-            $("#submit-problem-form").append(
-                "<div class='alert alert-danger'><strong>Post request failed!</strong> "+jqXHR["responseText"]+"</div>"
-            );
-            console.log(textStatus);
-            console.log(errorThrown);
-        }
-    );
-
-    loadProblems();
+    
+    
 }
 
 window.onload = loadProblems();
