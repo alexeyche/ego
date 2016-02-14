@@ -1,5 +1,5 @@
 ProblemConfig {
-  Name: "TestProblem"
+  Name: "Problem"
   Variable {
     Name: "Var0"
     Min: 0
@@ -23,8 +23,8 @@ ModelState {
   }
   Parameters {
     x: 0
-    x: 0
-    x: 0
-    x: 0
+    x: -4.6051701859880909
+    x: -0.69314718055994529
+    x: -4.6051701859880909
   }
 }

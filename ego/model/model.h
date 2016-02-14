@@ -45,13 +45,15 @@ namespace NEgo {
 
         void SetData(const TMatrixD &x, const TVectorD &y);
 
-        TPair<TMatrixD, TVectorD> GetData() const;
+        TPair<TRefWrap<const TMatrixD>, TRefWrap<const TVectorD>> GetData() const;
 
         void SetConfig(const TModelConfig& config);
 
-        const double& GetMinimum() const;
+        const double& GetMinimumY() const;
 
-        void SetMinimum(double v);
+        TVectorD GetMinimumX() const;
+
+        void SetMinimum(double v, ui32 idx);
 
         ui32 GetDimSize() const;
 
@@ -90,6 +92,8 @@ namespace NEgo {
         void AddPoint(const TVectorD& x, double y);
 
         void Update();
+
+        bool Empty() const;
     private:
         TMatrixD X;
         TVectorD Y;
@@ -104,7 +108,7 @@ namespace NEgo {
 
         TOptional<TPosterior> Posterior;
 
-        double MinF;
+        TPair<double, ui32> MinF;
     };
 
 } // namespace NEgo

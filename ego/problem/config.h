@@ -15,8 +15,10 @@ namespace NEgo {
 		TString Name;
 		double Min;
 		double Max;
-
-		EVariableType Type;
+        
+        ui32 Id;
+		
+        EVariableType Type;
 	};
 
 
@@ -27,6 +29,7 @@ namespace NEgo {
             : ProtoConfig(config)
         {
             Name = ProtoConfig.name();
+            ui32 variableId = 0;
             for (const auto& v: ProtoConfig.variable()) {
                 if (v.type() == NEgoProto::FLOAT) {
                     TVariable var;
@@ -34,7 +37,9 @@ namespace NEgo {
                     var.Type = EVariableType::FLOAT;
                     var.Min = v.min();
                     var.Max = v.max();
-                    Variables.push_back(var);
+                    var.Id = variableId++;
+                    auto res = Variables.insert(MakePair(var.Name, var));
+                    ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                 } else
                 if (v.type() == NEgoProto::INT) {
                     TVariable var;
@@ -42,14 +47,19 @@ namespace NEgo {
                     var.Type = EVariableType::INT;
                     var.Min = v.min();
                     var.Max = v.max();
-                    Variables.push_back(var);
+                    var.Id = variableId++;
+                    auto res = Variables.insert(MakePair(var.Name, var));
+                    ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                 } else {
                     for (const auto& vopt: v.option()) {
                         TVariable var;
+                        var.Name = v.name() + "-" + vopt;
                         var.Min = 0.0;
                         var.Max = 1.0;
                         var.Type = EVariableType::ENUM;
-                        Variables.push_back(var);
+                        var.Id = variableId++;
+                        auto res = Variables.insert(MakePair(var.Name, var));
+                        ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                     }
                 }
             }
@@ -59,7 +69,7 @@ namespace NEgo {
         TString Name;
 
         ui32 DimSize;
-        TVector<TVariable> Variables;
+        std::map<TString, TVariable> Variables;
 
         NEgoProto::TProblemConfig ProtoConfig;
     };

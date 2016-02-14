@@ -6,87 +6,36 @@ using std::stringstream;
 
 namespace NEgo {
 
+    #define DEFINE_ERROR(type) \
+        struct type : public std::exception \
+        { \
+            type() {} \
+            type(type &exc) { \
+                ss << exc.ss.str(); \
+            } \
+            \
+            template <typename T> \
+            type& operator << (const T& s) { \
+                ss << s; \
+                return *this; \
+            } \
+            \
+            const char * what () const throw () { \
+                return ss.str().c_str(); \
+            } \
+            stringstream ss; \
+        };
 
-
-    struct TEgoException : public std::exception
-    {
-        TEgoException() {}
-        TEgoException(TEgoException &exc) {
-            ss << exc.ss.str();
-        }
-
-        template <typename T>
-        TEgoException& operator << (const T& s) {
-            ss << s;
-            return *this;
-        }
-        const char * what () const throw () {
-            return ss.str().c_str();
-        }
-        stringstream ss;
-    };
-
-    struct TEgoInterrupt : public TEgoException {
-    };
-
-    struct TEgoNotImplemented : public std::exception {
-        TEgoNotImplemented() {}
-        TEgoNotImplemented(TEgoNotImplemented &exc) {
-            ss << exc.ss.str();
-        }
-
-        template <typename T>
-        TEgoNotImplemented& operator << (const T& s) {
-            ss << s;
-            return *this;
-        }
-        const char * what () const throw () {
-            return ss.str().c_str();
-        }
-        stringstream ss;
-    };
+    DEFINE_ERROR(TEgoException);
+    DEFINE_ERROR(TEgoInterrupt);
+    DEFINE_ERROR(TEgoNotImplemented);
+    DEFINE_ERROR(TEgoFileNotFound);
+    DEFINE_ERROR(TEgoElementNotFound);
+    DEFINE_ERROR(TEgoLogicError);
 
     #define ENSURE(cond, str) \
         if(!(cond)) { \
             throw TEgoException() << str; \
         }\
-
-
-    struct TEgoFileNotFound : public std::exception
-    {
-        TEgoFileNotFound() {}
-        TEgoFileNotFound(TEgoFileNotFound &exc) {
-            ss << exc.ss.str();
-        }
-
-        template <typename T>
-        TEgoFileNotFound& operator << (const T& s) {
-            ss << s;
-            return *this;
-        }
-        const char * what () const throw () {
-            return ss.str().c_str();
-        }
-        stringstream ss;
-    };
-
-    struct TEgoLogicError : public std::exception
-    {
-        TEgoLogicError() {}
-        TEgoLogicError(TEgoLogicError &exc) {
-            ss << exc.ss.str();
-        }
-
-        template <typename T>
-        TEgoLogicError& operator << (const T& s) {
-            ss << s;
-            return *this;
-        }
-        const char * what () const throw () {
-            return ss.str().c_str();
-        }
-        stringstream ss;
-    };
-
 
 } // namespace NEgo

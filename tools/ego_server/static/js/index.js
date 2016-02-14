@@ -152,10 +152,8 @@ function compileProblemConfig() {
                 cfg += ind + ind + "Option: \"" + optsArr[oi] + "\"\n";
             }
         }
-        $("#cov-btn-group > .active")
-    }
-    if (table.rows.length>1) {
         cfg += ind + "}\n";
+        $("#cov-btn-group > .active")
     }
     cfg += "}\n";
 

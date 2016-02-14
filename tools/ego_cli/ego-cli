@@ -45,7 +45,7 @@ def run(server, problem, args, random, num_of_evaluations):
         rng = np.random.RandomState()
 
     spec_str = urllib2.urlopen(
-        "{server}/api/problem/{problem}/specification.json".format(
+        "{server}/api/problem/{problem}/specification".format(
             server=server,
             problem=problem
         )
@@ -63,17 +63,20 @@ def run(server, problem, args, random, num_of_evaluations):
             for v in spec["Variable"]:
                 inp.append(v["Min"] + samples[v["Name"]][ev_id]*(v["Max"]-v["Min"]))
 
-        logging.info("Running: \n\t{}".format(" ".join(args)))
+        input_line = " ".join([ str(i) for i in inp ]) + "\n"
+        logging.info("Running: \n\t{}\nwith input: {}".format(" ".join(args), input_line))
         p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
-        stdout, stderr = p.communicate(input=" ".join([ str(i) for i in inp ]))
+        stdout, stderr = p.communicate(input = input_line)
         if p.returncode != 0:
             raise Exception("Found failed command: \n{}\n{}".format(stdout, stderr))
+        if stderr:
+            raise Exception("Found failed command: \nstdout:\n{}\nstderr:\n{}".format(stdout, stderr))
         ans = float(stdout.strip())
 
         send_ans = {}
         send_ans["Data"] = OrderedDict(zip([ v["Name"] for v in spec["Variable"]] + [ spec["Name"] ], inp + [ ans ]))
         send_ans["Options"] = {}
-        send_ans["Options"]["UpdateModel"] = False;
+        send_ans["Options"]["UpdateModel"] = True if ev_id == num_of_evaluations-1 else False
         req = urllib2.Request(
             "{server}/api/problem/{problem}/accept".format(
                 server = server,

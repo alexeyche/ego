@@ -365,6 +365,22 @@ namespace NEgo {
             return arma::min(m);
         }
 
+        TPair<double, ui32> MaxIdx(const TVectorD& m) {
+            arma::uword index;
+            TPair<double, ui32> ret;
+            ret.first = m.max(index);
+            ret.second = index;
+            return ret;
+        }
+
+        TPair<double, ui32> MinIdx(const TVectorD& m) {
+            arma::uword index;
+            TPair<double, ui32> ret;
+            ret.first = m.min(index);
+            ret.second = index;
+            return ret;
+        }
+
         TVectorD LogExpAx(const TMatrixD &A, const TVectorD &x) {
             ui32 N = A.n_cols;
             TVectorD maxA = MaxOverCols(A);

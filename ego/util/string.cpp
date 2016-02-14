@@ -136,5 +136,14 @@ namespace NEgo {
             }
         }
 
+        template <>
+        ui32 As<ui32>(const TString& s) {
+            return std::stoi(s);
+        }
+
+        template <>
+        TString As<TString>(const TString& s) {
+            return s;
+        }
     } // namespace NStr
 } // namespace NEgo

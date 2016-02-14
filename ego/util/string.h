@@ -44,5 +44,8 @@ namespace NEgo {
 
 	    bool EndsWith(const TString &str, const TString&& suffix);
 
+	    template <typename T>
+	    T As(const TString& s);
+
 	} // namespace NStr
 } // namespace NEgo

@@ -24,6 +24,12 @@ namespace NEgo {
 			return doc;
 		}
 
+
+		template <typename T>
+		static TJsonDocument Array(const std::initializer_list<T>& array) {
+			return Array(std::vector<T>(array));
+		}
+
 		static TJsonDocument Array() {
 			TJsonDocument doc;
 			doc.Doc->SetArray();

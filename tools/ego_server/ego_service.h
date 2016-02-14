@@ -52,7 +52,7 @@ namespace NEgo {
 					}
 				)
 				.AddCallback(
-					"GET", "api/problem/{problem_name}/performance.json",
+					"GET", "api/problem/{problem_name}/performance",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						const TVectorD& Y = GetProblem(req).GetModel().GetData().second;
 						resp.Body() += TJsonDocument::Array(Y).GetPrettyString();
@@ -60,7 +60,7 @@ namespace NEgo {
 					}
 				)
 				.AddCallback(
-					"GET", "api/problem/{problem_name}/specification.json",
+					"GET", "api/problem/{problem_name}/specification",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TProblem& prob = GetProblem(req);
 						resp.Body() += NPbJson::ProtobufToJson(prob.GetConfig().ProtoConfig);
@@ -68,12 +68,29 @@ namespace NEgo {
 					}
 				)
 				.AddCallback(
+					"GET", "api/problem/{problem_name}/variable_slice",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						resp.Body() += GetProblem(req).GetVariableSlice(
+							FindUrlArg<TString>(req, "variable_name"),
+							FindUrlArg<ui32>(req, "grid_size", 1000)
+						).GetPrettyString();
+						resp.Good();	
+					}
+				)
+				.AddCallback(
 					"POST", "api/problem/{problem_name}/update_model",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						GetProblem(req).GetModel().Update();
+						resp.Accepted();
 					}
 				)
-
+				.AddCallback(
+					"POST", "api/problem/{problem_name}/optimize_hypers",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						GetProblem(req).GetModel().OptimizeHyp();
+						resp.Accepted();
+					}
+				)
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/accept",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
@@ -91,7 +108,7 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/list_problems",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						TJsonDocument jsonDoc;
+						TJsonDocument jsonDoc = TJsonDocument::Array();
 
 						for (const auto& p: Problems) {
 							jsonDoc.PushBack(p.first);
@@ -166,7 +183,6 @@ namespace NEgo {
 
 			return problemPtr->second;
 		}
-
 
 	private:
 		std::map<TString, TProblem> Problems;

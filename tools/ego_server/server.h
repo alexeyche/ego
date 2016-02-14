@@ -167,7 +167,7 @@ namespace NEgo {
             		GetInAddr((struct sockaddr *)&their_addr),
             		s, sizeof s);
 
-				L_DEBUG << "Server: got connection from " << s;
+				// L_DEBUG << "Server: got connection from " << s;
 
 				if (DebugMode) {
 					Receive(new_fd);
@@ -232,7 +232,6 @@ namespace NEgo {
 						std::deque<TString> keys = cbPath.Keywords;
 
 						std::regex cbPathRe(cbPath.MatchingString);
-						L_DEBUG << "Matching " << req.Path << " with " << cbPath.MatchingString;
 						std::sregex_iterator next(req.Path.begin(), req.Path.end(), cbPathRe);
 						std::sregex_iterator end;
 						while (next != end) {
@@ -271,6 +270,12 @@ namespace NEgo {
 					.NotFound()
 				    .FormResponse();
 			    if (DebugMode) throw;
+			} catch (const TEgoElementNotFound& e) {
+				resp = respBuilder
+					.Body(e.what())
+					.NotFound()
+				    .FormResponse();
+			    if (DebugMode) throw;
 			} catch (const TEgoLogicError& e) {
 				resp = respBuilder
 					.Body(e.what())
@@ -295,7 +300,6 @@ namespace NEgo {
 			const char *respStrArray = respStrInst.c_str();
 			int len = respStrInst.size();
 			ENSURE(SendAll(socket, respStrArray, &len) >= 0, "Failed to send data");
-			L_DEBUG << "Successfully sent " << respStrInst.size() << " bytes of full message size and " << resp.Body.size() << " bytes of content length";
 		}
 
 		~TServer() {

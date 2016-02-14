@@ -2,6 +2,7 @@
 #include <ego/base/base.h>
 #include <ego/util/log/log.h>
 #include <ego/util/string.h>
+#include <ego/util/optional.h>
 
 #include <ctime>
 
@@ -15,7 +16,7 @@ namespace NEgo {
         TString Path;
         std::map<TString, TString> KeywordsMap;
 
-        TVector<TString> UrlArgs;
+        TVector<TPair<TString, TString>> UrlArgs;
 
         TVector<TPair<TString, TString>> Headers;
 
@@ -31,6 +32,24 @@ namespace NEgo {
 
         TString Body;
     };
+
+    template <typename T>
+    T FindUrlArg(const THttpRequest& req, const TString& varName, TOptional<T> def = TOptional<T>()) {
+        auto varPtr = std::find_if(
+            req.UrlArgs.begin(), 
+            req.UrlArgs.end(), 
+            [&](const TPair<TString, TString>& arg) { 
+                return arg.first == varName; 
+            }
+        );
+        if (varPtr == req.UrlArgs.end()) {
+            if (def) {
+                return *def;
+            }
+            throw TEgoElementNotFound() << "`variable_name' is not found in url arguments";
+        }
+        return NStr::As<T>(varPtr->second);
+    }
 
     std::ostream& operator<< (std::ostream& stream, const THttpRequest& httpReq) {
         stream << httpReq.Method << " " << httpReq.RawPath << " " << httpReq.Version << "\r\n";
@@ -93,6 +112,19 @@ namespace NEgo {
         if (request.Path.empty()) {
             request.Path = "/";
         }
+        if (pathSpl.size() == 2) {
+            TVector<TString> queryVariables = NStr::Split(pathSpl[1], '&');
+            for (const auto &var: queryVariables) {
+                auto varValSpl = NStr::Split(var, '=', 1);
+                ENSURE(varValSpl.size() == 2, "Illformed query string: " << var);
+                request.UrlArgs.push_back(
+                    MakePair(NStr::Trim(varValSpl[0]), NStr::Trim(varValSpl[1]))
+                );
+
+            }
+            
+        }
+        
         return request;
     }
 

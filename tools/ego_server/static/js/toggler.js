@@ -6,7 +6,8 @@ function togglePage(pageName) {
         } else {
             $(this).parent().addClass("hidden");
         }
-    })
+    });
+    $('html, body').animate({scrollTop:0}, 'fast');
 }
 
 //$('#main-ego-page').parent().toggleClass('hidden');

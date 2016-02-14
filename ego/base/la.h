@@ -183,6 +183,10 @@ namespace NEgo {
 
         double Min(const TVectorD& m);
 
+        TPair<double, ui32> MaxIdx(const TVectorD& m);
+
+        TPair<double, ui32> MinIdx(const TVectorD& m);
+
         TVectorD LogExpAx(const TMatrixD &A, const TVectorD &x);
 
         TVectorD Inf(size_t v);

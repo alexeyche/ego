@@ -73,4 +73,7 @@ namespace NEgo {
 
 	using TOutputStream = std::ostream;
 
+	template <typename T>
+	using TRefWrap = std::reference_wrapper<T>;
+
 } // namespace NEgo

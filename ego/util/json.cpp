@@ -12,7 +12,7 @@ namespace NEgo {
 	}
 
 	template <>
-    NJson::Value TJsonDocument::SetValue<const TJsonDocument&>(const TJsonDocument& v) {
+    NJson::Value TJsonDocument::SetValue<TJsonDocument>(TJsonDocument v) {
 		NJson::Value s;
 		s.CopyFrom(v.CurrentValue(), Doc->GetAllocator());
 		return s;
@@ -81,7 +81,6 @@ namespace NEgo {
 	}
 
 	bool TJsonDocument::Has(const TString& key) const {
-		L_DEBUG << "hascur " << TJsonDocument(*this, CurrentValue()).GetString();
 		return CurrentValue().FindMember(key.c_str()) != CurrentValue().MemberEnd();
 	}
 

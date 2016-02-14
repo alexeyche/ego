@@ -38,6 +38,9 @@ namespace NEgo {
         TModel& GetModel();
 
         const TProblemConfig& GetConfig() const;
+
+        TJsonDocument GetVariableSlice(const TString& varName, ui32 gridSize);
+
 	private:
 		TProblemConfig Config;
 		SPtr<TModel> Model;

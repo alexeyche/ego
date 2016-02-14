@@ -16,7 +16,7 @@ namespace NEgo {
     TModel::TModel(const TModelConfig& config, ui32 D)
         : TParent(0)
         , Config(config)
-        , MinF(std::numeric_limits<double>::max())
+        , MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
         MetaEntity = true;
 
@@ -31,7 +31,7 @@ namespace NEgo {
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y)
         : TParent(0)
         , Config(config)
-        , MinF(std::numeric_limits<double>::max())
+        , MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
         MetaEntity = true;
 
@@ -45,7 +45,7 @@ namespace NEgo {
 
     TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq)
         : TParent(0)
-        , MinF(std::numeric_limits<double>::max())
+        , MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
         MetaEntity = true;
         SetModel(mean, cov, lik, inf, acq);
@@ -77,9 +77,9 @@ namespace NEgo {
         X = x;
         Y = y;
         if (X.size()>0) {
-            MinF = NLa::Min(Y);
+            MinF = NLa::MinIdx(Y);
             DimSize = X.n_cols;
-            L_DEBUG << "Got input values with size [" << X.n_rows << "x" << X.n_cols << "] and " << " target values with size [" << Y.n_rows << "x" << Y.n_cols << "] with minimum target " << MinF;
+            L_DEBUG << "Got input values with size [" << X.n_rows << "x" << X.n_cols << "] and " << " target values with size [" << Y.n_rows << "x" << Y.n_cols << "] with minimum target " << MinF.first;
             Posterior.emplace(Inf->Calc(X, Y).Posterior());
         } else {
             L_DEBUG << "Got empty input values";
@@ -90,12 +90,17 @@ namespace NEgo {
         Config = config;
     }
 
-    const double& TModel::GetMinimum() const {
-        return MinF;
+    const double& TModel::GetMinimumY() const {
+        return MinF.first;
     }
 
-    void TModel::SetMinimum(double v) {
-        MinF = v;
+    TVectorD TModel::GetMinimumX() const {
+        ENSURE(X.n_rows > 0, "Failed to find minimum for empty model");
+        return X.row(MinF.second);
+    }
+
+    void TModel::SetMinimum(double v, ui32 idx) {
+        MinF = MakePair(v, idx);
     }
 
     void TModel::SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
@@ -107,8 +112,8 @@ namespace NEgo {
         Acq->SetModel(*this);
     }
 
-    TPair<TMatrixD, TVectorD> TModel::GetData() const {
-        return MakePair(X, Y);
+    TPair<TRefWrap<const TMatrixD>, TRefWrap<const TVectorD>> TModel::GetData() const {
+        return MakePair(std::cref(X), std::cref(Y));
     }
 
     ui32 TModel::GetDimSize() const {
@@ -227,7 +232,7 @@ namespace NEgo {
 
     void TModel::Optimize(TOptimCallback cb) {
         for(size_t iterNum=0; iterNum < Config.IterationsNum; ++iterNum) {
-            L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
+            L_DEBUG << "Iteration number " << iterNum << ", best " << MinF.first;
 
             OptimizeStep(cb);
 
@@ -251,15 +256,15 @@ namespace NEgo {
 
         L_DEBUG << "Got result: " << res;
 
-        if(res < GetMinimum()) {
-            L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
-            SetMinimum(res);
-        }
         AddPoint(x, res);
         Update();
     }
 
     void TModel::AddPoint(const TVectorD& x, double y) {
+        if(y < GetMinimumY()) {
+            L_DEBUG << "Got new minimum (" << y << " < " << GetMinimumY() << ")";
+            SetMinimum(y, X.n_rows);
+        }
         X = NLa::RowBind(X, NLa::Trans(x));
         Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
     }
@@ -290,6 +295,10 @@ namespace NEgo {
             SetParameters(params);
             SetData(x, y);
         }
+    }
+
+    bool TModel::Empty() const {
+        return X.n_rows == 0;
     }
 
 } // namespace NEgo
