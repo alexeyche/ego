@@ -7,6 +7,12 @@ namespace NEgo {
 
     const double TModel::ParametersDefault = 0.0; // log(1.0)
 
+    TModel::TModel()
+        : TParent(0)
+    {
+        MetaEntity = true;
+    }
+
     TModel::TModel(const TModelConfig& config, ui32 D)
         : TParent(0)
         , Config(config)
@@ -15,6 +21,8 @@ namespace NEgo {
         MetaEntity = true;
 
         InitWithConfig(Config, D);
+
+        X = TMatrixD(0, D);
 
         TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
         SetParameters(v);
@@ -41,9 +49,6 @@ namespace NEgo {
     {
         MetaEntity = true;
         SetModel(mean, cov, lik, inf, acq);
-
-        TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
-        SetParameters(v);
     }
 
     TModel::TModel(const TModel& model)
@@ -53,9 +58,7 @@ namespace NEgo {
 
         InitWithConfig(model.Config, model.GetDimSize());
         SetParameters(model.GetParameters());
-        if (model.X.size()>0) {
-            SetData(model.X, model.Y);    
-        }
+        SetData(model.X, model.Y);
     }
 
     void TModel::InitWithConfig(const TModelConfig& config, ui32 D) {
@@ -67,17 +70,20 @@ namespace NEgo {
         auto acq = Factory.CreateAcq(Config.Acq, D);
         SetModel(mean, cov, lik, inf, acq);
     }
+
     // Setters
 
     void TModel::SetData(const TMatrixD &x, const TVectorD &y) {
         X = x;
         Y = y;
-        MinF = NLa::Min(Y);
-        DimSize = X.n_cols;
-
-        L_DEBUG << "Got input values with size [" << X.n_rows << "x" << X.n_cols << "] and " << " target values with size [" << Y.n_rows << "x" << Y.n_cols << "] with minimum target " << MinF;
-
-        Posterior.emplace(Inf->Calc(X, Y).Posterior());
+        if (X.size()>0) {
+            MinF = NLa::Min(Y);
+            DimSize = X.n_cols;
+            L_DEBUG << "Got input values with size [" << X.n_rows << "x" << X.n_cols << "] and " << " target values with size [" << Y.n_rows << "x" << Y.n_cols << "] with minimum target " << MinF;
+            Posterior.emplace(Inf->Calc(X, Y).Posterior());
+        } else {
+            L_DEBUG << "Got empty input values";
+        }
     }
 
     void TModel::SetConfig(const TModelConfig& config) {
@@ -144,6 +150,7 @@ namespace NEgo {
             V = NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % (Posterior->Linv * Ks);
             Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
         } else {
+            L_DEBUG << "Non cholesky matrix";
             V = Posterior->L * Ks;
             Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % V));
             NLa::ForEach(Fs2, [](double& v) { if(v < 0.0) v = 0; });
@@ -218,7 +225,6 @@ namespace NEgo {
         return v[0];
     }
 
-
     void TModel::Optimize(TOptimCallback cb) {
         for(size_t iterNum=0; iterNum < Config.IterationsNum; ++iterNum) {
             L_DEBUG << "Iteration number " << iterNum << ", best " << GetMinimum();
@@ -249,13 +255,41 @@ namespace NEgo {
             L_DEBUG << "Got new minimum (" << res << "<" << GetMinimum() << ")";
             SetMinimum(res);
         }
+        AddPoint(x, res);
+        Update();
+    }
 
-        L_DEBUG << "Updating posterior";
-
+    void TModel::AddPoint(const TVectorD& x, double y) {
         X = NLa::RowBind(X, NLa::Trans(x));
-        Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, res));
+        Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
+    }
 
+    void TModel::Update() {
+        L_DEBUG << "Updating posterior";
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
+    }
+
+    void TModel::SerialProcess(TSerializer& serial) {
+        NEgoProto::TModelConfig protoConfig = Config.ProtoConfig;
+        TVector<double> params;
+
+        if (serial.IsOutput()) {
+            params = GetParameters();
+        }
+        TMatrixD x(X);
+        TVectorD y(Y);
+
+        serial(protoConfig, NEgoProto::TModelState::kModelConfigFieldNumber);
+        serial(x, NEgoProto::TModelState::kXFieldNumber);
+        serial(y, NEgoProto::TModelState::kYFieldNumber);
+        serial(params, NEgoProto::TModelState::kParametersFieldNumber);
+
+        if (serial.IsInput()) {
+            TModelConfig newConfig(protoConfig);
+            InitWithConfig(newConfig, x.n_cols);
+            SetParameters(params);
+            SetData(x, y);
+        }
     }
 
 } // namespace NEgo

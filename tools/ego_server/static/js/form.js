@@ -21,7 +21,7 @@ $('#enum-variable-type').on('click', function() {
 function getVariableOptions() {
     if ($('#int-variable-type').hasClass('active')) {
         return "Min: " + $('#variable-min').val() + "; Max: " + $('#variable-max').val();
-    } else 
+    } else
     if ($('#float-variable-type').hasClass('active')) {
         return "Min: " + $('#variable-min').val() + "; Max: " + $('#variable-max').val();
     } else
@@ -52,7 +52,7 @@ $('#add-variable-button').on('click', function() {
         return;
     }
     $('#variable-name').parent().removeClass("has-error");
-    
+
     $('#variable-table').find('tbody')
         .append($('<tr>')
             .append($('<td>')
@@ -116,18 +116,18 @@ function compileProblemConfig() {
     var table = document.getElementById('variable-table');
     for (var i=1; i<table.rows.length; i+=1){
         var row = table.rows[i];
-        
+
         var varName = row.cells[1].innerHTML;
         var varType = row.cells[2].innerHTML;
         var varOpt = row.cells[3].innerHTML;
-        
+
         var opts = {}
         var optsArr = varOpt.split(";");
         for (var oi=0; oi < optsArr.length; oi+=1) {
             var optsSpl = optsArr[oi].split(":");
-            
+
             if (optsSpl.length == 2) {
-                opts[optsSpl[0].replace(/ /g,'')] = optsSpl[1].replace(/ /g,'');    
+                opts[optsSpl[0].replace(/ /g,'')] = optsSpl[1].replace(/ /g,'');
             } else {
                 optsArr[oi] = optsArr[oi].replace(/ /g,'');
             }
@@ -135,27 +135,38 @@ function compileProblemConfig() {
 
         cfg += ind + "Variable {\n";
         cfg += ind + ind + "Name: \"" + varName + "\"\n";
-        
+
         if (varType == "Float") {
             cfg += ind + ind + "Type: FLOAT\n";
             cfg += ind + ind + "Min: " + opts["Min"] + "\n";;
             cfg += ind + ind + "Max: " + opts["Max"] + "\n";;
-        } else 
+        } else
         if (varType == "Int") {
             cfg += ind + ind + "Type: INT\n";
             cfg += ind + ind + "Min: " + opts["Min"] + "\n";
             cfg += ind + ind + "Max: " + opts["Max"] + "\n";
-        } else 
+        } else
         if (varType == "Enum") {
             cfg += ind + ind + "Type: ENUM\n";
             for (var oi=0; oi < optsArr.length; oi += 1) {
                 cfg += ind + ind + "Option: \"" + optsArr[oi] + "\"\n";
             }
         }
+        $("#cov-btn-group > .active")
     }
-    
-    cfg += ind + "}\n" +
-        "}\n";
+    if (table.rows.length>1) {
+        cfg += ind + "}\n";
+    }
+    cfg += "}\n";
+
+    cfg += "ModelConfig {\n";
+    cfg += ind + "Mean: \"" + $("#mean-btn-group .active").text() + "\"\n";
+    cfg += ind + "Cov: \"" + $("#cov-btn-group .active").text() + "\"\n";
+    cfg += ind + "Lik: \"" + $("#lik-btn-group .active").text() + "\"\n";
+    cfg += ind + "Inf: \"" + $("#inf-btn-group .active").text() + "\"\n";
+    cfg += ind + "Acq: \"" + $("#acq-btn-group .active").text() + "\"\n";
+    cfg += "}\n";
+
 
     $("#textarea-problem-config").val(cfg);
 }
@@ -194,3 +205,23 @@ $("#submit-problem-btn").on('click', function() {
     loadProblems();
 })
 
+
+window.onload = loadModelParts();
+
+function loadModelParts() {
+    $.getJSON("/api/list_model_parts", function(data) {
+        $.each(data, function(key, val) {
+            var btnGrp = $("#"+key.toLowerCase() + "-btn-group");
+            $.each(val["Values"], function(subKey, subVal) {
+                var act = ""
+                if (subVal == val["Default"]) {
+                    act = "active";
+                }
+                var name = subVal;
+                btnGrp.append(
+                    "<button type='button' class='btn btn-default "+act+"' data-toggle='button' id="+name+"'model-part'>"+name+"</button>"
+                );
+            })
+        });
+    });
+}

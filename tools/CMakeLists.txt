@@ -4,6 +4,7 @@ set(DIRS
     ego
     ego_test
     ego_server
+    ego_cli
 )
 
 foreach(dir ${DIRS})

@@ -226,14 +226,14 @@ double TDistrWrap::GetSd() const {
 }
 
 
-TModelWrap::TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* infWrap, TAcqWrap* acq) 
+TModelWrap::TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* infWrap, TAcqWrap* acq)
 	: Model(
-		mean->Mean, 
-		cov->Cov, 
-		lik->Lik, 
-		Factory.CreateInf(infWrap->InfName, mean->Mean, cov->Cov, lik->Lik), 
+		mean->Mean,
+		cov->Cov,
+		lik->Lik,
+		Factory.CreateInf(infWrap->InfName, mean->Mean, cov->Cov, lik->Lik),
 		acq->Acq
-	) 
+	)
 {
 	L_DEBUG << "Creating model";
 }

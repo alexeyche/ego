@@ -12,5 +12,5 @@ cdef TModelConfig modelConfigFromDict(dict d):
     cdef TModelConfig c
     c.Seed = d.get("Seed") if d.get("Seed") else c.Seed
     c.HyperOpt = optParamsFromDict(d.get("HyperOpt", {}))
-    c.HyperOpt = optParamsFromDict(d.get("AcqOpt", {}))
+    c.AcqOpt = optParamsFromDict(d.get("AcqOpt", {}))
     return c

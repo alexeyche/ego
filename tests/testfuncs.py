@@ -21,7 +21,7 @@ def plot_mins(X, Y, plot_spec):
     minY = min(Y)
     minYIds = np.where(Y == minY)[0]
     plt.plot(X[minYIds], [minY]*minYIds.shape[0], plot_spec)
-    
+
 
 seed = 9
 if not seed is None:
@@ -44,7 +44,7 @@ def branin(x):
 % Min = 0.9617 0.1650
     """
     a = x[0] * 15 - 5;
-    b = x[1] * 15; 
+    b = x[1] * 15;
 
     return ((b-(5.1/(4*pi**2))*a**2+5*a/pi-6)**2+10*(1-1/(8*pi))*cos(a)+10)
 
@@ -80,17 +80,9 @@ Y = np.asarray([ fopt(x) for x in X ])
 #np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, np.asarray([Y]).T)), delimiter=',')
 np.savetxt("/var/tmp/testfuncs.csv", np.hstack((X, Y)), delimiter=',')
 
-model.setConfig({
-    "Seed": seed, 
-    "HypOptMethod": "CG",
-    "HypOptMaxEval": 10,
-    "HypOptFreq": 1,
-    "AcqOptMethod" : "GN_DIRECT",
-    "MaxEval": 10
-})
 
 model.setData(X, Y)
-model.optimizeHyp()
+#model.optimizeHyp()
 
 #gridSize = pow(1000, 1.0/D)
 gridSize = 1000
@@ -114,9 +106,9 @@ ev, dev = acq.evaluateCriteria(points)
 ev = scale_to(ev)
 ev = ev.reshape(len(ev))
 
-    
+
 if D == 1:
-    plt.figure(1)       
+    plt.figure(1)
     plt.plot(points, Ymean, '-', color='green', linewidth=2.0)
     plt.plot(points, Ygrid, '-', color='blue')
     plt.fill_between(points, Ymean-Ysd, Ymean+Ysd, facecolor='green', interpolate=True, alpha=0.2)
@@ -124,19 +116,19 @@ if D == 1:
     plt.plot(points, ev, '-', color='red')
     plot_mins(points, ev, 'rd')
     plot_mins(points, Ymean, 'bd')
-    
+
 else:
     ev = ev.reshape((gridSize, gridSize))
     Ymean = Ymean.reshape((gridSize, gridSize))
     Ysd = Ysd.reshape((gridSize, gridSize))
     Ygrid = Ygrid.reshape((gridSize, gridSize))
-    
+
     plt.figure(1)
     plt.contourf(grid[0], grid[1], Ygrid, alpha=0.5)
     plt.contour(grid[0], grid[1], Ymean, linestyles='dashed')
     plt.figure(2)
     plt.contourf(grid[0], grid[1], ev)
-    
+
 
 #ego.optimizeModel(model, "CG", {"MaxEval": 100})
 

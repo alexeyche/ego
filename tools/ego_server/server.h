@@ -32,7 +32,7 @@ namespace NEgo {
 			TString Path;
 			TString MatchingString;
 			bool RegExp = false;
-			
+
 			std::deque<TString> Keywords;
 			TRequestCallback Callback;
 		};
@@ -135,7 +135,7 @@ namespace NEgo {
 			    next++;
 			}
 			if (cbPath.Keywords.size()>0) {
-				cbPath.MatchingString = NStr::TStringBuilder() << "^" << std::regex_replace(path, keyRe, "([-.a-zA-Z0-9]+)") << "$"; 
+				cbPath.MatchingString = NStr::TStringBuilder() << "^" << std::regex_replace(path, keyRe, "([-.a-zA-Z0-9]+)") << "$";
 				cbPath.RegExp = true;
 				L_DEBUG << "Callback path regexp: " << cbPath.MatchingString;
 			} else {
@@ -218,9 +218,8 @@ namespace NEgo {
 
 			THttpRequest req = ParseHttpRequest(ss.str());
 
-
 			TOptional<TRequestCallback> cb;
-			
+
 			auto methodCbPtr = Callbacks.find(req.Method);
 			if (methodCbPtr != Callbacks.end()) {
 				for (const auto& cbPath: methodCbPtr->second) {
@@ -249,7 +248,7 @@ namespace NEgo {
 							cb = cbPath.Callback;
 							req.KeywordsMap = keywordMap;
 							break;
-						}	
+						}
 					}
 				}
 			}
@@ -274,6 +273,7 @@ namespace NEgo {
 			    if (DebugMode) throw;
 			} catch (const TEgoLogicError& e) {
 				resp = respBuilder
+					.Body(e.what())
 					.Body(e.what())
 					.BadRequest()
 					.FormResponse();

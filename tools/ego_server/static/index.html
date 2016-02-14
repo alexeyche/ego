@@ -12,39 +12,17 @@
     <title>EgoServer</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/sb-admin.css" rel="stylesheet">
-    <link href="css/plugins/morris.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/sb-admin.css" rel="stylesheet">
+    <link href="/css/plugins/morris.css" rel="stylesheet">
     <!-- Custom Fonts -->
-    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
 </head>
 <body>
 
     <div id="wrapper">
-        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">EgoServer</a>
-            </div>
-            <div class="collapse navbar-collapse navbar-ex1-collapse">
-                <ul class="nav navbar-nav side-nav">
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#problem-list">
-                            <i class="fa fa-fw fa-dashboard"></i> Problems
-                            <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="problem-list" class="collapse in">
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <!-- #include virtual = "nav.html" -->
 
         <div id="page-wrapper">
             <div id="main-ego-page" class="container-fluid">
@@ -114,15 +92,15 @@
                                                 </div>
                                             </div>
                                             <div id="min-max-inputs">
-                                                <div class="col-md-2"> 
+                                                <div class="col-md-2">
                                                     <div class="input-group">
-                                                        <div class="input-group-addon">Min</div>        
+                                                        <div class="input-group-addon">Min</div>
                                                         <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-min" value="0" required>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2">
                                                     <div class="input-group">
-                                                        <div class="input-group-addon">Max</div>        
+                                                        <div class="input-group-addon">Max</div>
                                                         <input type="text" pattern="^[-+.eE0-9]+$" maxlength="7" class="form-control" id="variable-max" value="1" required>
                                                     </div>
                                                 </div>
@@ -135,24 +113,75 @@
                                         </div>
                                         <br>
                                         <div class="row">
-                                            <div class="col-md-4"> 
+                                            <div class="col-md-4">
                                             <button type="button" class="btn btn-default" id="add-variable-button">+ Add variable</button>
                                             </div>
                                         </div>
-                                        
-                                        
                                     </div>
-
+                                </div>
+                            </div>
+                            <label>Model config</label>
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <label>Mean: </label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="btn-group" role="group" aria-label="..." id="mean-btn-group">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <label>Covariance: </label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="btn-group" role="group" aria-label="..." id="cov-btn-group">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <label>Likelihood: </label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="btn-group" role="group" aria-label="..." id="lik-btn-group">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <label>Inference: </label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="btn-group" role="group" aria-label="..." id="inf-btn-group">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <label>Acquisition: </label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="btn-group" role="group" aria-label="..." id="acq-btn-group">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <button type="submit" id="submit-problem-btn" class="btn btn-primary">Submit</button>
                                 <button id="show-problem-config-btn" class="btn btn-default">Show config</button>
                             </div>
-                            <textarea rows="10" cols="50" id="textarea-problem-config" class="hidden">
+                            <textarea rows="15" cols="70" id="textarea-problem-config" class="hidden">
                             </textarea>
-                            
-                        </form>                        
+
+                        </form>
                     </div>
                 </div>
 
@@ -161,20 +190,7 @@
     </div>
 
 
-    <!-- jQuery -->
-    <script src="js/jquery.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
-
-    <!-- Morris Charts JavaScript -->
-    <script src="js/plugins/morris/raphael.min.js"></script>
-    <script src="js/plugins/morris/morris.min.js"></script>
-    <script src="js/plugins/validator.min.js"></script>
-
-    <script src="js/backend/ego.js"></script>
-    <script src="js/toggler.js"></script>
-    <script src="js/form.js"></script>
+    <!-- #include virtual = "includes.html" -->
 
     <script type="text/javascript">
         var h = document.location.hash;
@@ -183,24 +199,6 @@
             togglePage(hspl[1]);
         }
     </script>
-
-    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="/icons/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-    <link rel="manifest" href="/icons/manifest.json">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
 
 </body>
 </html>

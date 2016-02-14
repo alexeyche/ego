@@ -1,10 +1,11 @@
-
 package NEgoProto;
+
+import "model.proto";
 
 enum EVariableType {
 	FLOAT = 0;
 	INT = 1;
-	ENUM = 2;	
+	ENUM = 2;
 }
 
 message TVariable {
@@ -20,7 +21,12 @@ message TProblemConfig {
 	repeated TVariable Variable = 2;
 }
 
-
-message TProblemConfigMessage {
+message TProblemSpec {
 	optional TProblemConfig ProblemConfig = 1;
+	optional TModelConfig ModelConfig = 2;
+}
+
+message TProblemState {
+	optional TProblemConfig ProblemConfig = 1;
+	optional TModelState ModelState = 2;
 }

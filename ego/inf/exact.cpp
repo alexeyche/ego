@@ -78,7 +78,7 @@ namespace NEgo {
     		)
     		.SetPosterior(
     			[=]() {
-            	    return TPosterior(pL, alpha, diagW);
+            	    return TPosterior(L, alpha, diagW);
             	}
 			);
     }

@@ -30,6 +30,7 @@ set(DIRS
     distr
     opt
     func
+    problem
 )
 
 foreach(dir ${DIRS})

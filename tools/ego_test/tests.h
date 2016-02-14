@@ -127,7 +127,7 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 				paramsRight[pi] += Epsilon;
 				f->SetParameters(paramsRight);
 				auto resParamRightEps = f->Calc(a).Value();
-				
+
 				CheckDerivativeSanity(
 					typename Functor::TReturn(centerDerivs[pi])
 				  , resParamLeftEps
@@ -142,9 +142,9 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 }
 
 template <typename Functor>
-void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f, 
+void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 	typename Functor::TFirst first = CreateTestData<typename Functor::TFirst>(),
-	typename Functor::TSecond second = CreateTestData<typename Functor::TSecond>()) 
+	typename Functor::TSecond second = CreateTestData<typename Functor::TSecond>())
 {
 	if (f->GetParametersSize()>0) {
 		arma::arma_rng::set_seed_random();
@@ -246,6 +246,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
 		SPtr<IAcq> acq = MakeShared(new AcqTypename(DimSize)); \
 		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq)); \
+		model->SetParameters(TVector<double>(model->GetParametersSize(), TModel::ParametersDefault)); \
 		model->SetData(X, Y); \
 		\
 		OneArgFunctorTester<Typename>(#Typename, model);\
@@ -262,6 +263,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
 		SPtr<AcqTypename> acq = MakeShared(new AcqTypename(DimSize)); \
 		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq)); \
+        model->SetParameters(TVector<double>(model->GetParametersSize(), TModel::ParametersDefault)); \
 		model->SetData(X, Y); \
 		\
 		OneArgFunctorTester<AcqTypename>(#AcqTypename, acq, CreateTestDataVectorX());\

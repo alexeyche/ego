@@ -1,10 +1,11 @@
 import "extension.proto";
+import "la.proto";
 
 package NEgoProto;
 
 message TOptConfig {
-    optional string Method = 1;
-    optional uint32 MinimizersNum = 2;
+    optional string Method = 1 [default = "CG"];
+    optional uint32 MinimizersNum = 2 [default = 10];
     optional uint32 MaxEval = 3 [default = 100];
     optional double Tolerance = 4 [default = 1e-10];
 }
@@ -28,4 +29,11 @@ message TModelConfig {
 
 message TModelConfigMessage {
     optional TModelConfig ModelConfig = 1;
+}
+
+message TModelState {
+    optional TModelConfig ModelConfig = 1;
+    optional TMatrixD X = 2;
+    optional TVectorD Y = 3;
+    optional TVectorD Parameters = 4;
 }

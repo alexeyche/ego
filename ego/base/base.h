@@ -25,7 +25,7 @@ namespace NEgo {
 
 	#define GENERATE_UNIQUE_ID(N) JOIN(N, __LINE__)
 
-	template <typename X, typename Y> 
+	template <typename X, typename Y>
 	TPair<X, Y> MakePair(X x, Y y) {
 		return TPair<X, Y>(x, y);
 	}

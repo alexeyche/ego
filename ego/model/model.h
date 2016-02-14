@@ -8,6 +8,7 @@
 
 #include <ego/util/log/log.h>
 #include <ego/util/optional.h>
+#include <ego/util/serial.h>
 
 #include <ego/distr/distr.h>
 
@@ -17,11 +18,16 @@ namespace NEgo {
 
     using TOptimCallback = std::function<double(const TVectorD&)>;
 
-    class TModel : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD> {
+    class TModel
+        : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>
+        , public ISerial<NEgoProto::TModelState>
+    {
     public:
         using TParent = TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>;
 
         static const double ParametersDefault;
+
+        TModel();
 
         TModel(const TModelConfig& config, ui32 D);
 
@@ -79,7 +85,11 @@ namespace NEgo {
 
         SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew);
 
-    
+        void SerialProcess(TSerializer& serial) override;
+
+        void AddPoint(const TVectorD& x, double y);
+
+        void Update();
     private:
         TMatrixD X;
         TVectorD Y;

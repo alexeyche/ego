@@ -50,11 +50,11 @@ namespace NEgo {
                             for(size_t rj=0; rj < right.n_rows; ++rj) {
                             	double sum = NLa::Sum(left.row(ri) - right.row(rj));
                             	if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
-                            		dR(ri, rj) = 0.0;	
+                            		dR(ri, rj) = 0.0;
                             	} else {
-                            		dR(ri, rj) = sum/r(ri, rj);	
+                            		dR(ri, rj) = sum/r(ri, rj);
                             	}
-                                
+
                             }
                         }
                         return dR;
@@ -67,9 +67,9 @@ namespace NEgo {
                             for(size_t rj=0; rj < right.n_rows; ++rj) {
                             	double sum = - NLa::Sum(left.row(ri) - right.row(rj));
                                 if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
-                            		dR(ri, rj) = 0.0;	
+                            		dR(ri, rj) = 0.0;
                             	} else {
-                            		dR(ri, rj) = sum/r(ri, rj);	
+                            		dR(ri, rj) = sum/r(ri, rj);
                             	}
                             }
                         }
@@ -94,8 +94,8 @@ namespace NEgo {
         }
 
         TCovStationaryISO::Result UserCalc(const TMatrixD &left, const TMatrixD &right) const override final {
-        	ENSURE(left.n_cols == DimSize, "Col size of left input matrix are not satisfy to kernel params: " << DimSize << " != " << left.n_cols);
-	        ENSURE(right.n_cols == DimSize, "Col size of right input matrix are not satisfy to kernel params: " << DimSize << " != " << right.n_cols);
+        	ENSURE(left.n_cols == DimSize, "Col size of left input matrix are not satisfy to kernel params: " << left.n_cols << " != " << DimSize);
+	        ENSURE(right.n_cols == DimSize, "Col size of right input matrix are not satisfy to kernel params: " << right.n_cols << " != " << DimSize);
 
 	        double l = exp(Parameters[0]);
         	double var = exp(2.0 * Parameters[1]);

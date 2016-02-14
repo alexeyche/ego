@@ -27,22 +27,24 @@ namespace NEgo {
 
 
     struct TModelConfig {
-        TModelConfig(NEgoProto::TModelConfig config = NEgoProto::TModelConfig()) {
-            Cov = config.cov();
-            Mean = config.mean();
-            Lik = config.lik();
-            Inf = config.inf();
-            Acq = config.acq();
-            IterationsNum = config.iterationsnum();
-            HyperOptFreq = config.hyperoptfreq();
+        TModelConfig(NEgoProto::TModelConfig config = NEgoProto::TModelConfig())
+            : ProtoConfig(config)
+        {
+            Cov = ProtoConfig.cov();
+            Mean = ProtoConfig.mean();
+            Lik = ProtoConfig.lik();
+            Inf = ProtoConfig.inf();
+            Acq = ProtoConfig.acq();
+            IterationsNum = ProtoConfig.iterationsnum();
+            HyperOptFreq = ProtoConfig.hyperoptfreq();
 
-            if(config.has_seed() || config.seed()>0) {
-                Seed = config.seed();
+            if(ProtoConfig.has_seed() || ProtoConfig.seed()>0) {
+                Seed = ProtoConfig.seed();
             } else {
                 Seed = std::time(0);
             }
-            HyperOpt = TOptConfig(config.hyperopt());
-            AcqOpt = TOptConfig(config.acqopt());
+            HyperOpt = TOptConfig(ProtoConfig.hyperopt());
+            AcqOpt = TOptConfig(ProtoConfig.acqopt());
         }
 
         TString Cov;
@@ -58,6 +60,8 @@ namespace NEgo {
 
         ui32 IterationsNum;
         ui32 HyperOptFreq;
+
+        NEgoProto::TModelConfig ProtoConfig;
     };
 
 } // namespace NEgo

@@ -1,0 +1,11 @@
+package NEgoProto;
+
+message TVectorD {
+    repeated double x = 1;
+}
+
+message TMatrixD {
+    repeated TVectorD row = 1;
+    optional uint32 n_rows = 2;
+    optional uint32 n_cols = 3;
+}

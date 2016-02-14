@@ -1,7 +1,7 @@
 #pragma once
 
+#include <ego/base/base.h>
 #include <ego/protos/problem.pb.h>
-
 
 namespace NEgo {
 
@@ -22,9 +22,12 @@ namespace NEgo {
 
     struct TProblemConfig {
     	TProblemConfig() {}
-        TProblemConfig(const NEgoProto::TProblemConfig& config) {
-            Name = config.name();
-            for (const auto& v: config.variable()) {
+
+        TProblemConfig(const NEgoProto::TProblemConfig& config)
+            : ProtoConfig(config)
+        {
+            Name = ProtoConfig.name();
+            for (const auto& v: ProtoConfig.variable()) {
                 if (v.type() == NEgoProto::FLOAT) {
                     TVariable var;
                     var.Name = v.name();
@@ -54,9 +57,11 @@ namespace NEgo {
         }
 
         TString Name;
-        
+
         ui32 DimSize;
         TVector<TVariable> Variables;
+
+        NEgoProto::TProblemConfig ProtoConfig;
     };
 
 

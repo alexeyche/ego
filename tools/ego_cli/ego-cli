@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+import argparse
+import sys
+import os
+import urllib2
+import logging
+import json
+import subprocess as sub
+import random as rnd
+import logging
+from collections import OrderedDict
+import numpy as np
+
+def lhs_sample(n, rng):
+    return (rng.permutation(range(1,n+1)) - rng.random_sample(n))/float(n)
+
+
+def add_coloring_to_emit_ansi(fn):
+    # add methods we need to the class
+    def new(*args):
+        levelno = args[0].levelno
+        if(levelno>=50):
+            color = '\x1b[31m' # red
+        elif(levelno>=40):
+            color = '\x1b[31m' # red
+        elif(levelno>=30):
+            color = '\x1b[33m' # yellow
+        elif(levelno>=20):
+            color = '\x1b[32m' # green
+        elif(levelno>=10):
+            color = '\x1b[35m' # pink
+        else:
+            color = '\x1b[0m' # normal
+        args[0].msg = color + args[0].msg +  '\x1b[0m'  # normal
+        return fn(*args)
+    return new
+
+
+def run(server, problem, args, random, num_of_evaluations):
+    seed = os.environ.get("SEED")
+    rng = None
+    if seed:
+        rng = np.random.RandomState(int(seed))
+    else:
+        rng = np.random.RandomState()
+
+    spec_str = urllib2.urlopen(
+        "{server}/api/problem/{problem}/specification.json".format(
+            server=server,
+            problem=problem
+        )
+    ).read()
+    spec = json.loads(spec_str, object_pairs_hook=OrderedDict)
+
+    samples = {}
+    if random:
+        for v in spec["Variable"]:
+            samples[v["Name"]] = lhs_sample(num_of_evaluations, rng)
+
+    for ev_id in xrange(num_of_evaluations):
+        inp = []
+        if random:
+            for v in spec["Variable"]:
+                inp.append(v["Min"] + samples[v["Name"]][ev_id]*(v["Max"]-v["Min"]))
+
+        logging.info("Running: \n\t{}".format(" ".join(args)))
+        p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
+        stdout, stderr = p.communicate(input=" ".join([ str(i) for i in inp ]))
+        if p.returncode != 0:
+            raise Exception("Found failed command: \n{}\n{}".format(stdout, stderr))
+        ans = float(stdout.strip())
+
+        send_ans = {}
+        send_ans["Data"] = OrderedDict(zip([ v["Name"] for v in spec["Variable"]] + [ spec["Name"] ], inp + [ ans ]))
+        send_ans["Options"] = {}
+        send_ans["Options"]["UpdateModel"] = False;
+        req = urllib2.Request(
+            "{server}/api/problem/{problem}/accept".format(
+                server = server,
+                problem = problem
+            ),
+            json.dumps(send_ans)
+        )
+        response = urllib2.urlopen(req)
+        d = response.read()
+
+def main(argv):
+    parser = argparse.ArgumentParser(description='Ego client')
+    parser.add_argument(
+        '-s',
+        '--server',
+        required=False,
+        help='Server of Ego, default: %(default)s', default="http://localhost:8080"
+    )
+    parser.add_argument(
+        '-p',
+        '--problem',
+        required=True,
+        help='Problem to run'
+    )
+    parser.add_argument(
+        'args',
+        type=str,
+        help='Args to run', nargs="+"
+    )
+    parser.add_argument(
+        '--random',
+        action='store_true',
+        help='Randomize input instead of asking server'
+    )
+    parser.add_argument(
+        '-n',
+        '--num-of-evaluations',
+        required=False,
+        help='Number of evaluations', default=10, type=int
+    )
+
+    args = parser.parse_args(argv)
+
+    if len(argv) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    logFormatter = logging.Formatter("%(asctime)s [%(levelname)s]  %(message)-100s")
+    rootLogger = logging.getLogger()
+    rootLogger.setLevel(logging.DEBUG)
+
+    consoleHandler = logging.StreamHandler(sys.stdout)
+    consoleHandler.emit = add_coloring_to_emit_ansi(consoleHandler.emit)
+    consoleHandler.setFormatter(logFormatter)
+    rootLogger.addHandler(consoleHandler)
+
+    run(args.server, args.problem, args.args, args.random, args.num_of_evaluations)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

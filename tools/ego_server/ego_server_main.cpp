@@ -24,7 +24,7 @@ int main(int argc, const char** argv) {
         TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
     }
 
-    TEgoService(std::stoi(config.port()), config.debug());
+    TEgoService(std::stoi(config.port()), config.debug(), config.statedir());
 
     return 0;
 }

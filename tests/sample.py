@@ -21,9 +21,9 @@ def sample(K):
 
 ego.setDebugLogLevel()
 D=1
-cov = Cov("cSqExpISO", D, [-1, np.log(1.0)])
+cov = Cov("cSqExpISO", D, [np.log(0.01), np.log(0.5)])
 mean = Mean("mConst", D, [0.0])
-lik = Lik("lGauss", D, [np.log(0.015)])
+lik = Lik("lGauss", D, [np.log(0.01)])
 inf = Inf("iExact")
 acq = Acq("aEI", D)
 model = Model(mean, cov, lik, inf, acq)
@@ -32,11 +32,8 @@ model = Model(mean, cov, lik, inf, acq)
 
 model.setConfig({
     "Seed": 1, 
-    "HypOptMethod": "CG",
-    "HypOptMaxEval": 10,
-    "HypOptFreq": 1,
-    "AcqOptMethod" : "GN_DIRECT",
-    "MaxEval": 50
+    "HyperOpt": {"Method": "CG", "MaxEval": 100},
+    "AcqOpt": {"Method": "CG", "MaxEval": 100},    
 })
 
 
@@ -48,8 +45,6 @@ Ysamp = sample(K)
 
 point_ids = [25,75, 0, 30, 60, 50]
 
-
-
 X = np.asarray([]).reshape(0, 1)
 Y = np.asarray([])
 
@@ -60,7 +55,7 @@ for pnum, pid in enumerate(point_ids):
     Y = np.append(Y, y)
 
     model.setData(X, Y)
-
+    
     preds = model.getPrediction(Xgrid)
     Ymean = np.asarray([ yp.getMean() for yp in preds ])
     Ysd = np.asarray([ yp.getSd() for yp in preds ])

@@ -1,0 +1,30 @@
+ProblemConfig {
+  Name: "TestProblem"
+  Variable {
+    Name: "Var0"
+    Min: 0
+    Max: 1
+    Type: FLOAT
+  }
+}
+ModelState {
+  ModelConfig {
+    Cov: "cExpISO"
+    Mean: "mConst"
+    Inf: "iExact"
+    Lik: "lGauss"
+    Acq: "aEI"
+  }
+  X {
+    n_rows: 0
+    n_cols: 1
+  }
+  Y {
+  }
+  Parameters {
+    x: 0
+    x: 0
+    x: 0
+    x: 0
+  }
+}

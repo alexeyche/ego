@@ -18,4 +18,10 @@ message TServerOpts {
         (description) = "Run in debug mode",
         (short_option) = "-d"
     ];
+
+    optional string StateDir = 4 [
+        (description) = "Path to directory with problem states",
+        (short_option) = "-s",
+        (default_value) = "../state"
+    ];
 }

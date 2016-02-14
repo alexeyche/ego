@@ -12,61 +12,60 @@
     <title>EgoServer</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link href="css/sb-admin.css" rel="stylesheet">
-
-    <!-- Morris Charts CSS -->
-    <link href="css/plugins/morris.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/sb-admin.css" rel="stylesheet">
+    <link href="/css/plugins/morris.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/plugins/jquery.jqplot.min.css" />
 
     <!-- Custom Fonts -->
-    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
 </head>
 <body>
 
     <div id="wrapper">
         <!--#include virtual="nav.html" -->
-<div id="page-wrapper">
-
+        <div id="page-wrapper">
             <div class="container-fluid">
 
                 <!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">
-                            Main dashboard <small>Statistics Overview</small>
+                        <h1 class="page-header" id="page-header">
                         </h1>
-                        <ol class="breadcrumb">
+                        <!-- <ol class="breadcrumb">
                             <li class="active">
                                 <i class="fa fa-dashboard"></i> Main dashboard
                             </li>
-                        </ol>
+                        </ol> -->
                     </div>
                 </div>
 
+                <!-- <div class="row"> -->
+                    <!-- <div class="col-lg-8"> -->
                 <div class="row">
-                    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i> Problem performance </h3>
-                            </div>
-                            <div class="panel-body">
-                                <div id="problem-performance-area-chart"></div>
-                            </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i> Problem performance </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="problem-performance-area-chart"></div>
                         </div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
 
     </div>
-    <!-- /#wrapper -->
 
     <!--#include virtual="includes.html" -->
-    
+    <script class="include" type="text/javascript" src="/js/plugins/jqplot/jquery.jqplot.js"></script>
+    <script class="include" type="text/javascript" src="/js/plugins/jqplot/jqplot.cursor.min.js"></script>
+    <script class="include" type="text/javascript" src="/js/plugins/jqplot/jqplot.dateAxisRenderer.min.js"></script>
+    <script class="include" type="text/javascript" src="/js/plugins/jqplot/jqplot.highlighter.min.js"></script>
+
+    <script src="/js/problem.js"></script>
 </body>
 
 </html>
