@@ -202,11 +202,6 @@ namespace NEgo {
         return Inf->Calc(X, Y);
     }
 
-    void TModel::OptimizeHyp() {
-        NOpt::OptimizeModelLogLik(*this, Config.HyperOpt);
-        Posterior.emplace(Inf->Calc(X, Y).Posterior());
-    }
-
     TDistrVec TModel::GetPrediction(const TMatrixD &Xnew) {
         auto calcRes = Calc(Xnew).Value();
         return Lik->GetPredictiveDistributions(calcRes.first, calcRes.second, Config.Seed);
@@ -230,34 +225,8 @@ namespace NEgo {
         return v[0];
     }
 
-    void TModel::Optimize(TOptimCallback cb) {
-        for(size_t iterNum=0; iterNum < Config.IterationsNum; ++iterNum) {
-            L_DEBUG << "Iteration number " << iterNum << ", best " << MinF.first;
-
-            OptimizeStep(cb);
-
-            if((iterNum+1) % Config.HyperOptFreq == 0) {
-                NOpt::OptimizeModelLogLik(
-                    *this,
-                    Config.HyperOpt
-                );
-            }
-        }
-    }
-
-    void TModel::OptimizeStep(TOptimCallback cb) {
-        L_DEBUG << "Optimizing acquisition function ...";
-
-        TVectorD x;
-        double crit;
-        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Acq, Config.AcqOpt);
-        L_DEBUG << "Found criteria value: " << crit;
-        double res = cb(x);
-
-        L_DEBUG << "Got result: " << res;
-
-        AddPoint(x, res);
-        Update();
+    SPtr<IAcq> TModel::GetAcq() const {
+        return Acq;
     }
 
     void TModel::AddPoint(const TVectorD& x, double y) {

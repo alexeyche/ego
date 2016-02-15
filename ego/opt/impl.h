@@ -5,7 +5,7 @@
 #include <ego/base/la.h>
 
 #include <nlopt/api/nlopt.hpp>
-#include <ego/model/config.h>
+#include <ego/strategy/config.h>
 
 #include <functional>
 

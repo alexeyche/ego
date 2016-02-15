@@ -2,6 +2,7 @@
 
 #include "config.h"
 
+#include <ego/strategy/strategy.h>
 #include <ego/model/model.h>
 #include <ego/util/json.h>
 #include <ego/util/fs.h>
@@ -23,7 +24,7 @@ namespace NEgo {
 	public:
 		TProblem(const TFsPath srcFile);
 
-		TProblem(const TProblemConfig& problem, const TModelConfig& config);
+		TProblem(const TProblemSpec& spec);
 
 		TString GetName() const;
 
@@ -41,9 +42,13 @@ namespace NEgo {
 
         TJsonDocument GetVariableSlice(const TString& varName, ui32 gridSize);
 
+        TStrategy& GetStrategy();
+
 	private:
 		TProblemConfig Config;
 		SPtr<TModel> Model;
+
+        TStrategy Strategy;
 	};
 
 } // namespace NEgo

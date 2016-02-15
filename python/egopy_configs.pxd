@@ -11,11 +11,15 @@ cdef extern from "ego_wrapper.h":
         double Tolerance
 
 cdef extern from "ego_wrapper.h":
-    cdef struct TModelConfig:
-        int Seed
+    cdef struct TStrategyConfig:
         TOptConfig HyperOpt
         TOptConfig AcqOpt
 
+cdef extern from "ego_wrapper.h":
+    cdef struct TModelConfig:
+        int Seed
 
+
+cdef TStrategyConfig strategyConfigFromDict(dict d)
 cdef TModelConfig modelConfigFromDict(dict d)
 cdef TOptConfig optParamsFromDict(dict d)

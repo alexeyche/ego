@@ -1,6 +1,7 @@
 package NEgoProto;
 
 import "model.proto";
+import "strategy.proto";
 
 enum EVariableType {
 	FLOAT = 0;
@@ -24,9 +25,11 @@ message TProblemConfig {
 message TProblemSpec {
 	optional TProblemConfig ProblemConfig = 1;
 	optional TModelConfig ModelConfig = 2;
+	optional TStrategyConfig StrategyConfig = 3;
 }
 
 message TProblemState {
 	optional TProblemConfig ProblemConfig = 1;
 	optional TModelState ModelState = 2;
+	optional TStrategyState StrategyState = 3;
 }

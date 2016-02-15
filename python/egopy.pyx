@@ -4,6 +4,7 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
+from egopy_configs cimport strategyConfigFromDict
 from egopy_configs cimport modelConfigFromDict
 from egopy_configs cimport optParamsFromDict
 
@@ -136,8 +137,8 @@ cdef class Model:
     def getParameters(self):
         return self.obj.GetParameters()
 
-    def optimize(self, f):
-        self.obj.Optimize(OptimCallback, <void*>f)
+#    def optimize(self, f):
+#        self.obj.Optimize(OptimCallback, <void*>f)
 
     def __del__(self):
         del self.obj
@@ -146,8 +147,8 @@ cdef class Model:
         d = self.obj.GetData()
         return fromMatWrapToNumpy(d.first), fromMatWrapToNumpy(d.second)
 
-    def optimizeHyp(self):
-        self.obj.OptimizeHyp()
+#    def optimizeHyp(self):
+#        self.obj.OptimizeHyp()
 
 def setDebugLogLevel():
     SetDebugLogLevel()

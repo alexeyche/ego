@@ -4,15 +4,17 @@
 
 namespace NEgo {
 
-    TProblem::TProblem(const TFsPath srcFile) {
-        Model = MakeShared(new TModel());
+    TProblem::TProblem(const TFsPath srcFile)
+        : Model(MakeShared(new TModel()))
+    {
         LoadState(srcFile);
     }
 
-    TProblem::TProblem(const TProblemConfig& problem, const TModelConfig& config)
-        : Config(problem)
+    TProblem::TProblem(const TProblemSpec& spec)
+        : Config(spec.ProblemConfig)
+        , Model(MakeShared(new TModel(spec.ModelConfig, Config.DimSize)))
+        , Strategy(spec.StrategyConfig, Model)
     {
-        Model = MakeShared(new TModel(config, problem.DimSize));
     }
 
     TString TProblem::GetName() const {
@@ -24,9 +26,11 @@ namespace NEgo {
 
         serial(protoConfig, NEgoProto::TProblemState::kProblemConfigFieldNumber);
         serial(*Model, NEgoProto::TProblemState::kModelStateFieldNumber);
+        serial(Strategy, NEgoProto::TProblemState::kStrategyStateFieldNumber);
 
         if (serial.IsInput()) {
             Config = TProblemConfig(protoConfig);
+            Strategy.SetModel(Model);
         }
     }
 
@@ -73,6 +77,10 @@ namespace NEgo {
         return *Model;
     }
 
+    TStrategy& TProblem::GetStrategy() {
+        return Strategy;
+    }
+
     const TProblemConfig& TProblem::GetConfig() const {
         return Config;
     }
@@ -86,12 +94,12 @@ namespace NEgo {
             throw TEgoElementNotFound() << "Variable " << varName << " is not found in problem " << GetName();
         }
         const TVariable& var = res->second;
-        
+
         TVectorD Xbest = Model->GetMinimumX();
 
         TMatrixD X;
         TVectorD grid = NLa::Linspace(0.0, 1.0, gridSize);
-        for (ui32 dim = 0; dim < Xbest.size(); ++dim) { 
+        for (ui32 dim = 0; dim < Xbest.size(); ++dim) {
             if (dim == var.Id) {
                 X = NLa::ColBind(X, grid);
             } else {
@@ -104,7 +112,7 @@ namespace NEgo {
         TJsonDocument mean = TJsonDocument::Array();
         TJsonDocument leftSd = TJsonDocument::Array();
         TJsonDocument rightSd = TJsonDocument::Array();
-        
+
         ui32 idx = 0;
         for (const auto& distr: vec) {
             mean.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean()}));
@@ -113,7 +121,7 @@ namespace NEgo {
             ++idx;
         }
         TJsonDocument points = TJsonDocument::Array();
-        
+
 
         const TMatrixD& Xfull = Model->GetData().first;
         const TVectorD& Yfull = Model->GetData().second;
@@ -121,7 +129,7 @@ namespace NEgo {
         for (size_t pi=0; pi < Yfull.size(); ++pi) {
             points.PushBack(TJsonDocument::Array({Xfull(pi, var.Id), Yfull(pi)}));
         }
-        
+
         TJsonDocument minimum = TJsonDocument::Array();
         minimum.PushBack(TJsonDocument::Array({Xbest(var.Id), Model->GetMinimumY()}));
 

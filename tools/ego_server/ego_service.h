@@ -74,7 +74,7 @@ namespace NEgo {
 							FindUrlArg<TString>(req, "variable_name"),
 							FindUrlArg<ui32>(req, "grid_size", 1000)
 						).GetPrettyString();
-						resp.Good();	
+						resp.Good();
 					}
 				)
 				.AddCallback(
@@ -87,7 +87,7 @@ namespace NEgo {
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/optimize_hypers",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						GetProblem(req).GetModel().OptimizeHyp();
+						GetProblem(req).GetStrategy().OptimizeHypers();
 						resp.Accepted();
 					}
 				)
@@ -142,27 +142,25 @@ namespace NEgo {
 				.AddCallback(
 					"POST", "api/submit_problem",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						NEgoProto::TProblemSpec problemSpec;
+						NEgoProto::TProblemSpec problemSpecProto;
 
 						L_DEBUG << "Got problem:\n" << req.Body;
 
-						ReadProtoText(req.Body, problemSpec);
+						ReadProtoText(req.Body, problemSpecProto);
+						TProblemSpec problemSpec(problemSpecProto);
 
-					    TProblemConfig problemConf(problemSpec.problemconfig());
-					    TModelConfig modelConfig(problemSpec.modelconfig());
-
-						auto res = Problems.insert(
+					    auto res = Problems.insert(
 							MakePair(
-								problemConf.Name,
-								TProblem(problemConf, modelConfig)
+								problemSpec.ProblemConfig.Name,
+								TProblem(problemSpec)
 							)
 						);
 
 						if (!res.second) {
-							throw TEgoLogicError() << "Problem with the name `" << problemConf.Name << "' is already exist";
+							throw TEgoLogicError() << "Problem with the name `" << problemSpec.ProblemConfig.Name << "' is already exist";
 						}
 
-						res.first->second.DumpState(TFsPath(StateDir) / TFsPath(problemConf.Name) + ".pb.txt");
+						res.first->second.DumpState(TFsPath(StateDir) / TFsPath(problemSpec.ProblemConfig.Name) + ".pb.txt");
 
 						resp.Body("{}");
 						resp.Accepted();

@@ -2,6 +2,8 @@
 
 #include <ego/base/base.h>
 #include <ego/protos/problem.pb.h>
+#include <ego/model/config.h>
+#include <ego/strategy/config.h>
 
 namespace NEgo {
 
@@ -15,9 +17,9 @@ namespace NEgo {
 		TString Name;
 		double Min;
 		double Max;
-        
+
         ui32 Id;
-		
+
         EVariableType Type;
 	};
 
@@ -74,5 +76,17 @@ namespace NEgo {
         NEgoProto::TProblemConfig ProtoConfig;
     };
 
+    struct TProblemSpec {
+        TProblemSpec(const NEgoProto::TProblemSpec& spec) {
+            ProblemConfig = TProblemConfig(spec.problemconfig());
+            ModelConfig = TModelConfig(spec.modelconfig());
+            StrategyConfig = TStrategyConfig(spec.strategyconfig());
+        }
+
+        TProblemConfig ProblemConfig;
+        TModelConfig ModelConfig;
+        TStrategyConfig StrategyConfig;
+
+    };
 
 } // namespace NEgo

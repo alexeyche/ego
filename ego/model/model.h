@@ -94,6 +94,8 @@ namespace NEgo {
         void Update();
 
         bool Empty() const;
+
+        SPtr<IAcq> GetAcq() const;
     private:
         TMatrixD X;
         TVectorD Y;

@@ -3,13 +3,6 @@ import "la.proto";
 
 package NEgoProto;
 
-message TOptConfig {
-    optional string Method = 1 [default = "CG"];
-    optional uint32 MinimizersNum = 2 [default = 10];
-    optional uint32 MaxEval = 3 [default = 100];
-    optional double Tolerance = 4 [default = 1e-10];
-}
-
 
 message TModelConfig {
     optional string Cov = 1 [default = "cExpISO"];
@@ -19,12 +12,6 @@ message TModelConfig {
     optional string Acq = 5 [default = "aEI"];
 
     optional uint32 Seed = 6 [default = 0];
-
-    optional TOptConfig HyperOpt = 7;
-    optional TOptConfig AcqOpt = 8;
-
-    optional uint32 IterationsNum = 9 [default = 100];
-    optional uint32 HyperOptFreq = 10 [default = 1];
 }
 
 message TModelConfigMessage {

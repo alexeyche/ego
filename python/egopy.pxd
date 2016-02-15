@@ -4,6 +4,7 @@ from libcpp.pair cimport pair
 
 from egopy_configs cimport TOptConfig
 from egopy_configs cimport TModelConfig
+from egopy_configs cimport TStrategyConfig
 
 cdef extern from "ego_wrapper.h":
     cdef cppclass TMatWrap:
@@ -54,9 +55,9 @@ cdef extern from "ego_wrapper.h":
         void SetConfig(TModelConfig)
         vector[TDistrWrap] GetPrediction(TMatWrap) # except +
         vector[double] GetParameters() # except +
-        void Optimize(FOptimCallback, void*) # except +
+        # void Optimize(FOptimCallback, void*) # except +
         pair[TMatWrap, TMatWrap] GetData() # except +
-        void OptimizeHyp() # except +
+        # void OptimizeHyp() # except +
 
 cdef extern from "ego_wrapper.h":
     void SetDebugLogLevel()
