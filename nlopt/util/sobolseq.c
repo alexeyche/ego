@@ -7,17 +7,17 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /* Generation of Sobol sequences in up to 1111 dimensions, based on the
@@ -79,7 +79,7 @@ typedef struct nlopt_soboldata_s {
  * This code uses a 32-bit version of algorithm to find the rightmost
  * one bit in Knuth, _The Art of Computer Programming_, volume 4A
  * (draft fascicle), section 7.1.3, "Bitwise tricks and
- * techniques." 
+ * techniques."
  *
  * Assumes n has a zero bit, i.e. n < 2^32 - 1.
  *
@@ -130,7 +130,7 @@ static int sobol_gen(soboldata *sd, double *x)
 static int sobol_init(soboldata *sd, unsigned sdim)
 {
      unsigned i,j;
-     
+
      if (!sdim || sdim > MAXDIM) return 0;
 
      sd->mdata = (uint32_t *) malloc(sizeof(uint32_t) * (sdim * 32));
@@ -153,7 +153,7 @@ static int sobol_init(soboldata *sd, unsigned sdim)
 	  /* set initial values of m from table */
 	  for (j = 0; j < d; ++j)
 	       sd->m[j][i] = sobol_minit[j][i-1];
-	  
+
 	  /* fill in remaining values using recurrence */
 	  for (j = d; j < 32; ++j) {
 	       a = sobol_a[i-1];
@@ -269,7 +269,7 @@ int main(int argc, char **argv)
      static double x[MAXDIM];
      double testint_sobol = 0, testint_rand = 0;
      nlopt_sobol s;
-     if (argc < 3) { 
+     if (argc < 3) {
 	  fprintf(stderr, "Usage: %s <sdim> <ngen>\n", argv[0]);
 	  return 1;
      }

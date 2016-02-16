@@ -17,6 +17,7 @@ set(SOURCES
     protobuf.cpp
     json.cpp
     serial.cpp
+    sobol.cpp
 )
 
 set(DIR_SRCS)

@@ -142,4 +142,8 @@ namespace NEgo {
         return ret;
     }
 
+    TJsonDocument TProblem::GetNextPoint() {
+        Strategy.GetNextPoint();
+    }
+
 } // namespace NEgo

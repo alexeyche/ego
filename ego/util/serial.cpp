@@ -10,6 +10,21 @@ namespace NEgo {
         Descr = Message.GetDescriptor();
     }
 
+    void TSerializer::operator() (ui32& v, int protoField) {
+        switch (Mode) {
+            case ESerialMode::IN:
+            {
+                v = Refl->GetUInt32(Message, Descr->FindFieldByNumber(protoField));
+            }
+            break;
+            case ESerialMode::OUT:
+            {
+                Refl->SetUInt32(&Message, Descr->FindFieldByNumber(protoField), v);
+            }
+            break;
+        }
+    }
+
     void TSerializer::operator() (TVector<double>& v, int protoField) {
         TVectorD laVec = NLa::StdToVec(v);
         (*this)(laVec, protoField);

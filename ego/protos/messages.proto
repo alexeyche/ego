@@ -1,0 +1,11 @@
+package NEgoProto;
+
+message TVariableValue {
+    optional string Name = 1;
+    optional double Value = 2;
+}
+
+
+message TPointMessage {
+
+}

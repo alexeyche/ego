@@ -2,18 +2,24 @@
 
 #include <ego/util/protobuf.h>
 
+#include <ego/util/sobol.h>
+
 namespace NEgo {
 
     TStrategy::TStrategy(const TStrategyConfig& config, SPtr<TModel> model)
         : Config(config)
         , Model(model)
+        , IterationNumber(0)
     {
+        InitSamples = GenerateSobolGrid(Config.InitSamplesNum, Model->GetDimSize());
     }
 
     void TStrategy::SerialProcess(TSerializer& serial) {
         NEgoProto::TStrategyConfig protoConfig = Config.ProtoConfig;
 
         serial(protoConfig, NEgoProto::TStrategyState::kStrategyConfigFieldNumber);
+        serial(IterationNumber, NEgoProto::TStrategyState::kIterationNumberFieldNumber);
+        serial(InitSamples, NEgoProto::TStrategyState::kInitSamplesFieldNumber);
 
         if (serial.IsInput()) {
             Config = TStrategyConfig(protoConfig);
@@ -60,6 +66,15 @@ namespace NEgo {
 
         Model->AddPoint(x, res);
         Model->Update();
+    }
+
+    TVectorD TStrategy::GetNextPoint() {
+        if (IterationNumber < InitSamples.n_rows) {
+            L_DEBUG << "Going to return random next point";
+            return InitSamples.row(IterationNumber++);
+        }
+
+        L_DEBUG << "Going to generate optimal next point";
     }
 
 } // namespace NEgo

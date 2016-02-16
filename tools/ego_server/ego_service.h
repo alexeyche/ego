@@ -78,6 +78,13 @@ namespace NEgo {
 					}
 				)
 				.AddCallback(
+					"GET", "api/problem/{problem_name}/next_point",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						resp.Body() += GetProblem(req).GetNextPoint().GetPrettyString();
+						resp.Good();
+					}
+				)
+				.AddCallback(
 					"POST", "api/problem/{problem_name}/update_model",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						GetProblem(req).GetModel().Update();

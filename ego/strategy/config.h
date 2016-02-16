@@ -28,6 +28,7 @@ namespace NEgo {
         TStrategyConfig(const NEgoProto::TStrategyConfig& config)
             : ProtoConfig(config)
         {
+            InitSamplesNum = ProtoConfig.initsamplesnum();
             IterationsNum = ProtoConfig.iterationsnum();
             HyperOptFreq = ProtoConfig.hyperoptfreq();
 
@@ -38,6 +39,7 @@ namespace NEgo {
         TOptConfig HyperOpt;
         TOptConfig AcqOpt;
 
+        ui32 InitSamplesNum;
         ui32 IterationsNum;
         ui32 HyperOptFreq;
 

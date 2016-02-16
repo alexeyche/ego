@@ -23,7 +23,14 @@ namespace NEgo {
         void SerialProcess(TSerializer& serial) override;
 
         void SetModel(SPtr<TModel> model);
+
+        TVectorD GetNextPoint();
+
 	private:
+        ui32 IterationNumber;
+
+        TMatrixD InitSamples;
+
 		TStrategyConfig Config;
 
 		SPtr<TModel> Model;

@@ -19,6 +19,8 @@ namespace NEgo {
 
         TSerializer(google::protobuf::Message& message, ESerialMode mode);
 
+        void operator() (ui32& v, int protoField);
+
         void operator() (TVector<double>& v, int protoField);
 
         template <typename T>

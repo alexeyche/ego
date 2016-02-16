@@ -1,5 +1,6 @@
 package NEgoProto;
 
+import "la.proto";
 
 message TOptConfig {
     optional string Method = 1 [default = "CG"];
@@ -13,10 +14,13 @@ message TStrategyConfig {
     optional TOptConfig HyperOpt = 7;
     optional TOptConfig AcqOpt = 8;
 
-    optional uint32 IterationsNum = 9 [default = 100];
-    optional uint32 HyperOptFreq = 10 [default = 1];
+    optional uint32 InitSamplesNum = 9 [default = 10];
+    optional uint32 IterationsNum = 10 [default = 100];
+    optional uint32 HyperOptFreq = 11 [default = 1];
 };
 
 message TStrategyState {
     optional TStrategyConfig StrategyConfig = 1;
+    optional uint32 IterationNumber = 2;
+    optional TMatrixD InitSamples = 3;
 };

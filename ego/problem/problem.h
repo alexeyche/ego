@@ -44,6 +44,8 @@ namespace NEgo {
 
         TStrategy& GetStrategy();
 
+        TJsonDocument GetNextPoint();
+
 	private:
 		TProblemConfig Config;
 		SPtr<TModel> Model;
