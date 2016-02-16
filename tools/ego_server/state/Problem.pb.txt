@@ -23,8 +23,47 @@ ModelState {
   }
   Parameters {
     x: 0
-    x: -4.6051701859880909
-    x: -0.69314718055994529
-    x: -4.6051701859880909
+    x: 0
+    x: 0
+    x: 0
+  }
+}
+StrategyState {
+  StrategyConfig {
+  }
+  IterationNumber: 0
+  InitSamples {
+    row {
+      x: 0.6875
+    }
+    row {
+      x: 0.9375
+    }
+    row {
+      x: 0.4375
+    }
+    row {
+      x: 0.3125
+    }
+    row {
+      x: 0.8125
+    }
+    row {
+      x: 0.5625
+    }
+    row {
+      x: 0.0625
+    }
+    row {
+      x: 0.09375
+    }
+    row {
+      x: 0.59375
+    }
+    row {
+      x: 0.84375
+    }
+    n_rows: 10
+    n_cols: 1
   }
 }

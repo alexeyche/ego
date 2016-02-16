@@ -8,8 +8,21 @@
 
 namespace NEgo {
 
+    struct TPoint {
+        TPoint(TString id, const TVectorD& x)
+            : Id(id)
+            , X(x)
+        {
+        }
+
+
+        TString Id;
+        TVectorD X;
+    };
+
 	class TStrategy : public ISerial<NEgoProto::TStrategyState> {
 	public:
+
         TStrategy() {}
 
 		TStrategy(const TStrategyConfig& config, SPtr<TModel> model);
@@ -24,9 +37,12 @@ namespace NEgo {
 
         void SetModel(SPtr<TModel> model);
 
-        TVectorD GetNextPoint();
+        void AddPoint(const TPoint& p, double target);
+
+        TPoint GetNextPoint();
 
 	private:
+        ui32 BatchNumber;
         ui32 IterationNumber;
 
         TMatrixD InitSamples;

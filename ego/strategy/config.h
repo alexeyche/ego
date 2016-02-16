@@ -29,6 +29,7 @@ namespace NEgo {
             : ProtoConfig(config)
         {
             InitSamplesNum = ProtoConfig.initsamplesnum();
+            BatchSize = ProtoConfig.batchsize();
             IterationsNum = ProtoConfig.iterationsnum();
             HyperOptFreq = ProtoConfig.hyperoptfreq();
 
@@ -40,6 +41,7 @@ namespace NEgo {
         TOptConfig AcqOpt;
 
         ui32 InitSamplesNum;
+        ui32 BatchSize;
         ui32 IterationsNum;
         ui32 HyperOptFreq;
 

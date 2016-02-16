@@ -4,6 +4,24 @@
 
 namespace NEgo {
 
+    template <>
+    double FromUnit(const TVariable& var, double unitVal) {
+        if(! (((unitVal <= 1.0) || (std::abs(unitVal - 1.0) < std::numeric_limits<double>::epsilon())) &&
+              ((unitVal >= 0.0) || (std::abs(unitVal - 0.0) < std::numeric_limits<double>::epsilon()))) ){
+            throw TEgoLogicError() << "Value of " << var.Name << " out of unit cube: " << unitVal;
+        }
+        return var.Min + unitVal * (var.Max - var.Min);
+    }
+    
+    template <>
+    int FromUnit(const TVariable& var, double unitVal) {
+        if(! (((unitVal <= 1.0) || (std::abs(unitVal - 1.0) < std::numeric_limits<double>::epsilon())) &&
+              ((unitVal >= 0.0) || (std::abs(unitVal - 0.0) < std::numeric_limits<double>::epsilon()))) ){
+            throw TEgoLogicError() << "Value of " << var.Name << " out of unit cube: " << unitVal;
+        }
+        return std::round(var.Min + unitVal * (var.Max - var.Min));
+    }
+    
     TProblem::TProblem(const TFsPath srcFile)
         : Model(MakeShared(new TModel()))
     {
@@ -45,10 +63,9 @@ namespace NEgo {
         Deserialize(problemState);
     }
 
-    void TProblem::Accept(const TJsonDocument& inputSpec) {
+    void TProblem::AddPoint(const TJsonDocument& inputSpec) {
         TVectorD Xnew(Config.DimSize);
-        const TJsonDocument varSpec = inputSpec["Data"];
-        const TJsonDocument optSpec = inputSpec["Options"];
+        const TJsonDocument varSpec = inputSpec["Point"];
 
         double Ynew = varSpec[Config.Name].GetValue<double>();
 
@@ -66,10 +83,31 @@ namespace NEgo {
             }
         }
         L_DEBUG << GetName() << " accepted new data: " << NLa::VecToStr(Xnew) << " -> " << Ynew;
-        Model->AddPoint(Xnew, Ynew);
-        if (!optSpec.Has("UpdateModel") || optSpec["UpdateModel"].GetValue<bool>()) {
-            Model->Update();
+        Strategy.AddPoint(TPoint(inputSpec["Id"].GetValue<TString>(), Xnew), Ynew);
+    }
+
+    TJsonDocument TProblem::GetNextPoint() {
+        TPoint point = Strategy.GetNextPoint();
+
+        TJsonDocument req;
+        req["Id"] = point.Id;
+
+        for (const auto& namedVar: Config.Variables) {
+            const TVariable& var = namedVar.second;
+            
+            switch (var.Type) {
+                case EVariableType::INT:
+                    req["Point"][var.Name] = FromUnit<int>(var, point.X(var.Id));
+                    break;
+                case EVariableType::FLOAT:
+                    req["Point"][var.Name] = FromUnit<double>(var, point.X(var.Id));
+                    break;
+                case EVariableType::ENUM:
+                    throw TEgoException() << "Not implemented";
+            }
         }
+
+        return req;
     }
 
     TModel& TProblem::GetModel() {
@@ -140,10 +178,6 @@ namespace NEgo {
         ret["points"] = points;
         ret["minimum"] = minimum;
         return ret;
-    }
-
-    TJsonDocument TProblem::GetNextPoint() {
-        Strategy.GetNextPoint();
     }
 
 } // namespace NEgo

@@ -26,6 +26,13 @@ namespace NEgo {
 	}
 
 	template <>
+    NJson::Value TJsonDocument::SetValue<int>(int v) {
+		NJson::Value s;
+		s.SetInt(v);
+		return s;
+	}
+
+	template <>
 	TString TJsonDocument::GetValue(const NJson::Value& v) const {
 		return v.GetString();
 	}

@@ -10,6 +10,7 @@ namespace NEgo {
         : Config(config)
         , Model(model)
         , IterationNumber(0)
+        , BatchNumber(0)
     {
         InitSamples = GenerateSobolGrid(Config.InitSamplesNum, Model->GetDimSize());
     }
@@ -19,6 +20,7 @@ namespace NEgo {
 
         serial(protoConfig, NEgoProto::TStrategyState::kStrategyConfigFieldNumber);
         serial(IterationNumber, NEgoProto::TStrategyState::kIterationNumberFieldNumber);
+        serial(BatchNumber, NEgoProto::TStrategyState::kBatchNumberFieldNumber);
         serial(InitSamples, NEgoProto::TStrategyState::kInitSamplesFieldNumber);
 
         if (serial.IsInput()) {
@@ -51,6 +53,32 @@ namespace NEgo {
         }
     }
 
+    void TStrategy::AddPoint(const TPoint& p, double target) {
+        L_DEBUG << "Got point with id " << p.Id;
+        Model->AddPoint(p.X, target);
+    }
+
+
+    TPoint TStrategy::GetNextPoint() {
+        if (IterationNumber < InitSamples.n_rows) {
+            L_DEBUG << "Going to return random next point";
+
+            return TPoint(
+                NStr::TStringBuilder() << IterationNumber << "-init", 
+                InitSamples.row(IterationNumber++)
+            );
+        }
+        L_DEBUG << "Going to generate optimal next point";
+
+        L_DEBUG << "Optimizing acquisition function ...";
+
+        TVectorD x;
+        double crit;
+        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), Config.AcqOpt);
+        L_DEBUG << "Found criteria value: " << crit;
+        
+        return TPoint(NStr::TStringBuilder() << IterationNumber << "-" << BatchNumber, x);
+    }
 
 
     void TStrategy::OptimizeStep(TOptimCallback cb) {
@@ -66,15 +94,6 @@ namespace NEgo {
 
         Model->AddPoint(x, res);
         Model->Update();
-    }
-
-    TVectorD TStrategy::GetNextPoint() {
-        if (IterationNumber < InitSamples.n_rows) {
-            L_DEBUG << "Going to return random next point";
-            return InitSamples.row(IterationNumber++);
-        }
-
-        L_DEBUG << "Going to generate optimal next point";
     }
 
 } // namespace NEgo

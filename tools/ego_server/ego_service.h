@@ -99,9 +99,9 @@ namespace NEgo {
 					}
 				)
 				.AddCallback(
-					"POST", "api/problem/{problem_name}/accept",
+					"POST", "api/problem/{problem_name}/add_point",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						GetProblem(req).Accept(TJsonDocument(req.Body));
+						GetProblem(req).AddPoint(TJsonDocument(req.Body));
 						resp.Accepted();
 					}
 				)

@@ -19,6 +19,9 @@ namespace NEgo {
        	return unitVal;
     }
 
+	template <typename T>
+	T FromUnit(const TVariable& var, double unitVal);
+	
 
 	class TProblem : public ISerial<NEgoProto::TProblemState> {
 	public:
@@ -28,7 +31,7 @@ namespace NEgo {
 
 		TString GetName() const;
 
-		void Accept(const TJsonDocument& inputSpec);
+		void AddPoint(const TJsonDocument& inputSpec);
 
 		void DumpState(const TFsPath dstFile);
 
