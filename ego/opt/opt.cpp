@@ -106,7 +106,9 @@ namespace NEgo {
 		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, const TOptConfig& config) {
 			switch(MethodFromString(config.Method)) {
 				case CG:
-					throw TEgoException() << "Need to use derivative free methods\n";
+					{
+						throw TEgoException() << "Can't use unconstrained method for optimization";
+					}
 				default:
 					{
 						return NLoptAcqMinimize(acq, config);

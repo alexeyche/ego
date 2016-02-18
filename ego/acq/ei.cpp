@@ -22,7 +22,7 @@ namespace NEgo {
         double criteria = - d->GetSd() * parenVal;
 
         double dudx = - d->GetMeanDeriv() / d->GetSd() - d->GetSdDeriv() * diff / (d->GetSd() * d->GetSd());
-        double deriv = d->GetSd() * 
+        double deriv = d->GetSd() *
             dudx * (
                 d->StandardPdfDeriv(u) +
                 u * d->StandardCdfDeriv(u) +

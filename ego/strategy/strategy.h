@@ -43,6 +43,7 @@ namespace NEgo {
 
 	private:
         ui32 BatchNumber;
+
         ui32 IterationNumber;
 
         TMatrixD InitSamples;

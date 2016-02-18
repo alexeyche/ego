@@ -105,7 +105,7 @@ namespace NEgo {
 	        auto Kres = KernelFunctor(r/l);
 
 	        TMatrixD K = Kres.Value();
-	        TMatrixD dKdArg = Kres.ArgDeriv();
+	        // TMatrixD dKdArg = Kres.ArgDeriv();
 
 	        return TCovStationaryISO::Result()
 	        	.SetValue(

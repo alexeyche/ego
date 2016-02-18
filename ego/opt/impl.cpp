@@ -39,16 +39,20 @@ namespace NEgo {
 		    model.SetParameters(initStd);
 			return res;
 		}
-		
-		double NLoptAcqMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data) {
+
+		double NLoptAcqMinimizer(const std::vector<double>& x, std::vector<double>& grad, void* f_data) {
 			try {
 				IAcq* acq = static_cast<IAcq*>(f_data);
-				return acq->Calc(NLa::StdToVec(x)).Value();	
+				auto res = acq->Calc(NLa::StdToVec(x));
+				grad = res.ArgDeriv();
+				double val = res.Value();
+				L_DEBUG << "Got acquisition function value : " << val;
+				return val;
 			} catch(const std::exception& e) {
 				L_ERROR << "Got errors while optimization: " << e.what();
 				throw;
 			}
-			
+
 		}
 
 		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, const TOptConfig& config) {

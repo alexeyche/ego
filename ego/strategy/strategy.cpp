@@ -64,7 +64,7 @@ namespace NEgo {
             L_DEBUG << "Going to return random next point";
 
             return TPoint(
-                NStr::TStringBuilder() << IterationNumber << "-init", 
+                NStr::TStringBuilder() << IterationNumber << "-init",
                 InitSamples.row(IterationNumber++)
             );
         }
@@ -76,7 +76,7 @@ namespace NEgo {
         double crit;
         Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), Config.AcqOpt);
         L_DEBUG << "Found criteria value: " << crit;
-        
+
         return TPoint(NStr::TStringBuilder() << IterationNumber << "-" << BatchNumber, x);
     }
 

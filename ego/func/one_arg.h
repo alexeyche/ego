@@ -1,14 +1,14 @@
 #pragma once
 
 #include "functor.h"
+#include "derivative.h"
 
 namespace NEgo {
 
-
-	template <typename T, typename Derived>
+	template <typename T, typename DT, typename Derived>
 	class TOneArgFunctorResultBase : public TFunctorResult<T, Derived> {
 	public:
-		using TCalcArgDerivCb = std::function<T()>;
+		using TCalcArgDerivCb = std::function<DT()>;
 
 		TOneArgFunctorResultBase() :
 			CalcArgDerivCb([=]() -> T {
@@ -22,7 +22,7 @@ namespace NEgo {
 			return *static_cast<Derived*>(this);
 		}
 
-		T ArgDeriv() const {
+		DT ArgDeriv() const {
 			return CalcArgDerivCb();
 		}
 
@@ -30,11 +30,12 @@ namespace NEgo {
 		TCalcArgDerivCb CalcArgDerivCb;
 	};
 
-	template <typename T>
-	class TOneArgFunctorResult : public TOneArgFunctorResultBase<T, TOneArgFunctorResult<T>> {
+	template <typename T, typename DT>
+	class TOneArgFunctorResult : public TOneArgFunctorResultBase<T, DT, TOneArgFunctorResult<T, DT>> {
 	};
 
-	template <typename T, typename A, typename R = TOneArgFunctorResult<T>>
+
+	template <typename T, typename A, typename R = TOneArgFunctorResult<T, typename TDerivativeOf<T, A>::Value>>
 	class TOneArgFunctor : public TFunctorBase<T> {
 	public:
 		using TArg = A;
