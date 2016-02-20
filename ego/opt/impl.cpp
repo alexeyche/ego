@@ -44,7 +44,7 @@ namespace NEgo {
 			try {
 				IAcq* acq = static_cast<IAcq*>(f_data);
 				auto res = acq->Calc(NLa::StdToVec(x));
-				grad = res.ArgDeriv();
+				// grad = res.ArgDeriv();
 				double val = res.Value();
 				L_DEBUG << "Got acquisition function value : " << val;
 				return val;

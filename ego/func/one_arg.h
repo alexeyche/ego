@@ -1,18 +1,57 @@
 #pragma once
 
+#include <ego/util/optional.h>
+
 #include "functor.h"
-#include "derivative.h"
 
 namespace NEgo {
 
-	template <typename T, typename DT, typename Derived>
+	template <typename T, typename A>
+	struct TPartialDerivative {
+		static TVector<T> Default(const T& dArg) {
+			throw TEgoNotImplemented() << "Calculation of partial argument derivative was not implemented";
+		}
+	};
+
+
+	// template <typename T, typename A>
+	// T PartialDerivativeDefault(const T& dArg, ui32 index) {
+
+	// 	// T v = NLa::CreateSameShape<T>(dArg, /* fill_zeros = */ true);
+	// 	// ENSURE(index < dArg.size(), "Trying to take partial derivative of something bigger: " << index << " >= " << dArg.size());
+	// 	// v(index) = dArg(index);
+	// 	// return v;
+	// }
+
+	// template <>
+	// double PartialDerivativeDefault(const double& dArg, ui32 index);
+
+	// template <>
+	// TPair<TVectorD, TVectorD> PartialDerivativeDefault(const TPair<TVectorD, TVectorD>& dArg, ui32 index);
+
+	// template <typename T>
+	// ui32 GetReturnValueSize(const T& v) {
+	// 	return v.size();
+	// }
+
+	// template <>
+	// ui32 GetReturnValueSize(const double& v);
+
+	// template <>
+	// ui32 GetReturnValueSize(const TPair<TVectorD, TVectorD>& v);
+
+	template <typename T, typename A, typename Derived>
 	class TOneArgFunctorResultBase : public TFunctorResult<T, Derived> {
 	public:
-		using TCalcArgDerivCb = std::function<DT()>;
+		using TCalcArgDerivCb = std::function<T()>;
+		using TCalcPartialArgDerivCb = std::function<TVector<T>()>;
 
 		TOneArgFunctorResultBase() :
 			CalcArgDerivCb([=]() -> T {
 				throw TEgoNotImplemented() << "Calculation of argument derivative was not implemented";
+			}),
+			CalcPartialArgDerivCb([=]() -> TVector<T> {
+				return TPartialDerivative<T,A>::Default(ArgDeriv());
 			})
 		{
 		}
@@ -22,20 +61,25 @@ namespace NEgo {
 			return *static_cast<Derived*>(this);
 		}
 
-		DT ArgDeriv() const {
+		T ArgDeriv() const {
 			return CalcArgDerivCb();
+		}
+
+		TVector<T> PartialArgDeriv() const {
+			return CalcPartialArgDerivCb();
 		}
 
 	private:
 		TCalcArgDerivCb CalcArgDerivCb;
+		TCalcPartialArgDerivCb CalcPartialArgDerivCb;
 	};
 
-	template <typename T, typename DT>
-	class TOneArgFunctorResult : public TOneArgFunctorResultBase<T, DT, TOneArgFunctorResult<T, DT>> {
+	template <typename T, typename A>
+	class TOneArgFunctorResult : public TOneArgFunctorResultBase<T, A, TOneArgFunctorResult<T, A>> {
 	};
 
 
-	template <typename T, typename A, typename R = TOneArgFunctorResult<T, typename TDerivativeOf<T, A>::Value>>
+	template <typename T, typename A, typename R = TOneArgFunctorResult<T, A>>
 	class TOneArgFunctor : public TFunctorBase<T> {
 	public:
 		using TArg = A;

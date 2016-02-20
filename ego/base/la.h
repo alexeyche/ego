@@ -215,6 +215,15 @@ namespace NEgo {
 
         void AddCholeskyRow(TMatrixD &L, const TVectorD &v);
 
+        template <typename V>
+        V CreateSameShape(const V& v, bool fill_zeros = false) {
+            if (!fill_zeros) {
+                return V(arma::size(v));
+            } else {
+                return V(arma::size(v), arma::fill::zeros);
+            }
+        }
+
     } // namespace NLa
 
     using NLa::TMatrixD;

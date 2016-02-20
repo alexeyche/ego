@@ -346,7 +346,7 @@ namespace NEgo {
         }
 
         double LogGamma(double v) {
-            return gammal(v);
+            return lgamma(v);
         }
 
         double Norm(const TVectorD &v) {

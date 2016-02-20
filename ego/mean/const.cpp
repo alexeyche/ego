@@ -13,7 +13,7 @@ namespace NEgo {
     TMeanConst::Result TMeanConst::UserCalc(const TMatrixD &m) const {
         TVectorD ones = NLa::Ones(m.n_rows);
         const double& c = Parameters[0];
-        
+
         return TMeanConst::Result()
             .SetValue(
                 [=]() -> TVectorD {
@@ -35,5 +35,5 @@ namespace NEgo {
     size_t TMeanConst::GetParametersSize() const {
         return 1;
     }
-    
+
 } //namespace NEgo

@@ -5,10 +5,10 @@
 #include <ego/util/optional.h>
 
 namespace NEgo {
-	
+
 	class TModel;
 
-    
+
     class IAcq : public TOneArgFunctor<double, TVectorD> {
     public:
         using TParent = TOneArgFunctor<double, TVectorD>;

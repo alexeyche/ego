@@ -25,7 +25,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
 find_package(Protobuf REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(Threads REQUIRED)
-
+find_library(OpenBLAS_LIBRARY openblas /opt/OpenBLAS/lib)
 
 
 # Debugging CFLAGS.  Turn optimizations off; turn debugging symbols on.

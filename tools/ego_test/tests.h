@@ -113,6 +113,33 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 	} catch(const TEgoNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
+
+	TVector<typename Functor::TReturn> partials;
+	try {
+		partials = resCenter.PartialArgDeriv();
+	} catch(const TEgoNotImplemented &e) {
+		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+	}
+
+	for (ui32 index=0; index < partials.size(); ++index) {
+		typename Functor::TArg leftA = a;
+		leftA(index) -= Epsilon;
+		typename Functor::TArg rightA = a;
+		rightA(index) += Epsilon;
+
+		auto resLeftEpsPart = f->Calc(leftA);
+		auto resRightEpsPart = f->Calc(rightA);
+		try {
+			CheckDerivativeSanity(
+				partials[index],
+				resLeftEpsPart.Value(),
+				resRightEpsPart.Value(),
+				functorName + TString(NStr::TStringBuilder() << ", " << index << " partial argument derivative")
+			);
+		} catch(const TEgoNotImplemented &e) {
+			L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+		}
+	}
 	if(f->GetParametersSize() > 0) {
 		TVector<double> centerParams = f->GetParameters();
 		try {

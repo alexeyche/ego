@@ -7,17 +7,17 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 // C++ style wrapper around NLopt API
@@ -26,7 +26,7 @@
 #ifndef NLOPT_HPP
 #define NLOPT_HPP
 
-#include <nlopt.h>
+#include "nlopt.h"
 
 #include <vector>
 #include <stdexcept>
@@ -117,7 +117,7 @@ namespace nlopt {
 			  std::vector<double> &grad, void *data);
 
   //////////////////////////////////////////////////////////////////////
-  
+
   // NLopt-specific exceptions (corresponding to error codes):
   class roundoff_limited : public std::runtime_error {
   public:
@@ -134,7 +134,7 @@ namespace nlopt {
   class opt {
   private:
     nlopt_opt o;
-    
+
     void mythrow(nlopt_result ret) const {
       switch (ret) {
       case NLOPT_FAILURE: throw std::runtime_error("nlopt failure");
@@ -154,7 +154,7 @@ namespace nlopt {
     } myfunc_data;
 
     // free/destroy f_data in nlopt_destroy and nlopt_copy, respectively
-    static void *free_myfunc_data(void *p) { 
+    static void *free_myfunc_data(void *p) {
       myfunc_data *d = (myfunc_data *) p;
       if (d) {
 	if (d->f_data && d->munge_destroy) d->munge_destroy(d->f_data);
@@ -266,19 +266,19 @@ namespace nlopt {
 
   public:
     // Constructors etc.
-    opt() : o(NULL), xtmp(0), gradtmp(0), gradtmp0(0), 
+    opt() : o(NULL), xtmp(0), gradtmp(0), gradtmp0(0),
 	    last_result(nlopt::FAILURE), last_optf(HUGE_VAL),
 	    forced_stop_reason(NLOPT_FORCED_STOP) {}
     ~opt() { nlopt_destroy(o); }
-    opt(algorithm a, unsigned n) : 
-      o(nlopt_create(nlopt_algorithm(a), n)), 
+    opt(algorithm a, unsigned n) :
+      o(nlopt_create(nlopt_algorithm(a), n)),
       xtmp(0), gradtmp(0), gradtmp0(0),
       last_result(nlopt::FAILURE), last_optf(HUGE_VAL),
       forced_stop_reason(NLOPT_FORCED_STOP) {
       if (!o) throw std::bad_alloc();
       nlopt_set_munge(o, free_myfunc_data, dup_myfunc_data);
     }
-    opt(const opt& f) : o(nlopt_copy(f.o)), 
+    opt(const opt& f) : o(nlopt_copy(f.o)),
 			xtmp(f.xtmp), gradtmp(f.gradtmp), gradtmp0(0),
 			last_result(f.last_result), last_optf(f.last_optf),
 			forced_stop_reason(f.forced_stop_reason) {
@@ -404,13 +404,13 @@ namespace nlopt {
       mythrow(nlopt_add_inequality_constraint(o, myvfunc, d, tol));
       alloc_tmp();
     }
-    void add_inequality_mconstraint(mfunc mf, void *f_data, 
+    void add_inequality_mconstraint(mfunc mf, void *f_data,
 				    const std::vector<double> &tol) {
       myfunc_data *d = new myfunc_data;
       if (!d) throw std::bad_alloc();
       d->o = this; d->mf = mf; d->f_data = f_data; d->f = NULL; d->vf = NULL;
       d->munge_destroy = d->munge_copy = NULL;
-      mythrow(nlopt_add_inequality_mconstraint(o, tol.size(), mymfunc, d, 
+      mythrow(nlopt_add_inequality_mconstraint(o, tol.size(), mymfunc, d,
 					       tol.empty() ? NULL : &tol[0]));
     }
 
@@ -433,18 +433,18 @@ namespace nlopt {
       mythrow(nlopt_add_equality_constraint(o, myvfunc, d, tol));
       alloc_tmp();
     }
-    void add_equality_mconstraint(mfunc mf, void *f_data, 
+    void add_equality_mconstraint(mfunc mf, void *f_data,
 				  const std::vector<double> &tol) {
       myfunc_data *d = new myfunc_data;
       if (!d) throw std::bad_alloc();
       d->o = this; d->mf = mf; d->f_data = f_data; d->f = NULL; d->vf = NULL;
       d->munge_destroy = d->munge_copy = NULL;
-      mythrow(nlopt_add_equality_mconstraint(o, tol.size(), mymfunc, d, 
+      mythrow(nlopt_add_equality_mconstraint(o, tol.size(), mymfunc, d,
 					     tol.empty() ? NULL : &tol[0]));
     }
 
     // For internal use in SWIG wrappers (see also above)
-    void add_inequality_constraint(func f, void *f_data, 
+    void add_inequality_constraint(func f, void *f_data,
 				   nlopt_munge md, nlopt_munge mc,
 				   double tol=0) {
       myfunc_data *d = new myfunc_data;
@@ -453,7 +453,7 @@ namespace nlopt {
       d->munge_destroy = md; d->munge_copy = mc;
       mythrow(nlopt_add_inequality_constraint(o, myfunc, d, tol));
     }
-    void add_equality_constraint(func f, void *f_data, 
+    void add_equality_constraint(func f, void *f_data,
 				 nlopt_munge md, nlopt_munge mc,
 				 double tol=0) {
       myfunc_data *d = new myfunc_data;
@@ -462,24 +462,24 @@ namespace nlopt {
       d->munge_destroy = md; d->munge_copy = mc;
       mythrow(nlopt_add_equality_constraint(o, myfunc, d, tol));
     }
-    void add_inequality_mconstraint(mfunc mf, void *f_data, 
+    void add_inequality_mconstraint(mfunc mf, void *f_data,
 				    nlopt_munge md, nlopt_munge mc,
 				    const std::vector<double> &tol) {
       myfunc_data *d = new myfunc_data;
       if (!d) throw std::bad_alloc();
       d->o = this; d->mf = mf; d->f_data = f_data; d->f = NULL; d->vf = NULL;
       d->munge_destroy = md; d->munge_copy = mc;
-      mythrow(nlopt_add_inequality_mconstraint(o, tol.size(), mymfunc, d, 
+      mythrow(nlopt_add_inequality_mconstraint(o, tol.size(), mymfunc, d,
 					       tol.empty() ? NULL : &tol[0]));
     }
-    void add_equality_mconstraint(mfunc mf, void *f_data, 
+    void add_equality_mconstraint(mfunc mf, void *f_data,
 				  nlopt_munge md, nlopt_munge mc,
 				  const std::vector<double> &tol) {
       myfunc_data *d = new myfunc_data;
       if (!d) throw std::bad_alloc();
       d->o = this; d->mf = mf; d->f_data = f_data; d->f = NULL; d->vf = NULL;
       d->munge_destroy = md; d->munge_copy = mc;
-      mythrow(nlopt_add_equality_mconstraint(o, tol.size(), mymfunc, d, 
+      mythrow(nlopt_add_equality_mconstraint(o, tol.size(), mymfunc, d,
 					     tol.empty() ? NULL : &tol[0]));
     }
 
@@ -540,7 +540,7 @@ namespace nlopt {
     NLOPT_GETSET_VEC(initial_step)
 
     void set_default_initial_step(const std::vector<double> &x) {
-      nlopt_result ret 
+      nlopt_result ret
 	= nlopt_set_default_initial_step(o, x.empty() ? NULL : &x[0]);
       mythrow(ret);
     }
