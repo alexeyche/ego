@@ -47,11 +47,8 @@ namespace NEgo {
 		using TCalcPartialArgDerivCb = std::function<TVector<T>()>;
 
 		TOneArgFunctorResultBase() :
-			CalcArgDerivCb([=]() -> T {
+			CalcArgDerivCb([]() -> T {
 				throw TEgoNotImplemented() << "Calculation of argument derivative was not implemented";
-			}),
-			CalcPartialArgDerivCb([=]() -> TVector<T> {
-				return TPartialDerivative<T,A>::Default(ArgDeriv());
 			})
 		{
 		}
@@ -66,12 +63,15 @@ namespace NEgo {
 		}
 
 		TVector<T> PartialArgDeriv() const {
-			return CalcPartialArgDerivCb();
+			if (!CalcPartialArgDerivCb) {
+				return TPartialDerivative<T,A>::Default(ArgDeriv());
+			}
+			return (*CalcPartialArgDerivCb)();
 		}
 
 	private:
 		TCalcArgDerivCb CalcArgDerivCb;
-		TCalcPartialArgDerivCb CalcPartialArgDerivCb;
+		TOptional<TCalcPartialArgDerivCb> CalcPartialArgDerivCb;
 	};
 
 	template <typename T, typename A>
