@@ -32,17 +32,17 @@ target_link_libraries(test_ego
 )
 install(TARGETS RUNTIME DESTINATION bin)
 
-add_custom_command(
-  OUTPUT test_ego.pass
-  POST_BUILD
-  COMMAND test_ego && touch test_ego.pass
-  COMMENT "Running test"
-  DEPENDS test_ego
-)
+#add_custom_command(
+#  OUTPUT test_ego.pass
+#  POST_BUILD
+#  COMMAND test_ego && touch test_ego.pass
+#  COMMENT "Running test"
+#  DEPENDS test_ego
+#)
 
-add_custom_target(
-    check_test ALL
-    DEPENDS test_ego.pass
-)
+#add_custom_target(
+#    check_test ALL
+#    DEPENDS test_ego.pass
+#)
 
 
