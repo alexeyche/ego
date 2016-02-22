@@ -51,6 +51,7 @@ class TEgoClient(object):
         return self.__ask("problem/{}/{}".format(self.problem, fun))
 
     def __tell_problem(self, fun, telling):
+        logging.debug("Going to tell {} this:\n{}".format(fun, json.dumps(telling)))
         req = urllib2.Request(
             "{server}/api/problem/{problem}/{fun}".format(
                 server = self.server,
@@ -93,7 +94,7 @@ def run(server, problem, args, num_of_evaluations):
             raise Exception("Found failed command: \nstdout:\n{}\nstderr:\n{}".format(stdout, stderr))
         ans = float(stdout.strip())
 
-        point[spec["Name"]] = ans
+        point["Point"][spec["Name"]] = ans
         ego.add_point(point)
 
 def main(argv):
