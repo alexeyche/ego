@@ -46,6 +46,26 @@ namespace NEgo {
                       , NLa::Ones(mean.size())
                     );
                 }
+            )
+            .SetFirstArgPartialDeriv(
+                [=](ui32 index) {
+                    TVectorD m = NLa::Zeros(mean.size());
+                    m(index) = 1.0;
+                    return MakePair(
+                        m
+                      , NLa::Zeros(mean.size())
+                    );
+                }
+            )
+            .SetSecondArgPartialDeriv(
+                [=](ui32 index) {
+                    TVectorD m = NLa::Zeros(mean.size());
+                    m(index) = 1.0;
+                    return MakePair(
+                        NLa::Zeros(mean.size())
+                      , m
+                    );
+                }
             );
     }
 

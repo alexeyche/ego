@@ -33,7 +33,7 @@ namespace NEgo {
     };
 
 
-    class TInfResult : public TTwoArgFunctorResultBase<double, TInfResult> {
+    class TInfResult : public TTwoArgFunctorResultBase<double, TMatrixD, TVectorD, TInfResult> {
     public:
         using TCalcPosteriorCb = std::function<TPosterior()>;
 

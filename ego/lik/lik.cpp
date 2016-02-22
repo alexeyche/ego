@@ -13,25 +13,18 @@ namespace NEgo {
         return dvec;
 	}
 
-    TDistrVec ILik::GetPredictiveDistributionsWithDerivative(
-        const TVectorD& mean, const TVectorD& variance,
-        const TVectorD& meanDeriv, const TVectorD& varianceDeriv, ui32 seed)
+    SPtr<IDistr> ILik::GetDistributionsWithDerivative(
+            double mean, double sd,
+            const TVectorD& meanDeriv, const TVectorD& sdDeriv, ui32 seed)
     {
-        TDistrVec dvec;
-        for(size_t pi=0; pi<mean.size(); ++pi) {
-            const double& var = variance(pi);
-            ENSURE(var>=0.0, "Got negative variance, something wrong in system");
-            double sd = sqrt(var);
-            SPtr<IDistr> d = GetDistribution(
-                mean(pi)
-              , sd
-              , seed
-            );
-            d->SetMeanDeriv(meanDeriv(pi));
-            d->SetSdDeriv(0.5 * varianceDeriv(pi) / sd);
-            dvec.push_back(d);
-        }
-        return dvec;
+        SPtr<IDistr> d = GetDistribution(
+            mean
+          , sd
+          , seed
+        );
+        d->SetMeanDeriv(meanDeriv);
+        d->SetSdDeriv(sdDeriv);
+        return d;
     }
 
 

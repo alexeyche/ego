@@ -12,7 +12,7 @@ namespace NEgo {
         }
         return var.Min + unitVal * (var.Max - var.Min);
     }
-    
+
     template <>
     int FromUnit(const TVariable& var, double unitVal) {
         if(! (((unitVal <= 1.0) || (std::abs(unitVal - 1.0) < std::numeric_limits<double>::epsilon())) &&
@@ -21,7 +21,7 @@ namespace NEgo {
         }
         return std::round(var.Min + unitVal * (var.Max - var.Min));
     }
-    
+
     TProblem::TProblem(const TFsPath srcFile)
         : Model(MakeShared(new TModel()))
     {
@@ -94,7 +94,7 @@ namespace NEgo {
 
         for (const auto& namedVar: Config.Variables) {
             const TVariable& var = namedVar.second;
-            
+
             switch (var.Type) {
                 case EVariableType::INT:
                     req["Point"][var.Name] = FromUnit<int>(var, point.X(var.Id));

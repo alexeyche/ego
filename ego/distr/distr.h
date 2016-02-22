@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ego/base/la.h>
 #include <ego/base/base.h>
 
 #include <random>
@@ -52,28 +53,49 @@ namespace NEgo {
 	    	return Sd;
 	    }
 
-		const double& GetMeanDeriv() const {
+	    // ----------------
+		const TVectorD& GetMeanDeriv() const {
 	    	return MeanDeriv;
 	    }
 
-	    const double& GetSdDeriv() const {
+	    const TVectorD& GetSdDeriv() const {
 	    	return SdDeriv;
 	    }
 
-		void SetMeanDeriv(double md) {
+		void SetMeanDeriv(const TVectorD& md) {
 	    	MeanDeriv = md;
 	    }
 
-	    void SetSdDeriv(double sdd) {
+	    void SetSdDeriv(const TVectorD& sdd) {
 	    	SdDeriv = sdd;
 	    }
+
+	    // ----------------
+		// double GetMeanTotalDeriv() const {
+	 //    	return MeanTotalDeriv;
+	 //    }
+
+	 //    double GetSdTotalDeriv() const {
+	 //    	return SdTotalDeriv;
+	 //    }
+
+		// void SetMeanTotalDeriv(double md) {
+	 //    	MeanTotalDeriv = md;
+		// }
+
+	 //    void SetSdTotalDeriv(double sdd) {
+	 //    	SdTotalDeriv = sdd;
+	 //    }
 
 	protected:
 		double Mean;
 		double Sd;
 
-		double MeanDeriv;
-		double SdDeriv;
+		TVectorD MeanDeriv;
+		TVectorD SdDeriv;
+
+		// double MeanTotalDeriv;
+		// double SdTotalDeriv;
 
 		std::mt19937 Generator;
 	};

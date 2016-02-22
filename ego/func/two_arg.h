@@ -2,13 +2,18 @@
 
 #include "functor.h"
 
+#include <ego/util/optional.h>
+
 namespace NEgo {
 
-	template <typename T, typename Derived>
+	template <typename T, typename A1, typename A2, typename Derived>
 	class TTwoArgFunctorResultBase : public TFunctorResult<T, Derived> {
 	public:
-		using TCalcFirstArgDerivCb = std::function<T()>;
-		using TCalcSecondArgDerivCb = std::function<T()>;
+		using TSelf = TTwoArgFunctorResultBase<T, A1, A2, Derived>;
+
+		using TCalcArgDerivCb = std::function<T()>;
+		using TCalcFirstArgPartialDerivCb = typename TPartialDerivative<T, A1>::TCalcFunction;
+		using TCalcSecondArgPartialDerivCb = typename TPartialDerivative<T, A2>::TCalcFunction;
 
 		TTwoArgFunctorResultBase() :
 			CalcFirstArgDerivCb([=]() -> T {
@@ -20,15 +25,49 @@ namespace NEgo {
 		{
 		}
 
-		Derived& SetFirstArgDeriv(TCalcFirstArgDerivCb cb) {
+		Derived& SetFirstArgDeriv(TCalcArgDerivCb cb) {
 			CalcFirstArgDerivCb = cb;
 			return *static_cast<Derived*>(this);
 		}
 
-		Derived& SetSecondArgDeriv(TCalcSecondArgDerivCb cb) {
+		Derived& SetSecondArgDeriv(TCalcArgDerivCb cb) {
 			CalcSecondArgDerivCb = cb;
 			return *static_cast<Derived*>(this);
 		}
+
+
+		Derived& SetFirstArgPartialDeriv(TCalcFirstArgPartialDerivCb cb) {
+			CalcFirstArgPartialDerivCb = cb;
+			return *static_cast<Derived*>(this);
+		}
+
+		Derived& SetSecondArgPartialDeriv(TCalcSecondArgPartialDerivCb cb) {
+			CalcSecondArgPartialDerivCb = cb;
+			return *static_cast<Derived*>(this);
+		}
+
+		template <typename ... FunArgs>
+		T FirstArgPartialDeriv(FunArgs ... args) const {
+			if (!CalcFirstArgPartialDerivCb) {
+				if (!FirstArgDerivCache) {
+					const_cast<TSelf*>(this)->FirstArgDerivCache = FirstArgDeriv();
+				}
+				return TPartialDerivative<T,A1>::Default(*FirstArgDerivCache, args...);
+			}
+			return (*CalcFirstArgPartialDerivCb)(args...);
+		}
+
+		template <typename ... FunArgs>
+		T SecondArgPartialDeriv(FunArgs ... args) const {
+			if (!CalcSecondArgPartialDerivCb) {
+				if (!SecondArgDerivCache) {
+					const_cast<TSelf*>(this)->SecondArgDerivCache = SecondArgDeriv();
+				}
+				return TPartialDerivative<T,A2>::Default(*SecondArgDerivCache, args...);
+			}
+			return (*CalcSecondArgPartialDerivCb)(args...);
+		}
+
 
 		T FirstArgDeriv() const {
 			return CalcFirstArgDerivCb();
@@ -38,16 +77,23 @@ namespace NEgo {
 			return CalcSecondArgDerivCb();
 		}
 
+
 	private:
-		TCalcFirstArgDerivCb CalcFirstArgDerivCb;
-		TCalcSecondArgDerivCb CalcSecondArgDerivCb;
+		TCalcArgDerivCb CalcFirstArgDerivCb;
+		TCalcArgDerivCb CalcSecondArgDerivCb;
+
+		TOptional<TCalcFirstArgPartialDerivCb> CalcFirstArgPartialDerivCb;
+		TOptional<TCalcSecondArgPartialDerivCb> CalcSecondArgPartialDerivCb;
+
+		TOptional<T> FirstArgDerivCache;
+		TOptional<T> SecondArgDerivCache;
 	};
 
-	template <typename T>
-	class TTwoArgFunctorResult : public TTwoArgFunctorResultBase<T, TTwoArgFunctorResult<T>> {
+	template <typename T, typename A1, typename A2>
+	class TTwoArgFunctorResult : public TTwoArgFunctorResultBase<T, A1, A2, TTwoArgFunctorResult<T, A1, A2>> {
 	};
 
-	template <typename T, typename A1, typename A2, typename R = TTwoArgFunctorResult<T>>
+	template <typename T, typename A1, typename A2, typename R = TTwoArgFunctorResult<T, A1, A2>>
 	class TTwoArgFunctor : public TFunctorBase<T> {
 	public:
 		using TFirst = A1;

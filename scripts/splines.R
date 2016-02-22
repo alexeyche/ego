@@ -18,14 +18,14 @@ if (seed > 0) {
 
 x = NULL
 in.r.studio = TRUE
-if(length(grep("RStudio", args)) == 0) {    
+if(length(grep("RStudio", args)) == 0) {
     f <- file("stdin")
     open(f)
-    line = readLines(f,n=1)    
+    line = readLines(f,n=1)
     x = as.numeric(line)
     in.r.studio = FALSE
 } else {
-    set.seed(100)    
+    set.seed(100)
 }
 
 p.num = 4*10
@@ -43,7 +43,7 @@ y.spl = sample(y.spl)
 
 spl = splinefun(x.spl, y.spl)
 if (in.r.studio) {
-    plot(spl, xlim = c(min(x.spl), max(x.spl)))    
+    plot(spl, xlim = c(min(x.spl), max(x.spl)))
 }
 
 cat(spl(x), "\n")

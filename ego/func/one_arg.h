@@ -6,45 +6,13 @@
 
 namespace NEgo {
 
-	template <typename T, typename A>
-	struct TPartialDerivative {
-		static TVector<T> Default(const T& dArg) {
-			throw TEgoNotImplemented() << "Calculation of partial argument derivative was not implemented";
-		}
-	};
-
-
-	// template <typename T, typename A>
-	// T PartialDerivativeDefault(const T& dArg, ui32 index) {
-
-	// 	// T v = NLa::CreateSameShape<T>(dArg, /* fill_zeros = */ true);
-	// 	// ENSURE(index < dArg.size(), "Trying to take partial derivative of something bigger: " << index << " >= " << dArg.size());
-	// 	// v(index) = dArg(index);
-	// 	// return v;
-	// }
-
-	// template <>
-	// double PartialDerivativeDefault(const double& dArg, ui32 index);
-
-	// template <>
-	// TPair<TVectorD, TVectorD> PartialDerivativeDefault(const TPair<TVectorD, TVectorD>& dArg, ui32 index);
-
-	// template <typename T>
-	// ui32 GetReturnValueSize(const T& v) {
-	// 	return v.size();
-	// }
-
-	// template <>
-	// ui32 GetReturnValueSize(const double& v);
-
-	// template <>
-	// ui32 GetReturnValueSize(const TPair<TVectorD, TVectorD>& v);
-
 	template <typename T, typename A, typename Derived>
 	class TOneArgFunctorResultBase : public TFunctorResult<T, Derived> {
 	public:
+		using TSelf = TOneArgFunctorResultBase<T, A, Derived>;
+
 		using TCalcArgDerivCb = std::function<T()>;
-		using TCalcPartialArgDerivCb = std::function<TVector<T>()>;
+		using TCalcArgPartialDerivCb = typename TPartialDerivative<T, A>::TCalcFunction;
 
 		TOneArgFunctorResultBase() :
 			CalcArgDerivCb([]() -> T {
@@ -58,20 +26,31 @@ namespace NEgo {
 			return *static_cast<Derived*>(this);
 		}
 
+		Derived& SetArgPartialDeriv(TCalcArgPartialDerivCb cb) {
+			CalcArgPartialDerivCb = cb;
+			return *static_cast<Derived*>(this);
+		}
+
 		T ArgDeriv() const {
 			return CalcArgDerivCb();
 		}
 
-		TVector<T> PartialArgDeriv() const {
-			if (!CalcPartialArgDerivCb) {
-				return TPartialDerivative<T,A>::Default(ArgDeriv());
+		template <typename ... FunArgs>
+		T ArgPartialDeriv(FunArgs ... args) const {
+			if (!CalcArgPartialDerivCb) {
+				if (!ArgDerivCache) {
+					const_cast<TSelf*>(this)->ArgDerivCache = ArgDeriv();
+				}
+				return TPartialDerivative<T,A>::Default(*ArgDerivCache, args...);
 			}
-			return (*CalcPartialArgDerivCb)();
+			return (*CalcArgPartialDerivCb)(args...);
 		}
 
 	private:
 		TCalcArgDerivCb CalcArgDerivCb;
-		TOptional<TCalcPartialArgDerivCb> CalcPartialArgDerivCb;
+		TOptional<TCalcArgPartialDerivCb> CalcArgPartialDerivCb;
+
+		TOptional<T> ArgDerivCache;
 	};
 
 	template <typename T, typename A>

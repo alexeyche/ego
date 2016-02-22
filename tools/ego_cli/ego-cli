@@ -36,34 +36,54 @@ def add_coloring_to_emit_ansi(fn):
     return new
 
 
-def run(server, problem, args, random, num_of_evaluations):
-    seed = os.environ.get("SEED")
-    rng = None
-    if seed:
-        rng = np.random.RandomState(int(seed))
-    else:
-        rng = np.random.RandomState()
+class TEgoClient(object):
+    def __init__(self, server, problem):
+        self.server = server
+        self.problem = problem
 
-    spec_str = urllib2.urlopen(
-        "{server}/api/problem/{problem}/specification".format(
-            server=server,
-            problem=problem
+    def __ask(self, fun):
+        ans_str = urllib2.urlopen("{}/api/{}".format(self.server, fun)).read()
+        logging.debug("Got answer: {}".format(ans_str))
+        ans = json.loads(ans_str, object_pairs_hook=OrderedDict)
+        return ans;
+
+    def __ask_problem(self, fun):
+        return self.__ask("problem/{}/{}".format(self.problem, fun))
+
+    def __tell_problem(self, fun, telling):
+        req = urllib2.Request(
+            "{server}/api/problem/{problem}/{fun}".format(
+                server = self.server,
+                problem = self.problem,
+                fun = fun,
+            ),
+            json.dumps(telling)
         )
-    ).read()
-    spec = json.loads(spec_str, object_pairs_hook=OrderedDict)
+        response = urllib2.urlopen(req)
+        d = response.read()
+        logging.debug("Result of telling: {}".format(d))
 
-    samples = {}
-    if random:
-        for v in spec["Variable"]:
-            samples[v["Name"]] = lhs_sample(num_of_evaluations, rng)
+
+    def get_specification(self):
+        return self.__ask_problem("specification")
+
+    def get_next_point(self):
+        return self.__ask_problem("next_point")
+
+    def add_point(self, point):
+        self.__tell_problem("add_point", point)
+
+
+def run(server, problem, args, num_of_evaluations):
+    ego = TEgoClient(server, problem)
+
+    spec = ego.get_specification()
 
     for ev_id in xrange(num_of_evaluations):
-        inp = []
-        if random:
-            for v in spec["Variable"]:
-                inp.append(v["Min"] + samples[v["Name"]][ev_id]*(v["Max"]-v["Min"]))
+        point = ego.get_next_point()
+        logging.debug("Got point with id {}".format(point["Id"]))
 
-        input_line = " ".join([ str(i) for i in inp ]) + "\n"
+        input_line = " ".join([ str(i) for i in point["Point"].values() ]) + "\n"
         logging.info("Running: \n\t{}\nwith input: {}".format(" ".join(args), input_line))
         p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
         stdout, stderr = p.communicate(input = input_line)
@@ -73,19 +93,8 @@ def run(server, problem, args, random, num_of_evaluations):
             raise Exception("Found failed command: \nstdout:\n{}\nstderr:\n{}".format(stdout, stderr))
         ans = float(stdout.strip())
 
-        send_ans = {}
-        send_ans["Data"] = OrderedDict(zip([ v["Name"] for v in spec["Variable"]] + [ spec["Name"] ], inp + [ ans ]))
-        send_ans["Options"] = {}
-        send_ans["Options"]["UpdateModel"] = True if ev_id == num_of_evaluations-1 else False
-        req = urllib2.Request(
-            "{server}/api/problem/{problem}/accept".format(
-                server = server,
-                problem = problem
-            ),
-            json.dumps(send_ans)
-        )
-        response = urllib2.urlopen(req)
-        d = response.read()
+        point[spec["Name"]] = ans
+        ego.add_point(point)
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Ego client')
@@ -105,11 +114,6 @@ def main(argv):
         'args',
         type=str,
         help='Args to run', nargs="+"
-    )
-    parser.add_argument(
-        '--random',
-        action='store_true',
-        help='Randomize input instead of asking server'
     )
     parser.add_argument(
         '-n',
@@ -133,7 +137,7 @@ def main(argv):
     consoleHandler.setFormatter(logFormatter)
     rootLogger.addHandler(consoleHandler)
 
-    run(args.server, args.problem, args.args, args.random, args.num_of_evaluations)
+    run(args.server, args.problem, args.args, args.num_of_evaluations)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

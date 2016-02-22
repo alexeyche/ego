@@ -7,6 +7,7 @@
 
 namespace NEgo {
 
+
     TAcqEI::Result TAcqEI::UserCalc(const TVectorD& x) const {
     	ENSURE(Model, "Model is not set");
 
@@ -21,27 +22,40 @@ namespace NEgo {
         double parenVal = (u * cdf_u + pdf_u);
         double criteria = - d->GetSd() * parenVal;
 
-        double dudx = - d->GetMeanDeriv() / d->GetSd() - d->GetSdDeriv() * diff / (d->GetSd() * d->GetSd());
-        double deriv = d->GetSd() *
-            dudx * (
-                d->StandardPdfDeriv(u) +
-                u * d->StandardCdfDeriv(u) +
-                cdf_u
-            ) +
-            d->GetSdDeriv() * parenVal;
-
         return TAcqEI::Result()
             .SetValue(
-                [=]() {
+                [=]() -> double {
                    return criteria;
                 }
             )
-            .SetArgDeriv(
-                [=]() {
+            .SetArgPartialDeriv(
+                [=](ui32 index) -> double {
+                    const TVectorD& meanDeriv = d->GetMeanDeriv();
+                    const TVectorD& sdDeriv = d->GetSdDeriv();
+                    double dudx = - meanDeriv(index) / d->GetSd() - sdDeriv(index) * diff / (d->GetSd() * d->GetSd());
+                    double deriv = d->GetSd() *
+                        dudx * (
+                            d->StandardPdfDeriv(u) +
+                            u * d->StandardCdfDeriv(u) +
+                            cdf_u
+                        ) +
+                        sdDeriv(index) * parenVal;
                     return - deriv;
                 }
             );
-
+            // .SetArgDeriv(
+            //     [=]() -> double {
+            //         double dudx = - d->GetMeanTotalDeriv() / d->GetSd() - d->GetSdTotalDeriv() * diff / (d->GetSd() * d->GetSd());
+            //         double deriv = d->GetSd() *
+            //             dudx * (
+            //                 d->StandardPdfDeriv(u) +
+            //                 u * d->StandardCdfDeriv(u) +
+            //                 cdf_u
+            //             ) +
+            //             d->GetSdTotalDeriv() * parenVal;
+            //         return - deriv;
+            //     }
+            // )
     }
 
     size_t TAcqEI::GetParametersSize() const {

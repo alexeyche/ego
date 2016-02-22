@@ -4,6 +4,35 @@
 
 namespace NEgo {
 
+
+	template <typename T, typename A>
+	struct TPartialDerivative;
+
+	template <typename T>
+	struct TPartialDerivative<T, TMatrixD> {
+		using TCalcFunction = std::function<T(ui32, ui32)>;
+
+		static T Default(const T& dArg, ui32 indexRow, ui32 indexCol) {
+			throw TEgoNotImplemented() << "Calculation of partial argument derivative was not implemented";
+		}
+	};
+
+
+	template <typename T>
+	struct TPartialDerivative<T, TVectorD> {
+		using TCalcFunction = std::function<T(ui32)>;
+
+		static T Default(const T& dArg, ui32 index) {
+			throw TEgoNotImplemented() << "Calculation of partial argument derivative was not implemented";
+		}
+	};
+
+	template <>
+	TMatrixD TPartialDerivative<TMatrixD, TMatrixD>::Default(const TMatrixD& dArg, ui32 indexRow, ui32 indexCol);
+
+	template <>
+	TVectorD TPartialDerivative<TVectorD, TVectorD>::Default(const TVectorD& dArg, ui32 index);
+
 	template <typename T, typename Derived>
 	class TFunctorResult {
 	public:

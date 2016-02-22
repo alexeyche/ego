@@ -29,6 +29,11 @@ namespace NEgo {
                 [=]() -> TVectorD {
                     return NLa::Zeros(m.n_rows);
                 }
+            )
+            .SetArgPartialDeriv(
+                [=](ui32 indexRow, ui32 indexCol) -> TVectorD {
+                    return NLa::Zeros(m.n_rows);
+                }
             );
     }
 

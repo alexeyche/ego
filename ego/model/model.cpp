@@ -188,6 +188,24 @@ namespace NEgo {
                       , Fs2Deriv % likRes.SecondArgDeriv().second
                     );
                 }
+            )
+            .SetArgPartialDeriv(
+                [=](ui32 indexRow, ui32 indexCol) -> TPair<TVectorD, TVectorD> {
+                    TMatrixD KsDeriv = covRes.SecondArgPartialDeriv(indexRow, indexCol);
+                    TVectorD FmuDeriv = meanRes.ArgPartialDeriv(indexRow, indexCol) + NLa::Trans(KsDeriv) * Posterior->Alpha;
+                    TVectorD Fs2Deriv;
+                    if(Posterior->IsCholesky) {
+                        TMatrixD Vderiv = NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % (Posterior->Linv * KsDeriv);
+                        Fs2Deriv = NLa::Diag(crossCovRes.SecondArgPartialDeriv(indexRow, indexCol)) - NLa::Trans(NLa::ColSum(2.0 * V % Vderiv));
+                    } else {
+                        TMatrixD Vderiv = Posterior->L * KsDeriv;
+                        Fs2Deriv = NLa::Diag(crossCovRes.SecondArgPartialDeriv(indexRow, indexCol)) + NLa::Trans(NLa::ColSum(V % KsDeriv + Vderiv % Ks));
+                    }
+                    return MakePair(
+                        FmuDeriv % likRes.FirstArgPartialDeriv(indexRow).first
+                      , Fs2Deriv % likRes.SecondArgPartialDeriv(indexRow).second
+                    );
+                }
             );
     }
 
@@ -207,22 +225,36 @@ namespace NEgo {
         return Lik->GetPredictiveDistributions(calcRes.first, calcRes.second, Config.Seed);
     }
 
-    TDistrVec TModel::GetPredictionWithDerivative(const TMatrixD &Xnew) {
-        auto calcRes = Calc(Xnew);
-        auto preds = calcRes.Value();
-        auto predsDeriv = calcRes.ArgDeriv();
-        return Lik->GetPredictiveDistributionsWithDerivative(preds.first, preds.second, predsDeriv.first, predsDeriv.second, Config.Seed);
-    }
 
     SPtr<IDistr> TModel::GetPointPrediction(const TVectorD& Xnew) {
         TDistrVec v = GetPrediction(NLa::Trans(Xnew));
         ENSURE(v.size() == 1, "UB");
         return v[0];
     }
+
     SPtr<IDistr> TModel::GetPointPredictionWithDerivative(const TVectorD& Xnew) {
-        TDistrVec v = GetPredictionWithDerivative(NLa::Trans(Xnew));
-        ENSURE(v.size() == 1, "UB");
-        return v[0];
+        TMatrixD XnewM = NLa::Trans(Xnew);
+        auto calcRes = Calc(XnewM);
+
+        auto preds = calcRes.Value();
+        ENSURE((preds.first.size() == 1) && (preds.second.size() == 1), "UB");
+        ENSURE(preds.second(0) >= 0, "Got negative variance, something wrong in system");
+
+        double mean = preds.first(0);
+        double sd = sqrt(preds.second(0));
+
+        TVectorD meanDeriv(Xnew.size());
+        TVectorD sdDeriv(Xnew.size());
+        for (size_t index=0; index < Xnew.size(); ++index) {
+            auto deriv = calcRes.ArgPartialDeriv(0, index);
+            ENSURE((deriv.first.size() == 1) && (deriv.second.size() == 1), "UB");
+
+            meanDeriv(index) = deriv.first(0);
+            sdDeriv(index) = 0.5 * deriv.second(0) / sd;
+        }
+
+        auto d = Lik->GetDistributionsWithDerivative(mean, sd, meanDeriv, sdDeriv, Config.Seed);
+        return d;
     }
 
     SPtr<IAcq> TModel::GetAcq() const {

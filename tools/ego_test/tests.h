@@ -8,10 +8,12 @@
 
 using namespace NEgo;
 
+
 constexpr double Epsilon = 1e-4;
 constexpr double LilEpsilon = 1e-4;
 constexpr ui32 DimSize = 5;
 constexpr ui32 SampleSize = 15;
+
 
 template <typename T>
 void CheckDerivativeSanity(T derivVal, T leftVal, T rightVal, std::string name) {
@@ -92,6 +94,172 @@ TVectorD CreateTestDataVectorX() {
 }
 
 
+
+
+template <typename Functor, typename A>
+struct TTestPartials;
+
+
+template <typename Functor>
+struct TTestPartials<Functor, TMatrixD> {
+	static void Test(std::string functorName, SPtr<Functor> f,  const TMatrixD& a) {
+		auto resCenter = f->Calc(a);
+
+		for (ui32 indexRow=0; indexRow < a.n_rows; ++indexRow) {
+			for (ui32 indexCol=0; indexCol < a.n_cols; ++indexCol) {
+				TMatrixD leftA = a;
+				leftA(indexRow, indexCol) -= Epsilon;
+				TMatrixD rightA = a;
+				rightA(indexRow, indexCol) += Epsilon;
+
+				auto resLeftEpsPart = f->Calc(leftA);
+				auto resRightEpsPart = f->Calc(rightA);
+				try {
+					CheckDerivativeSanity(
+						resCenter.ArgPartialDeriv(indexRow, indexCol),
+						resLeftEpsPart.Value(),
+						resRightEpsPart.Value(),
+						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
+					);
+				} catch(const TEgoNotImplemented &e) {
+					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+				}
+			}
+		}
+	}
+	template <typename TSecond>
+	static void TestFirstArg(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, const TSecond& secArg) {
+		auto resCenter = f->Calc(a, secArg);
+
+		for (ui32 indexRow=0; indexRow < a.n_rows; ++indexRow) {
+			for (ui32 indexCol=0; indexCol < a.n_cols; ++indexCol) {
+				TMatrixD leftA = a;
+				leftA(indexRow, indexCol) -= Epsilon;
+				TMatrixD rightA = a;
+				rightA(indexRow, indexCol) += Epsilon;
+
+				auto resLeftEpsPart = f->Calc(leftA, secArg);
+				auto resRightEpsPart = f->Calc(rightA, secArg);
+				try {
+					CheckDerivativeSanity(
+						resCenter.FirstArgPartialDeriv(indexRow, indexCol),
+						resLeftEpsPart.Value(),
+						resRightEpsPart.Value(),
+						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
+					);
+				} catch(const TEgoNotImplemented &e) {
+					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+				}
+			}
+		}
+	}
+	template <typename TFirst>
+	static void TestSecondArg(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, const TFirst& firstArg) {
+		auto resCenter = f->Calc(firstArg, a);
+
+		for (ui32 indexRow=0; indexRow < a.n_rows; ++indexRow) {
+			for (ui32 indexCol=0; indexCol < a.n_cols; ++indexCol) {
+				TMatrixD leftA = a;
+				leftA(indexRow, indexCol) -= Epsilon;
+				TMatrixD rightA = a;
+				rightA(indexRow, indexCol) += Epsilon;
+
+				auto resLeftEpsPart = f->Calc(firstArg, leftA);
+				auto resRightEpsPart = f->Calc(firstArg, rightA);
+				try {
+					CheckDerivativeSanity(
+						resCenter.SecondArgPartialDeriv(indexRow, indexCol),
+						resLeftEpsPart.Value(),
+						resRightEpsPart.Value(),
+						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
+					);
+				} catch(const TEgoNotImplemented &e) {
+					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+				}
+			}
+		}
+	}
+};
+
+
+
+template <typename Functor>
+struct TTestPartials<Functor, TVectorD> {
+	static void Test(std::string functorName, SPtr<Functor> f,  const TVectorD& a) {
+		auto resCenter = f->Calc(a);
+
+		for (ui32 index=0; index < a.size(); ++index) {
+			TVectorD leftA = a;
+			leftA(index) -= Epsilon;
+			TVectorD rightA = a;
+			rightA(index) += Epsilon;
+
+			auto resLeftEpsPart = f->Calc(leftA);
+			auto resRightEpsPart = f->Calc(rightA);
+			try {
+				CheckDerivativeSanity(
+					resCenter.ArgPartialDeriv(index),
+					resLeftEpsPart.Value(),
+					resRightEpsPart.Value(),
+					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
+				);
+			} catch(const TEgoNotImplemented &e) {
+				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+			}
+		}
+	}
+	template <typename TSecond>
+	static void TestFirstArg(std::string functorName, SPtr<Functor> f,  const TVectorD& a, const TSecond& secArg) {
+		auto resCenter = f->Calc(a, secArg);
+
+		for (ui32 index=0; index < a.size(); ++index) {
+			TVectorD leftA = a;
+			leftA(index) -= Epsilon;
+			TVectorD rightA = a;
+			rightA(index) += Epsilon;
+
+			auto resLeftEpsPart = f->Calc(leftA, secArg);
+			auto resRightEpsPart = f->Calc(rightA, secArg);
+			try {
+				CheckDerivativeSanity(
+					resCenter.FirstArgPartialDeriv(index),
+					resLeftEpsPart.Value(),
+					resRightEpsPart.Value(),
+					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
+				);
+			} catch(const TEgoNotImplemented &e) {
+				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+			}
+		}
+	}
+
+	template <typename TFirst>
+	static void TestSecondArg(std::string functorName, SPtr<Functor> f,  const TVectorD& a, const TFirst& firstArg) {
+		auto resCenter = f->Calc(firstArg, a);
+
+		for (ui32 index=0; index < a.size(); ++index) {
+			TVectorD leftA = a;
+			leftA(index) -= Epsilon;
+			TVectorD rightA = a;
+			rightA(index) += Epsilon;
+
+			auto resLeftEpsPart = f->Calc(firstArg, leftA);
+			auto resRightEpsPart = f->Calc(firstArg, rightA);
+			try {
+				CheckDerivativeSanity(
+					resCenter.SecondArgPartialDeriv(index),
+					resLeftEpsPart.Value(),
+					resRightEpsPart.Value(),
+					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
+				);
+			} catch(const TEgoNotImplemented &e) {
+				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+			}
+		}
+	}
+};
+
+
 template <typename Functor>
 void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Functor::TArg a = CreateTestData<typename Functor::TArg>()) {
 	if(f->GetParametersSize()>0) {
@@ -114,32 +282,8 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
 
-	TVector<typename Functor::TReturn> partials;
-	try {
-		partials = resCenter.PartialArgDeriv();
-	} catch(const TEgoNotImplemented &e) {
-		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
-	}
+	TTestPartials<Functor, typename Functor::TArg>::Test(functorName, f, a);
 
-	for (ui32 index=0; index < partials.size(); ++index) {
-		typename Functor::TArg leftA = a;
-		leftA(index) -= Epsilon;
-		typename Functor::TArg rightA = a;
-		rightA(index) += Epsilon;
-
-		auto resLeftEpsPart = f->Calc(leftA);
-		auto resRightEpsPart = f->Calc(rightA);
-		try {
-			CheckDerivativeSanity(
-				partials[index],
-				resLeftEpsPart.Value(),
-				resRightEpsPart.Value(),
-				functorName + TString(NStr::TStringBuilder() << ", " << index << " partial argument derivative")
-			);
-		} catch(const TEgoNotImplemented &e) {
-			L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
-		}
-	}
 	if(f->GetParametersSize() > 0) {
 		TVector<double> centerParams = f->GetParameters();
 		try {
@@ -167,6 +311,7 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 		}
 	}
 }
+
 
 template <typename Functor>
 void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
@@ -208,6 +353,9 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 	} catch(const TEgoNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
+
+	TTestPartials<Functor, typename Functor::TFirst>::TestFirstArg(functorName, f, first, second);
+	TTestPartials<Functor, typename Functor::TSecond>::TestSecondArg(functorName, f, second, first);
 
 	if(f->GetParametersSize() > 0) {
 		TVector<double> centerParams = f->GetParameters();
