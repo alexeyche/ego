@@ -32,10 +32,17 @@ namespace NEgo {
     DEFINE_ERROR(TEgoFileNotFound);
     DEFINE_ERROR(TEgoElementNotFound);
     DEFINE_ERROR(TEgoLogicError);
+    DEFINE_ERROR(TEgoAlgebraError);
 
     #define ENSURE(cond, str) \
         if(!(cond)) { \
             throw TEgoException() << str; \
         }\
+
+    #define ENSURE_ERR(cond, exc) \
+        if(!(cond)) { \
+            throw exc; \
+        }\
+
 
 } // namespace NEgo

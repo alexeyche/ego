@@ -21,7 +21,7 @@ namespace NEgo {
 
 	template <typename T>
 	T FromUnit(const TVariable& var, double unitVal);
-	
+
 
 	class TProblem : public ISerial<NEgoProto::TProblemState> {
 	public:

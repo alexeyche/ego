@@ -76,29 +76,30 @@ namespace NEgo {
  		}
 
 
-		TPair<TVectorD, double> OptimizeModelLogLik(TModel &model, const TOptConfig& config) {
+		TPair<TVector<double>, double> OptimizeModelLogLik(TModel &model, const TVector<double>& start, const TOptConfig& config) {
 			L_DEBUG << "Going to minimize model log likelihood with " << config.Method;
 			switch(MethodFromString(config.Method)) {
 				case CG:
 					{
 						auto res = CgMinimize(
-					        model.GetParameters(),
+					        start,
 					        [&] (const TVectorD &x) -> TPair<double, TVectorD> {
 					            auto res = model.GetNegativeLogLik(NLa::VecToStd(x));
 					            return MakePair(res.Value(), NLa::StdToVec(res.ParamDeriv()));
 					        },
 					        TCgMinimizeConfig(config)
 					    );
-					    model.SetParameters(NLa::VecToStd(res.first));
-					    return res;
+					    TVector<double> par = NLa::VecToStd(res.first);
+					    model.SetParameters(par);
+					    return MakePair(par, res.second);
 					}
 				case RPROP:
 					{
-						return MakePair(TVectorD(), 0.0);
+						return MakePair(TVector<double>(), 0.0);
 					}
 				default:
 					{
-						return NLoptModelMinimize(model, config);
+						return NLoptModelMinimize(model, start, config);
 					}
 			}
 		}

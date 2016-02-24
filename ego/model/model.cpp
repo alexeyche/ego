@@ -24,8 +24,8 @@ namespace NEgo {
 
         X = TMatrixD(0, D);
 
-        TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
-        SetParameters(v);
+        // TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
+        // SetParameters(v);
     }
 
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y)
@@ -38,8 +38,8 @@ namespace NEgo {
         size_t D = x.n_cols;
         InitWithConfig(Config, D);
 
-        TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
-        SetParameters(v);
+        // TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
+        // SetParameters(v);
         SetData(x, y);
     }
 

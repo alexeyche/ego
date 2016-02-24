@@ -42,7 +42,7 @@ int main(int argc, const char** argv) {
     L_DEBUG << "Got ego options: \n\n" << config.DebugString();
     NEgoProto::TModelConfigMessage modelConfig;
     ReadProtoTextFromFile(config.config(), modelConfig);
-    
+
     L_DEBUG << "Got ego model config: \n\n" << modelConfig.DebugString();
 
     TMatrixD inputData = NLa::ReadCsv(config.input());
@@ -55,6 +55,5 @@ int main(int argc, const char** argv) {
         L_DEBUG << "Param " << i << " derivative: " << v;
         ++i;
     }
-    // NOpt::OptimizeModelLogLik(model, NOpt::MethodFromString(config.opt()));
     return 0;
 }

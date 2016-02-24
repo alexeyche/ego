@@ -11,7 +11,7 @@
 
 namespace NEgo {
 
-    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize);
+    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize, double min = 0.0, double max = 1.0);
 
     namespace NSobolImpl {
 

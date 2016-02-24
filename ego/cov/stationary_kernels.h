@@ -10,7 +10,7 @@ namespace NEgo {
 			using TParent = TOneArgFunctor<TMatrixD, TMatrixD>;
 
 	    	TSqExp(size_t dimSize) : TParent(dimSize) {}
-			
+
     		TSqExp::Result UserCalc(const TMatrixD &r) const override final;
     	};
 

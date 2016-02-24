@@ -16,22 +16,64 @@ ModelState {
     Acq: "aEI"
   }
   X {
-    n_rows: 0
+    row {
+      x: 0.6875
+    }
+    row {
+      x: 0.9375
+    }
+    row {
+      x: 0.4375
+    }
+    row {
+      x: 0.3125
+    }
+    row {
+      x: 0.8125
+    }
+    row {
+      x: 0.5625
+    }
+    row {
+      x: 0.0625
+    }
+    row {
+      x: 0.09375
+    }
+    row {
+      x: 0.59375
+    }
+    row {
+      x: 0.84375
+    }
+    n_rows: 10
     n_cols: 1
   }
   Y {
+    x: 0.8625037
+    x: -2.766247
+    x: 3.085203
+    x: 1.106322
+    x: 0.1289923
+    x: -3.574721
+    x: -0.1474223
+    x: -2.642286
+    x: -7.223474
+    x: -8.205577
   }
   Parameters {
     x: 0
-    x: 0
-    x: 0
-    x: 0
+    x: -4.60517
+    x: -0.6931472
+    x: -4.60517
   }
 }
 StrategyState {
   StrategyConfig {
   }
-  IterationNumber: 0
+  StartIterationNum: 10
+  EndIterationNum: 10
+  BatchNumber: 0
   InitSamples {
     row {
       x: 0.6875

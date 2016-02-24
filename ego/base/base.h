@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <thread>
+#include <mutex>
 
 namespace NEgo {
 
@@ -75,5 +77,9 @@ namespace NEgo {
 
 	template <typename T>
 	using TRefWrap = std::reference_wrapper<T>;
+
+	using TMutex = std::mutex;
+
+	using TGuard = std::lock_guard<TMutex>;
 
 } // namespace NEgo

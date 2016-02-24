@@ -33,6 +33,9 @@ namespace NEgo {
             IterationsNum = ProtoConfig.iterationsnum();
             HyperOptFreq = ProtoConfig.hyperoptfreq();
 
+            HyperLowerBound = ProtoConfig.hyperlowerbound();
+            HyperUpperBound = ProtoConfig.hyperupperbound();
+
             HyperOpt = TOptConfig(ProtoConfig.hyperopt());
             AcqOpt = TOptConfig(ProtoConfig.acqopt());
         }
@@ -44,6 +47,8 @@ namespace NEgo {
         ui32 BatchSize;
         ui32 IterationsNum;
         ui32 HyperOptFreq;
+        double HyperLowerBound;
+        double HyperUpperBound;
 
         NEgoProto::TStrategyConfig ProtoConfig;
     };

@@ -8,6 +8,7 @@ namespace NEgo {
     TMeanConst::TMeanConst(size_t dim_size)
         : IMean(dim_size)
     {
+        Parameters = {0.0};
     }
 
     TMeanConst::Result TMeanConst::UserCalc(const TMatrixD &m) const {

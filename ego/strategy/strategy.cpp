@@ -4,22 +4,43 @@
 
 #include <ego/util/sobol.h>
 
+#include <future>
+
 namespace NEgo {
 
     TStrategy::TStrategy(const TStrategyConfig& config, SPtr<TModel> model)
         : Config(config)
         , Model(model)
-        , IterationNumber(0)
+        , StartIterationNum(0)
+        , EndIterationNum(0)
         , BatchNumber(0)
     {
         InitSamples = GenerateSobolGrid(Config.InitSamplesNum, Model->GetDimSize());
     }
 
+    TStrategy::TStrategy(const TStrategy& strategy) {
+        (*this) = strategy;
+    }
+
+    TStrategy& TStrategy::operator=(const TStrategy& strategy) {
+        if (this != &strategy) {
+            BatchNumber = strategy.BatchNumber;
+            StartIterationNum = strategy.StartIterationNum;
+            EndIterationNum = strategy.EndIterationNum;
+            InitSamples = strategy.InitSamples;
+            Config = strategy.Config;
+            Model = strategy.Model;
+        }
+        return *this;
+    }
+
+
     void TStrategy::SerialProcess(TSerializer& serial) {
         NEgoProto::TStrategyConfig protoConfig = Config.ProtoConfig;
 
         serial(protoConfig, NEgoProto::TStrategyState::kStrategyConfigFieldNumber);
-        serial(IterationNumber, NEgoProto::TStrategyState::kIterationNumberFieldNumber);
+        serial(StartIterationNum, NEgoProto::TStrategyState::kStartIterationNumFieldNumber);
+        serial(EndIterationNum, NEgoProto::TStrategyState::kEndIterationNumFieldNumber);
         serial(BatchNumber, NEgoProto::TStrategyState::kBatchNumberFieldNumber);
         serial(InitSamples, NEgoProto::TStrategyState::kInitSamplesFieldNumber);
 
@@ -35,7 +56,39 @@ namespace NEgo {
     void TStrategy::OptimizeHypers() {
         ENSURE(Model, "Model is not set while optimizing hyperparameters");
 
-        NOpt::OptimizeModelLogLik(*Model, Config.HyperOpt);
+        // TMatrixD starts = GenerateSobolGrid(Config.HyperOpt.MinimizersNum, Model->GetParametersSize(), Config.HyperLowerBound, Config.HyperUpperBound);
+
+        // TVector<std::future<TPair<TVector<double>, double>>> results;
+        // for (size_t minNum=0; minNum < Config.HyperOpt.MinimizersNum; ++minNum) {
+        //     results.push_back(std::async(
+        //         std::launch::async,
+        //         [&]() {
+        //             TVectorD start = NLa::Trans(starts.row(minNum));
+        //             TModel modelOpt(*Model);
+        //             try {
+        //                 return NOpt::OptimizeModelLogLik(modelOpt, NLa::VecToStd(start), Config.HyperOpt);
+        //             } catch (const TEgoAlgebraError& err) {
+        //                 L_DEBUG << "Got algebra error, ignoring";
+        //                 return MakePair(TVector<double>(), std::numeric_limits<double>::max());
+        //             }
+        //         }
+        //     ));
+        // }
+        // double bestNegLogLik = std::numeric_limits<double>::max();
+        // TVector<double> bestParams;
+        // for (auto& f: results) {
+        //     auto r = f.get();
+        //     L_DEBUG << "Got result from starting at " << NLa::VecToStr(r.first) << " -> " << r.second;
+        //     if (r.second < bestNegLogLik) {
+        //         bestNegLogLik = r.second;
+        //         bestParams = r.first;
+        //     }
+        // }
+        // ENSURE(bestParams.size() > 0, "Best optimization result is not selected");
+        // L_DEBUG << "Found best optimization result at " << NLa::VecToStr(bestParams) << " -> " << bestNegLogLik;
+        // Model->SetParameters(bestParams);
+        // Model->Update();
+        NOpt::OptimizeModelLogLik(*Model, Model->GetParameters(), Config.HyperOpt);
         Model->Update();
     }
 
@@ -53,34 +106,6 @@ namespace NEgo {
         }
     }
 
-    void TStrategy::AddPoint(const TPoint& p, double target) {
-        L_DEBUG << "Got point with id " << p.Id;
-        Model->AddPoint(p.X, target);
-    }
-
-
-    TPoint TStrategy::GetNextPoint() {
-        if (IterationNumber < InitSamples.n_rows) {
-            L_DEBUG << "Going to return random next point";
-
-            return TPoint(
-                NStr::TStringBuilder() << IterationNumber << "-init",
-                InitSamples.row(IterationNumber++)
-            );
-        }
-        L_DEBUG << "Going to generate optimal next point";
-
-        L_DEBUG << "Optimizing acquisition function ...";
-
-        TVectorD x;
-        double crit;
-        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), Config.AcqOpt);
-        L_DEBUG << "Found criteria value: " << crit;
-
-        return TPoint(NStr::TStringBuilder() << IterationNumber << "-" << BatchNumber, x);
-    }
-
-
     void TStrategy::OptimizeStep(TOptimCallback cb) {
         L_DEBUG << "Optimizing acquisition function ...";
 
@@ -95,5 +120,51 @@ namespace NEgo {
         Model->AddPoint(x, res);
         Model->Update();
     }
+
+
+    void TStrategy::AddPoint(const TPoint& p, double target) {
+        TGuard lock(AddPointMut);
+
+        L_DEBUG << "Got point with id " << p.Id;
+        Model->AddPoint(p.X, target);
+
+        ++EndIterationNum;
+        L_DEBUG << "Closed " << EndIterationNum << " iteration ";
+
+        if ((EndIterationNum > 0) && (EndIterationNum > InitSamples.n_rows)) {
+            if (EndIterationNum % Config.HyperOptFreq == 0) {
+                L_DEBUG << "Updating model hyperparameters";
+                OptimizeHypers();
+            } else {
+                L_DEBUG << "Updating model";
+                Model->Update();
+            }
+        }
+    }
+
+
+    TPoint TStrategy::GetNextPoint() {
+        TGuard lock(NextPointMut);
+
+        if (StartIterationNum < InitSamples.n_rows) {
+            L_DEBUG << "Going to return random next point";
+
+            return TPoint(
+                NStr::TStringBuilder() << StartIterationNum << "-init",
+                InitSamples.row(StartIterationNum++)
+            );
+        }
+        L_DEBUG << "Going to generate optimal next point";
+
+        L_DEBUG << "Optimizing acquisition function ...";
+
+        TVectorD x;
+        double crit;
+        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), Config.AcqOpt);
+        L_DEBUG << "Found criteria value: " << crit;
+
+        return TPoint(NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber, x);
+    }
+
 
 } // namespace NEgo

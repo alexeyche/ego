@@ -22,7 +22,7 @@ namespace NEgo {
 
 		double NLoptAcqMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data);
 
-		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, const TOptConfig& config);
+		TPair<TVector<double>, double> NLoptModelMinimize(TModel &model, const TVector<double>& start, const TOptConfig& config);
 
 		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, const TOptConfig& config);
 

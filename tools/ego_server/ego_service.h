@@ -101,7 +101,9 @@ namespace NEgo {
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/add_point",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						GetProblem(req).AddPoint(TJsonDocument(req.Body));
+						auto& p = GetProblem(req);
+						p.AddPoint(TJsonDocument(req.Body));
+						SaveProblem(p);
 						resp.Accepted();
 					}
 				)
@@ -167,13 +169,17 @@ namespace NEgo {
 							throw TEgoLogicError() << "Problem with the name `" << problemSpec.ProblemConfig.Name << "' is already exist";
 						}
 
-						res.first->second.DumpState(TFsPath(StateDir) / TFsPath(problemSpec.ProblemConfig.Name) + ".pb.txt");
+						SaveProblem(res.first->second);
 
 						resp.Body("{}");
 						resp.Accepted();
 					}
 				)
 				.MainLoop();
+		}
+
+		void SaveProblem(TProblem& p) {
+			p.DumpState(TFsPath(StateDir) / TFsPath(p.GetName()) + ".pb.txt");
 		}
 
 		TProblem& GetProblem(const THttpRequest& req) {

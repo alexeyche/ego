@@ -7,7 +7,7 @@ namespace NEgo {
 		TDistrVec dvec;
         for(size_t pi=0; pi<mean.size(); ++pi) {
             const double& var = variance(pi);
-            ENSURE(var>=0.0, "Got negative variance, something wrong in system");
+            ENSURE(var>=0.0, "Got negative variance " << var << " at the point " << mean(pi));
             dvec.push_back(GetDistribution(mean(pi), sqrt(var), seed));
         }
         return dvec;

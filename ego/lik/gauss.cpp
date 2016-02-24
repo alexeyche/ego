@@ -8,6 +8,7 @@ namespace NEgo {
     TLikGauss::TLikGauss(size_t dimSize)
     	: ILik(dimSize)
    	{
+        Parameters = {-4.60517};
     }
 
 	TLikGauss::Result TLikGauss::UserCalc(const TVectorD& Y, const TVectorD& var) const {

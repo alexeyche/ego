@@ -39,6 +39,7 @@ namespace NEgo {
         	, SqDistFunctor(dimSize)
         	, KernelFunctor(dimSize)
         {
+            Parameters = {-4.60517, -0.6931472};
         }
 
         TCovStationaryISO::Result UserCalc(const TMatrixD &left, const TMatrixD &right) const override final {

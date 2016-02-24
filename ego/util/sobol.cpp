@@ -6,7 +6,7 @@ namespace NEgo {
 
     using namespace NSobolImpl;
 
-    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize) {
+    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize, double min, double max) {
         TMatrixD grid(samplesNum, dimSize);
 
         NSobolImpl::soboldata_s* s;
@@ -17,7 +17,7 @@ namespace NEgo {
         for (ui32 i = 0; i < samplesNum; ++i) {
             NSobolImpl::sobol_next01(s, x);
             for (ui32 j = 0; j < dimSize; ++j) {
-                grid(i, j) = x[j];
+                grid(i, j) = min + x[j] * (max - min);
             }
         }
         NSobolImpl::sobol_destroy(s);

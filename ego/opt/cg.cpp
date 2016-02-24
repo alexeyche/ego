@@ -24,7 +24,7 @@ namespace NEgo {
 			TVectorD Z = X;
 			double fX = f0;
 			ui32 i = 0;
-			L_DEBUG<< "Line search " << i << ", function value " << fX;
+			// L_DEBUG<< "Line search " << i << ", function value " << fX;
 			i++;
 
 			TVectorD s = -df0;
@@ -67,7 +67,7 @@ namespace NEgo {
 								// L_DEBUG<< "Oopsie, got error while eval";
 								throw TEgoException() << "Got nans";
 							}
-							L_DEBUG<< "Line search " << i << ", function value " << f3;
+							// L_DEBUG<< "Line search " << i << ", function value " << f3;
 
 							lineSearchSuccess = true;
 							// L_DEBUG<< "Line search good with function value " << f3;
@@ -152,7 +152,7 @@ namespace NEgo {
 					Z = Z + x3*s;
 					f0 = f3;
 					fProgress.push_back(f0);
-					L_DEBUG<< "Line search " << i << ", function value " << f0;
+					// L_DEBUG<< "Line search " << i << ", function value " << f0;
 					s = NLa::AsScalar((NLa::Trans(df3)*df3 - NLa::Trans(df0)*df3)/(NLa::Trans(df0)*df0))*s - df3;
 					df0 = df3;
 					d3 = d0;

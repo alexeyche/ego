@@ -31,9 +31,9 @@ model = Model(mean, cov, lik, inf, acq)
 
 
 model.setConfig({
-    "Seed": 1, 
+    "Seed": 1,
     "HyperOpt": {"Method": "CG", "MaxEval": 100},
-    "AcqOpt": {"Method": "CG", "MaxEval": 100},    
+    "AcqOpt": {"Method": "CG", "MaxEval": 100},
 })
 
 
@@ -55,12 +55,12 @@ for pnum, pid in enumerate(point_ids):
     Y = np.append(Y, y)
 
     model.setData(X, Y)
-    
+
     preds = model.getPrediction(Xgrid)
     Ymean = np.asarray([ yp.getMean() for yp in preds ])
     Ysd = np.asarray([ yp.getSd() for yp in preds ])
 
-    plt.figure(pnum)       
+    plt.figure(pnum)
     plt.plot(Xgrid, Ymean, '-', color='green', linewidth=2.0)
     plt.fill_between(Xgrid, Ymean-Ysd, Ymean+Ysd, facecolor='green', interpolate=True, alpha=0.2)
     plt.plot(X, Y, 'bp')

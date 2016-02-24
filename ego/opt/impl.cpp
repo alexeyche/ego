@@ -23,19 +23,16 @@ namespace NEgo {
 			}
 		}
 
-		TPair<TVectorD, double> NLoptModelMinimize(TModel &model, const TOptConfig& config) {
+		TPair<TVector<double>, double> NLoptModelMinimize(TModel &model, const TVector<double>& start, const TOptConfig& config) {
 			nlopt::algorithm algo = static_cast<nlopt::algorithm>(static_cast<ui32>(MethodFromString(config.Method))-1);
-			nlopt::opt optAlg(
-				algo
-			  , model.GetParametersSize()
-			);
+			nlopt::opt optAlg(algo, model.GetParametersSize());
 			optAlg.set_min_objective(NLoptModelMinimizer, static_cast<void*>(const_cast<TModel*>(&model)));
 			optAlg.set_ftol_rel(config.Tolerance);
 			optAlg.set_maxeval(config.MaxEval);
 			double best = std::numeric_limits<double>::max();
-			auto initStd = NLa::VecToStd(model.GetParameters());
+			auto initStd = start;
 			optAlg.optimize(initStd, best);
-			auto res = MakePair(NLa::StdToVec(initStd), optAlg.last_optimum_value());
+			auto res = MakePair(initStd, optAlg.last_optimum_value());
 		    model.SetParameters(initStd);
 			return res;
 		}

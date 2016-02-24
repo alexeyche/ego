@@ -6,6 +6,8 @@
 
 #include <ego/protos/strategy.pb.h>
 
+#include <mutex>
+
 namespace NEgo {
 
     struct TPoint {
@@ -27,6 +29,10 @@ namespace NEgo {
 
 		TStrategy(const TStrategyConfig& config, SPtr<TModel> model);
 
+        TStrategy(const TStrategy& strategy);
+
+        TStrategy& operator=(const TStrategy& strategy);
+
         void OptimizeHypers();
 
         void Optimize(TOptimCallback cb);
@@ -44,7 +50,11 @@ namespace NEgo {
 	private:
         ui32 BatchNumber;
 
-        ui32 IterationNumber;
+        ui32 StartIterationNum;
+        TMutex AddPointMut;
+
+        ui32 EndIterationNum;
+        TMutex NextPointMut;
 
         TMatrixD InitSamples;
 
