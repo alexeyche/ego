@@ -5,7 +5,7 @@ package NEgoProto;
 
 message TEgoOptions {
     optional string Config = 1 [
-        (description) = "Model config proto file",
+        (description) = "Strategy config pb file",
         (short_option) = "-c"
     ];
     optional string Input = 3 [
