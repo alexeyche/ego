@@ -14,6 +14,10 @@ args = commandArgs(trailingOnly = FALSE)
 seed = get.env("SEED", -1)
 if (seed > 0) {
     set.seed(seed)
+} else {
+    custom_seed = as.numeric(Sys.time())
+    cat("Using custom seed: ", custom_seed, "\n")
+    set.seed(custom_seed)
 }
 
 x = NULL
@@ -25,7 +29,7 @@ if(length(grep("RStudio", args)) == 0) {
     x = as.numeric(line)
     in.r.studio = FALSE
 } else {
-    set.seed(100)
+    #set.seed(100)
 }
 
 p.num = 4*10

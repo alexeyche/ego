@@ -2,6 +2,8 @@
 
 #include <ego/base/errors.h>
 #include <ego/base/value.h>
+#include <ego/util/log/log.h>
+
 
 #include <ego/mean/mean.h>
 #include <ego/cov/cov.h>

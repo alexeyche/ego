@@ -150,16 +150,23 @@ namespace NEgo {
         TJsonDocument mean = TJsonDocument::Array();
         TJsonDocument leftSd = TJsonDocument::Array();
         TJsonDocument rightSd = TJsonDocument::Array();
-
+        TJsonDocument acqValues = TJsonDocument::Array();
         ui32 idx = 0;
         for (const auto& distr: vec) {
             mean.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean()}));
             leftSd.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean() - distr->GetSd()}));
             rightSd.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean() + distr->GetSd()}));
+            acqValues.PushBack(
+                TJsonDocument::Array(
+                    {
+                        grid(idx), 
+                        Model->GetAcq()->Calc(NLa::Trans(X.row(idx))).Value()
+                    }
+                )
+            );
             ++idx;
         }
         TJsonDocument points = TJsonDocument::Array();
-
 
         const TMatrixD& Xfull = Model->GetData().first;
         const TVectorD& Yfull = Model->GetData().second;
@@ -172,10 +179,11 @@ namespace NEgo {
         minimum.PushBack(TJsonDocument::Array({Xbest(var.Id), Model->GetMinimumY()}));
 
         TJsonDocument ret = TJsonDocument::Object();
-        ret["leftBand"] = leftSd;
+        ret["left_band"] = leftSd;
         ret["mean"] = mean;
-        ret["rightBand"] = rightSd;
+        ret["right_band"] = rightSd;
         ret["points"] = points;
+        ret["acq_values"] = acqValues;
         ret["minimum"] = minimum;
         return ret;
     }

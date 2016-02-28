@@ -109,19 +109,30 @@ function loadVariableSliceChart(chartId, variableName) {
             variableSlicePlots[variableName].destroy();
         }
 
-        variableSlicePlots[variableName] = $.jqplot(chartId, [sliceData["mean"], sliceData["points"], sliceData["minimum"]], {
+        variableSlicePlots[variableName] = $.jqplot(chartId, [sliceData["mean"], sliceData["points"], sliceData["minimum"], sliceData["acq_values"]], {
             axes: {
-                xaxis: { tickOptions: { formatString:'%.3f' } },
+                xaxis: { tickOptions: { formatString:'%.3f' }, min: 0.0, max: 1.0 },
                 yaxis: { tickOptions: { formatString:'%.3f'} }
             },
-            seriesColors: ['#17BDB8', '#EBC400', '#FF0000'],
+            seriesColors: ['#17BDB8', '#EBC400', '#FF0000', '#ff0066'],
             series: [
                 { 
+                    yaxis: 'yaxis',
                     markerOptions: { size: 1, style: "circle" },
-                    rendererOptions: { bandData: [sliceData["leftBand"], sliceData["rightBand"]] }
+                    rendererOptions: { bandData: [sliceData["left_band"], sliceData["right_band"]] }
                 }, 
-                { showLine:false},
-                { showLine:false}
+                { 
+                    yaxis: 'yaxis',
+                    showLine:false 
+                },
+                {
+                    yaxis: 'yaxis', 
+                    showLine:false 
+                },
+                { 
+                    yaxis: 'y2axis',
+                    markerOptions: { size: 0.1, style: "circle" }
+                }
             ],
             highlighter: {
                 show: true,
@@ -131,20 +142,6 @@ function loadVariableSliceChart(chartId, variableName) {
                 show: false
             }
         });
-
-        // , 
-        
-    // } catch(err) {
-    //     if (err.message == "No data specified") {
-    //         $("#" + chartId).addClass("hidden");
-    //         $("#variable-slice-body").append(
-    //             "<div class='alert alert-danger'><strong>Can't build slice for empty model!</strong></div>"
-    //         );
-    //         console.log(err);    
-    //     } else {
-    //         throw err;
-    //     }                    
-    // } 
 }
 var variableSlicePlots = {}
 

@@ -95,6 +95,42 @@ namespace NEgo {
         Model->Update();
     }
 
+    TPair<TVectorD, double> TStrategy::OptimizeAcquisition(const TOptConfig& optConfig) {
+        ENSURE(Model, "Model is not set while optimizing hyperparameters");
+
+        TMatrixD starts = GenerateSobolGrid(optConfig.MinimizersNum, Model->GetDimSize());
+
+        TVector<std::future<TPair<TVectorD, double>>> results;
+        for (size_t minNum=0; minNum < optConfig.MinimizersNum; ++minNum) {
+            auto acqFun = Model->GetAcq();
+            TVectorD start = NLa::Trans(starts.row(minNum));
+            results.push_back(std::async(
+                std::launch::async,
+                [=]() {
+                    try {
+                        return NOpt::OptimizeAcquisitionFunction(acqFun, start, optConfig);
+                    } catch (const TEgoAlgebraError& err) {
+                        L_DEBUG << "Got algebra error, ignoring";
+                        return MakePair(TVectorD(), std::numeric_limits<double>::max());
+                    }
+                }
+            ));
+        }
+        double bestAcqFun = std::numeric_limits<double>::max();
+        TVectorD bestParams;
+        for (auto& f: results) {
+            auto r = f.get();
+            L_DEBUG << "Got result from starting at " << NLa::VecToStr(r.first) << " -> " << r.second;
+            if (r.second < bestAcqFun) {
+                bestAcqFun = r.second;
+                bestParams = r.first;
+            }
+        }
+        ENSURE(bestParams.size() > 0, "Best optimization result is not selected");
+        L_DEBUG << "Found best optimization result at " << NLa::VecToStr(bestParams) << " -> " << bestAcqFun;
+        return MakePair(bestParams, bestAcqFun);
+    }
+
     void TStrategy::Optimize(TOptimCallback cb) {
         ENSURE(Model, "Model is not set while optimizing function");
 
@@ -114,7 +150,7 @@ namespace NEgo {
 
         TVectorD x;
         double crit;
-        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), NLa::UnifVec(Model->GetDimSize()), Config.AcqOpt);
+        Tie(x, crit) = OptimizeAcquisition(Config.AcqOpt);
         L_DEBUG << "Found criteria value: " << crit;
         double res = cb(x);
 
@@ -156,6 +192,10 @@ namespace NEgo {
                 NStr::TStringBuilder() << StartIterationNum << "-init",
                 InitSamples.row(StartIterationNum++)
             );
+        } else 
+        if (StartIterationNum == InitSamples.n_rows) {
+            L_DEBUG << "Updating model hyperparameters with init samples";
+            OptimizeHypers(Config.HyperOpt);
         }
         L_DEBUG << "Going to generate optimal next point";
 
@@ -163,7 +203,7 @@ namespace NEgo {
 
         TVectorD x;
         double crit;
-        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), NLa::UnifVec(Model->GetDimSize()), Config.AcqOpt);
+        Tie(x, crit) = OptimizeAcquisition(Config.AcqOpt);
         L_DEBUG << "Found criteria value: " << crit;
 
         return TPoint(NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber, x);

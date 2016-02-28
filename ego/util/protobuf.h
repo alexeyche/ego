@@ -11,4 +11,6 @@ namespace NEgo {
 
 	void ReadProtoText(const TString& messageStr, google::protobuf::Message& message);
 
+	TString ProtoTextToString(const google::protobuf::Message& message);
+
 } // namespace NEgo

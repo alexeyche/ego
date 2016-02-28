@@ -147,7 +147,7 @@ namespace NEgo {
         TVectorD kss = NLa::Diag(crossCovRes.Value());
 
         TVectorD Fmu = ms + NLa::Trans(Ks) * Posterior->Alpha;
-
+        
         TVectorD Fs2;
         TMatrixD V;
 
@@ -155,12 +155,22 @@ namespace NEgo {
             V = NLa::RepMat(Posterior->DiagW, 1, Xnew.n_rows) % (Posterior->Linv * Ks);
             Fs2 = kss - NLa::Trans(NLa::ColSum(V % V));
         } else {
-            L_DEBUG << "Non cholesky matrix";
             V = Posterior->L * Ks;
             Fs2 = kss + NLa::Trans(NLa::ColSum(Ks % V));
             NLa::ForEach(Fs2, [](double& v) { if(v < 0.0) v = 0; });
         }
 
+        // NLa::DebugSave(Ks, "Ks");
+        // NLa::DebugSave(ms, "ms");
+        // NLa::DebugSave(kss, "kss");
+        // NLa::DebugSave(Posterior->Alpha, "Alpha");
+        // NLa::DebugSave(Posterior->DiagW, "DiagW");
+        // NLa::DebugSave(Posterior->Linv, "Linv");
+        // NLa::DebugSave(Posterior->L, "L");
+        // NLa::DebugSave(Fmu, "Fmu");
+        // NLa::DebugSave(V, "V");
+        // NLa::DebugSave(Fs2, "Fs2");
+        
         auto likRes = Lik->GetMarginalMeanAndVariance(Fmu, Fs2);
 
         TPair<TVectorD, TVectorD> distr = likRes.Value();
@@ -238,7 +248,7 @@ namespace NEgo {
 
         auto preds = calcRes.Value();
         ENSURE((preds.first.size() == 1) && (preds.second.size() == 1), "UB");
-        ENSURE(preds.second(0) >= 0, "Got negative variance, something wrong in system");
+        ENSURE_ERR(preds.second(0) >= 0, TEgoAlgebraError() << "Got negative variance, something wrong in system. X: " << NLa::VecToStr(Xnew) << ", Mean: " << preds.first(0) << ", Var: " << preds.second(0));
 
         double mean = preds.first(0);
         double sd = sqrt(preds.second(0));

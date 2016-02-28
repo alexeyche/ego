@@ -4,7 +4,7 @@ import "la.proto";
 
 message TOptConfig {
     optional string Method = 1;
-    optional uint32 MinimizersNum = 2 [default = 1000];
+    optional uint32 MinimizersNum = 2 [default = 100];
     optional uint32 MaxEval = 3 [default = 100];
     optional double Tolerance = 4 [default = 1e-10];
 }

@@ -58,7 +58,6 @@ namespace NEgo {
 		TPair<TVectorD, double> CppOptLibMinimize(const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = TOptional<TPair<TVectorD, TVectorD>>()) {
 			TProblem prob(cb);
 			if (bounds) {
-				L_DEBUG << "Setting bounds\n[\n\t(" << NLa::VecToStr(bounds->first) << "),\n\t(" << NLa::VecToStr(bounds->second) << ")\n]";
 				prob.setLowerBound(bounds->first);
 				prob.setUpperBound(bounds->second);
 			}

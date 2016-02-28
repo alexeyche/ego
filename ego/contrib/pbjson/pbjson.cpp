@@ -178,7 +178,8 @@ namespace pbjson
                         {
                             value = b64_encode(value);
                         }
-                        rapidjson::Value v(rapidjson::StringRef(value.c_str()));
+                        rapidjson::Value v;
+                        v.SetString(value.c_str(), value.size(), allocator);
                         json->PushBack(v, allocator);
                     }
                 }
@@ -189,7 +190,8 @@ namespace pbjson
                     {
                         value = b64_encode(value);
                     }
-                    json = new rapidjson::Value(rapidjson::StringRef(value.c_str()));
+                    json = new rapidjson::Value();
+                    json->SetString(value.c_str(), value.size(), allocator);
                 }
                 break;
             }

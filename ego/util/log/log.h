@@ -6,9 +6,9 @@ using std::string;
 
 #include <ego/base/errors.h>
 #include <ego/contrib/spdlog/spdlog.h>
+#undef S
 
 namespace NEgo {
-
 
     class TLog {
     public:

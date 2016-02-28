@@ -29,4 +29,10 @@ namespace NEgo {
 		ENSURE(google::protobuf::TextFormat::ParseFromString(messageStr, &message), "Failed to parse protobuf from string: \n" << messageStr);
 	}
 
+	TString ProtoTextToString(const google::protobuf::Message& message) {
+		TString s;
+		google::protobuf::TextFormat::PrintToString(message, &s);
+		return s;
+	}
+
 } // namespace NEgo

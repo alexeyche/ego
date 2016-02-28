@@ -35,6 +35,8 @@ namespace NEgo {
 
         void OptimizeHypers(const TOptConfig& optConfig);
 
+        TPair<TVectorD, double> OptimizeAcquisition(const TOptConfig& optConfig);
+
         void Optimize(TOptimCallback cb);
 
         void OptimizeStep(TOptimCallback cb);

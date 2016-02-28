@@ -63,7 +63,16 @@ namespace NEgo {
 					"GET", "api/problem/{problem_name}/specification",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TProblem& prob = GetProblem(req);
-						resp.Body() += NPbJson::ProtobufToJson(prob.GetConfig().ProtoConfig);
+						TString json = NPbJson::ProtobufToJson(prob.GetConfig().ProtoConfig);
+						resp.Body() += json;
+						resp.Good();
+					}
+				)
+				.AddCallback(
+					"GET", "api/problem/{problem_name}/state",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						TProblem& prob = GetProblem(req);
+				        resp.Body() += ProtoTextToString(prob.Serialize());
 						resp.Good();
 					}
 				)
@@ -106,7 +115,7 @@ namespace NEgo {
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						auto& p = GetProblem(req);
 						p.AddPoint(TJsonDocument(req.Body));
-						SaveProblem(p);
+						// SaveProblem(p);
 						resp.Accepted();
 					}
 				)

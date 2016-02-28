@@ -2,6 +2,12 @@
 
 #include <ego/util/log/log.h>
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
+
+using namespace google::protobuf;
+
+
 namespace NEgo {
 
 	template <>

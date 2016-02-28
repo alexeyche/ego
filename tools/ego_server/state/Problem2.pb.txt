@@ -1,5 +1,5 @@
 ProblemConfig {
-  Name: "Problem"
+  Name: "Problem2"
   Variable {
     Name: "Var0"
     Min: 0

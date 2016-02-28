@@ -30,7 +30,6 @@ namespace NEgo {
         TMatrixD L;
         TMatrixD pL;
         double sl;
-
         if(fabs(sn2) < 1e-06) { // very tiny sn2 can lead to numerical trouble
             sn2 = std::max(sn2, 1e-10);
             L = NLa::Chol(K + sn2 * NLa::Eye(n));
@@ -78,7 +77,7 @@ namespace NEgo {
     		)
     		.SetPosterior(
     			[=]() {
-            	    return TPosterior(L, alpha, diagW);
+            	    return TPosterior(pL, alpha, diagW);
             	}
 			);
     }
