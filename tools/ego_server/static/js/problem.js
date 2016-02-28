@@ -154,7 +154,7 @@ $(document).ready(function(){
               unusedOptionalUrl: perfJsonUrl
             },
             axes:{
-                xaxis: { tickOptions: { formatString:'%d' } },
+                xaxis: { tickOptions: { formatString:'%d' }, min: -0.1 },
                 yaxis: { tickOptions: { formatString:'%.2f'} }
             },
             highlighter: {
