@@ -94,7 +94,10 @@ namespace NEgo {
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/optimize_hypers",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						GetProblem(req).GetStrategy().OptimizeHypers();
+						auto strat = GetProblem(req).GetStrategy();
+						TOptConfig optConfig = strat.GetConfig().HyperOpt;
+						optConfig.Method = FindUrlArg<TString>(req, "method", optConfig.Method);
+						strat.OptimizeHypers(optConfig);
 						resp.Accepted();
 					}
 				)

@@ -33,7 +33,7 @@ namespace NEgo {
 
         TStrategy& operator=(const TStrategy& strategy);
 
-        void OptimizeHypers();
+        void OptimizeHypers(const TOptConfig& optConfig);
 
         void Optimize(TOptimCallback cb);
 
@@ -47,6 +47,7 @@ namespace NEgo {
 
         TPoint GetNextPoint();
 
+        const TStrategyConfig& GetConfig() const;
 	private:
         ui32 BatchNumber;
 

@@ -54,7 +54,6 @@ SET(OpenBLAS_INCLUDE_DIRS /opt/OpenBLAS/include)
 
 target_link_libraries(ego
     ego_protos
-    nlopt
     ${OpenBLAS_LIBRARY}
     lapack
     #dlib

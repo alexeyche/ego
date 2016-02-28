@@ -34,6 +34,9 @@ namespace NEgo {
         return *this;
     }
 
+    const TStrategyConfig& TStrategy::GetConfig() const {
+        return Config;
+    }
 
     void TStrategy::SerialProcess(TSerializer& serial) {
         NEgoProto::TStrategyConfig protoConfig = Config.ProtoConfig;
@@ -53,7 +56,7 @@ namespace NEgo {
         Model = model;
     }
 
-    void TStrategy::OptimizeHypers() {
+    void TStrategy::OptimizeHypers(const TOptConfig& optConfig) {
         ENSURE(Model, "Model is not set while optimizing hyperparameters");
 
         // TMatrixD starts = GenerateSobolGrid(Config.HyperOpt.MinimizersNum, Model->GetParametersSize(), Config.HyperLowerBound, Config.HyperUpperBound);
@@ -88,7 +91,7 @@ namespace NEgo {
         // L_DEBUG << "Found best optimization result at " << NLa::VecToStr(bestParams) << " -> " << bestNegLogLik;
         // Model->SetParameters(bestParams);
         // Model->Update();
-        NOpt::OptimizeModelLogLik(*Model, Model->GetParameters(), Config.HyperOpt);
+        NOpt::OptimizeModelLogLik(*Model, Model->GetParameters(), optConfig);
         Model->Update();
     }
 
@@ -101,7 +104,7 @@ namespace NEgo {
             OptimizeStep(cb);
 
             if((iterNum+1) % Config.HyperOptFreq == 0) {
-                OptimizeHypers();
+                OptimizeHypers(Config.HyperOpt);
             }
         }
     }
@@ -111,7 +114,7 @@ namespace NEgo {
 
         TVectorD x;
         double crit;
-        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), Config.AcqOpt);
+        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), NLa::UnifVec(Model->GetDimSize()), Config.AcqOpt);
         L_DEBUG << "Found criteria value: " << crit;
         double res = cb(x);
 
@@ -134,7 +137,7 @@ namespace NEgo {
         if ((EndIterationNum > 0) && (EndIterationNum > InitSamples.n_rows)) {
             if (EndIterationNum % Config.HyperOptFreq == 0) {
                 L_DEBUG << "Updating model hyperparameters";
-                OptimizeHypers();
+                OptimizeHypers(Config.HyperOpt);
             } else {
                 L_DEBUG << "Updating model";
                 Model->Update();
@@ -160,7 +163,7 @@ namespace NEgo {
 
         TVectorD x;
         double crit;
-        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), Config.AcqOpt);
+        Tie(x, crit) = NOpt::OptimizeAcquisitionFunction(Model->GetAcq(), NLa::UnifVec(Model->GetDimSize()), Config.AcqOpt);
         L_DEBUG << "Found criteria value: " << crit;
 
         return TPoint(NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber, x);

@@ -145,8 +145,6 @@ namespace NEgo {
         }
 
         /************************************************************************/
-        /* NLopt API to Sobol sequence creation, which hides soboldata structure
-           behind an opaque pointer */
 
         soboldata_s* sobol_create(unsigned sdim)
         {

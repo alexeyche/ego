@@ -3,28 +3,70 @@
 #include "cg.h"
 
 #include <ego/base/la.h>
+#include <ego/util/log/log.h>
+#include <ego/util/optional.h>
 
-#include <nlopt/api/nlopt.hpp>
 #include <ego/strategy/config.h>
 
 #include <functional>
 
-
+#include <ego/contrib/cppoptlib/problem.h>
 
 namespace NEgo {
 	class TModel;
 	class IAcq;
 
 	namespace NOpt {
-		using TCallback = std::function<TPair<double, TVectorD>(const TVectorD&)>;
 
-		double NLoptModelMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data);
+		enum EMethod {
+			CG = 0,
+			CG_OPTLIB = 1,
+			BFGS = 2,
+			LBFGS = 3,
+			LBFGSB = 4
+		};
 
-		double NLoptAcqMinimizer(const std::vector<double> &x, std::vector<double> &grad, void* f_data);
 
-		TPair<TVector<double>, double> NLoptModelMinimize(TModel &model, const TVector<double>& start, const TOptConfig& config);
+		using TOptLibCallback = std::function<double(const TVectorD&, TVectorD&)>;
 
-		TPair<TVectorD, double> NLoptAcqMinimize(SPtr<IAcq> acq, const TOptConfig& config);
+		class TProblem : public cppoptlib::Problem<double> {
+		public:
+			TProblem(TOptLibCallback cb)
+				: Cb(cb)
+			{
+			}
+
+		    double value(const TVectorD &beta) {
+		    	TVectorD gr;
+		    	double v = Cb(beta, gr);
+		    	L_DEBUG << "Got value: " << v;
+		    	return v;
+		    }
+
+		    void gradient(const TVectorD& beta, TVectorD& grad) {
+		        grad.set_size(beta.size());
+		        Cb(beta, grad);
+		    }
+
+		private:
+			TOptLibCallback Cb;
+		};
+
+		TPair<TVectorD, double> CppOptLibMinimize(EMethod method, const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = TOptional<TPair<TVectorD, TVectorD>>());
+
+		template <typename TSolver>
+		TPair<TVectorD, double> CppOptLibMinimize(const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = TOptional<TPair<TVectorD, TVectorD>>()) {
+			TProblem prob(cb);
+			if (bounds) {
+				L_DEBUG << "Setting bounds\n[\n\t(" << NLa::VecToStr(bounds->first) << "),\n\t(" << NLa::VecToStr(bounds->second) << ")\n]";
+				prob.setLowerBound(bounds->first);
+				prob.setUpperBound(bounds->second);
+			}
+			TSolver solver;
+			TVectorD x = start;
+			solver.minimize(prob, x);
+			return MakePair(x, prob(x));
+		}
 
 	} // namespace NOpt
 } // namespace NEgo

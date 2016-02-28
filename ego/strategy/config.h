@@ -9,8 +9,13 @@ namespace NEgo {
     struct TOptConfig {
         TOptConfig() {}
 
-        TOptConfig(const NEgoProto::TOptConfig& config) {
-            Method = config.method();
+        TOptConfig(const NEgoProto::TOptConfig& config, TString defaultMethod) {
+            if (config.has_method()) {
+                Method = config.method();    
+            } else {
+                Method = defaultMethod;
+            }
+            
             MinimizersNum = config.minimizersnum();
             MaxEval = config.maxeval();
             Tolerance = config.tolerance();
@@ -36,8 +41,8 @@ namespace NEgo {
             HyperLowerBound = ProtoConfig.hyperlowerbound();
             HyperUpperBound = ProtoConfig.hyperupperbound();
 
-            HyperOpt = TOptConfig(ProtoConfig.hyperopt());
-            AcqOpt = TOptConfig(ProtoConfig.acqopt());
+            HyperOpt = TOptConfig(ProtoConfig.hyperopt(), "LBFGS");
+            AcqOpt = TOptConfig(ProtoConfig.acqopt(), "LBFGSB");
         }
 
         TOptConfig HyperOpt;
