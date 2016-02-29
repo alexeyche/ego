@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(SOURCES
-    config.cpp
-    strategy.cpp
-    strategy_funcs.cpp
+	batch.cpp
+	random.cpp
 )
 
 set(DIR_SRCS)

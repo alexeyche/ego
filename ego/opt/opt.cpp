@@ -4,7 +4,7 @@
 
 namespace NEgo {
 	namespace NOpt {
-
+		
  		std::map<TString, EMethod> OptMethodMap = {
  			{"CG", CG},
 			{"CG_OPTLIB", CG_OPTLIB},
@@ -65,7 +65,9 @@ namespace NEgo {
 					            auto res = model.GetNegativeLogLik(NLa::VecToStd(x));
 					            grad = NLa::StdToVec(res.ParamDeriv());
 					            return res.Value();
-					        }
+					        },
+					        NoBounds(),
+					        config.Verbose
 						);
 						TVector<double> par = NLa::VecToStd(res.first);
 					    model.SetParameters(par);
@@ -97,7 +99,8 @@ namespace NEgo {
 								}
 								return val;
 					        },
-					        MakePair(NLa::Zeros(acq->GetDimSize()), NLa::Ones(acq->GetDimSize()))
+					        MakePair(NLa::Zeros(acq->GetDimSize()), NLa::Ones(acq->GetDimSize())),
+					        config.Verbose
 						);
 					}
 			}

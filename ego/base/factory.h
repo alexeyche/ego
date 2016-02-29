@@ -15,7 +15,9 @@ namespace NEgo {
 	class ILik;
 	class IInf;
 	class IAcq;
+	class IBatchPolicy;
 	class TModel;
+	class TStrategyConfig;
 
 	class TFactory {
 		template <typename BASE, template <typename> class FUN>
@@ -40,6 +42,13 @@ namespace NEgo {
 		using TCompCtor = SPtr<BASE> (*)(TVector<SPtr<typename BASE::TElem>>);
 
 		template<typename BASE, typename INST> static SPtr<BASE> CreateCbComp(TVector<SPtr<typename BASE::TElem>> elems) { return std::move(SPtr<BASE>(new INST(elems))); }
+
+		// High order ctors
+
+		template <typename BASE>
+		using TBatchPolicyCtor = SPtr<BASE> (*)(SPtr<TModel>, const TStrategyConfig&);
+
+		template<typename BASE, typename INST> static SPtr<BASE> CreateCbBatchPolicy(SPtr<TModel> model, const TStrategyConfig& config) { return std::move(SPtr<BASE>(new INST(model, config))); }
 
 	public:
 	    template <typename T>
@@ -72,11 +81,17 @@ namespace NEgo {
 	    	AcqMap[type] = &CreateCbSimple<IAcq, T>;
 	    }
 
+		template <typename T>
+	    void RegisterBatchPolicy(TString type) {
+	    	BatchPolicyMap[type] = &CreateCbBatchPolicy<IBatchPolicy, T>;
+	    }
+
+
 	    template <typename R, typename T, typename ... Params>
 	    SPtr<R> CreateEntity(TString name, const T &map, Params ... params) {
 			auto cbPtr = map.find(name);
 			ENSURE(cbPtr != map.end(), "Can't find entity with name " << name);
-			return cbPtr->second(std::forward<Params>(params) ... );
+			return cbPtr->second(params ... );
 	    }
 
 
@@ -93,6 +108,8 @@ namespace NEgo {
 	    SPtr<IInf> CreateInf(TString name, SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik);
 
 	    SPtr<IAcq> CreateAcq(TString name, size_t dimSize);
+
+	    SPtr<IBatchPolicy> CreateBatchPolicy(TString name, SPtr<TModel> model, const TStrategyConfig& config);
 
 	    static TFactory& Instance();
 
@@ -117,6 +134,8 @@ namespace NEgo {
 
 	    TVector<TString> GetAcqNames() const;
 
+	    TVector<TString> GetBatchPolicyNames() const;
+
 	    bool CheckInfName(const TString &s) const;
 	private:
 		TCreateMap<ICov, TSimpleEntityCtor> CovMap;
@@ -128,6 +147,8 @@ namespace NEgo {
 		TCreateMap<IInf, TInfCtor> InfMap;
 
 		TCreateMap<IAcq, TSimpleEntityCtor> AcqMap;
+
+		TCreateMap<IBatchPolicy, TBatchPolicyCtor> BatchPolicyMap;
 	};
 
 	#define REGISTRATOR_CLASS(Name, SuffixToReplace, ReplaceBy) \
@@ -145,6 +166,7 @@ namespace NEgo {
 	REGISTRATOR_CLASS(Lik, "TLik", "l");
 	REGISTRATOR_CLASS(Inf, "TInf", "i");
 	REGISTRATOR_CLASS(Acq, "TAcq", "a");
+	REGISTRATOR_CLASS(BatchPolicy, "TBatchPolicy", "bp");
 
 	#define REGISTER_COV(CovType) static TCovRegistrator<CovType> JOIN(TCovRegistrator, CovType)(#CovType);
 	#define REGISTER_MEAN(MeanType) static TMeanRegistrator<MeanType> JOIN(TMeanRegistrator, MeanType)(#MeanType);
@@ -152,6 +174,7 @@ namespace NEgo {
 	#define REGISTER_INF(InfType) static TInfRegistrator<InfType> JOIN(TInfRegistrator, InfType)(#InfType);
 	#define REGISTER_COMP_MEAN(CompMeanType) static TCompMeanRegistrator<CompMeanType> JOIN(TCompMeanRegistrator, CompMeanType)(#CompMeanType);
 	#define REGISTER_ACQ(AcqType) static TAcqRegistrator<AcqType> JOIN(TAcqRegistrator, AcqType)(#AcqType);
+	#define REGISTER_BATCH_POLICY(BatchPolicyType) static TBatchPolicyRegistrator<BatchPolicyType> JOIN(TBatchPolicyRegistrator, BatchPolicyType)(#BatchPolicyType);
 
 } // namespace NEgo
 

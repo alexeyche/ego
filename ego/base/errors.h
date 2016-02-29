@@ -33,6 +33,7 @@ namespace NEgo {
     DEFINE_ERROR(TEgoElementNotFound);
     DEFINE_ERROR(TEgoLogicError);
     DEFINE_ERROR(TEgoAlgebraError);
+    DEFINE_ERROR(TEgoNotAvailable);
 
     #define ENSURE(cond, str) \
         if(!(cond)) { \

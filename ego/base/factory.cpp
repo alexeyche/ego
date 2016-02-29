@@ -5,6 +5,7 @@
 #include <ego/util/parse_parenthesis.h>
 
 #include <ego/model/model.h>
+#include <ego/strategy/config.h>
 
 namespace NEgo {
 
@@ -54,6 +55,10 @@ namespace NEgo {
         return CreateEntity<IAcq>(name, AcqMap, dimSize);
     }
 
+    SPtr<IBatchPolicy> TFactory::CreateBatchPolicy(TString name, SPtr<TModel> model, const TStrategyConfig& config) {
+        return CreateEntity<IBatchPolicy>(name, BatchPolicyMap, model, config);
+    }
+
 	void TFactory::PrintEntities() {
 		#define PRINT_MAP(M, D) {  \
 			std::cout << D << "\n"; \
@@ -69,6 +74,7 @@ namespace NEgo {
 		PRINT_MAP(LikMap, "Likelihood functions: ");
 		PRINT_MAP(InfMap, "Inference methods: ");
         PRINT_MAP(AcqMap, "Acquisition functions: ");
+        PRINT_MAP(BatchPolicyMap, "Batch policies: ");
 	}
 
 
@@ -92,6 +98,10 @@ namespace NEgo {
         return GetNames(AcqMap);
     }
     
+    TVector<TString> TFactory::GetBatchPolicyNames() const {
+        return GetNames(BatchPolicyMap);
+    }
+
     bool TFactory::CheckInfName(const TString &s) const {
         return InfMap.find(s) != InfMap.end();
     }

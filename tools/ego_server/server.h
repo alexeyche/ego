@@ -279,8 +279,13 @@ namespace NEgo {
 			} catch (const TEgoLogicError& e) {
 				resp = respBuilder
 					.Body(e.what())
-					.Body(e.what())
 					.BadRequest()
+					.FormResponse();
+				if (DebugMode) throw;
+			} catch (const TEgoNotAvailable& e) {
+				resp = respBuilder
+					.Body(e.what())
+					.ServiceUnavailable()
 					.FormResponse();
 				if (DebugMode) throw;
 			} catch (const std::exception& e) {

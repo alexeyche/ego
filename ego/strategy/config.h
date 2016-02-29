@@ -19,21 +19,21 @@ namespace NEgo {
             MinimizersNum = config.minimizersnum();
             MaxEval = config.maxeval();
             Tolerance = config.tolerance();
+            Verbose = config.verbose();
         }
 
         TString Method;
         ui32 MinimizersNum;
         ui32 MaxEval;
         double Tolerance;
+        bool Verbose;
     };
 
     struct TStrategyConfig {
-    	TStrategyConfig() {}
-
-        TStrategyConfig(const NEgoProto::TStrategyConfig& config)
+        TStrategyConfig(const NEgoProto::TStrategyConfig& config = NEgoProto::TStrategyConfig())
             : ProtoConfig(config)
         {
-            InitSamplesNum = ProtoConfig.initsamplesnum();
+            InitSampleSize = ProtoConfig.initsamplesize();
             BatchSize = ProtoConfig.batchsize();
             IterationsNum = ProtoConfig.iterationsnum();
             HyperOptFreq = ProtoConfig.hyperoptfreq();
@@ -43,17 +43,21 @@ namespace NEgo {
 
             HyperOpt = TOptConfig(ProtoConfig.hyperopt(), "LBFGS");
             AcqOpt = TOptConfig(ProtoConfig.acqopt(), "LBFGSB");
+
+            BatchPolicy = ProtoConfig.batchpolicy();
         }
 
         TOptConfig HyperOpt;
         TOptConfig AcqOpt;
 
-        ui32 InitSamplesNum;
+        ui32 InitSampleSize;
         ui32 BatchSize;
         ui32 IterationsNum;
         ui32 HyperOptFreq;
         double HyperLowerBound;
         double HyperUpperBound;
+
+        TString BatchPolicy;
 
         NEgoProto::TStrategyConfig ProtoConfig;
     };

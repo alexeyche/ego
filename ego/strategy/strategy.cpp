@@ -1,7 +1,8 @@
 #include "strategy.h"
+#include "strategy_funcs.h"
+
 
 #include <ego/util/protobuf.h>
-
 #include <ego/util/sobol.h>
 
 #include <future>
@@ -15,7 +16,9 @@ namespace NEgo {
         , EndIterationNum(0)
         , BatchNumber(0)
     {
-        InitSamples = GenerateSobolGrid(Config.InitSamplesNum, Model->GetDimSize());
+        InitSamples = GenerateSobolGrid(Config.InitSampleSize, Model->GetDimSize());
+
+        BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
     }
 
     TStrategy::TStrategy(const TStrategy& strategy) {
@@ -30,6 +33,7 @@ namespace NEgo {
             InitSamples = strategy.InitSamples;
             Config = strategy.Config;
             Model = strategy.Model;
+            BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
         }
         return *this;
     }
@@ -49,13 +53,18 @@ namespace NEgo {
 
         if (serial.IsInput()) {
             Config = TStrategyConfig(protoConfig);
+            BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
         }
     }
 
     void TStrategy::SetModel(SPtr<TModel> model) {
         Model = model;
     }
-
+    
+    SPtr<TModel> TStrategy::GetModel() const {
+        return Model;
+    }
+    
     void TStrategy::OptimizeHypers(const TOptConfig& optConfig) {
         ENSURE(Model, "Model is not set while optimizing hyperparameters");
 
@@ -95,72 +104,7 @@ namespace NEgo {
         Model->Update();
     }
 
-    TPair<TVectorD, double> TStrategy::OptimizeAcquisition(const TOptConfig& optConfig) {
-        ENSURE(Model, "Model is not set while optimizing hyperparameters");
-
-        TMatrixD starts = GenerateSobolGrid(optConfig.MinimizersNum, Model->GetDimSize());
-
-        TVector<std::future<TPair<TVectorD, double>>> results;
-        for (size_t minNum=0; minNum < optConfig.MinimizersNum; ++minNum) {
-            auto acqFun = Model->GetAcq();
-            TVectorD start = NLa::Trans(starts.row(minNum));
-            results.push_back(std::async(
-                std::launch::async,
-                [=]() {
-                    try {
-                        return NOpt::OptimizeAcquisitionFunction(acqFun, start, optConfig);
-                    } catch (const TEgoAlgebraError& err) {
-                        L_DEBUG << "Got algebra error, ignoring";
-                        return MakePair(TVectorD(), std::numeric_limits<double>::max());
-                    }
-                }
-            ));
-        }
-        double bestAcqFun = std::numeric_limits<double>::max();
-        TVectorD bestParams;
-        for (auto& f: results) {
-            auto r = f.get();
-            L_DEBUG << "Got result from starting at " << NLa::VecToStr(r.first) << " -> " << r.second;
-            if (r.second < bestAcqFun) {
-                bestAcqFun = r.second;
-                bestParams = r.first;
-            }
-        }
-        ENSURE(bestParams.size() > 0, "Best optimization result is not selected");
-        L_DEBUG << "Found best optimization result at " << NLa::VecToStr(bestParams) << " -> " << bestAcqFun;
-        return MakePair(bestParams, bestAcqFun);
-    }
-
-    void TStrategy::Optimize(TOptimCallback cb) {
-        ENSURE(Model, "Model is not set while optimizing function");
-
-        for(size_t iterNum=0; iterNum < Config.IterationsNum; ++iterNum) {
-            L_DEBUG << "Iteration number " << iterNum << ", best " << Model->GetMinimumY();
-
-            OptimizeStep(cb);
-
-            if((iterNum+1) % Config.HyperOptFreq == 0) {
-                OptimizeHypers(Config.HyperOpt);
-            }
-        }
-    }
-
-    void TStrategy::OptimizeStep(TOptimCallback cb) {
-        L_DEBUG << "Optimizing acquisition function ...";
-
-        TVectorD x;
-        double crit;
-        Tie(x, crit) = OptimizeAcquisition(Config.AcqOpt);
-        L_DEBUG << "Found criteria value: " << crit;
-        double res = cb(x);
-
-        L_DEBUG << "Got result: " << res;
-
-        Model->AddPoint(x, res);
-        Model->Update();
-    }
-
-
+    
     void TStrategy::AddPoint(const TPoint& p, double target) {
         TGuard lock(AddPointMut);
 
@@ -197,16 +141,20 @@ namespace NEgo {
             L_DEBUG << "Updating model hyperparameters with init samples";
             OptimizeHypers(Config.HyperOpt);
         }
-        L_DEBUG << "Going to generate optimal next point";
+        
+        if ((StartIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {
+            if (StartIterationNum != EndIterationNum) {
+                L_DEBUG << "There are some calculation still goind on (" << StartIterationNum - EndIterationNum  << ")";
+                throw TEgoNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
+            }
+            BatchPolicy->InitNewBatch();
+            L_DEBUG << "Creating a new batch";
+        }
 
-        L_DEBUG << "Optimizing acquisition function ...";
-
-        TVectorD x;
-        double crit;
-        Tie(x, crit) = OptimizeAcquisition(Config.AcqOpt);
-        L_DEBUG << "Found criteria value: " << crit;
-
-        return TPoint(NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber, x);
+        return TPoint(
+            NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber, 
+            BatchPolicy->GetNextElementInBatch()
+        );
     }
 
 

@@ -31,15 +31,18 @@ namespace NEgo {
 
 		class TProblem : public cppoptlib::Problem<double> {
 		public:
-			TProblem(TOptLibCallback cb)
+			TProblem(TOptLibCallback cb, bool verbose)
 				: Cb(cb)
+				, Verbose(verbose)
 			{
 			}
 
 		    double value(const TVectorD &beta) {
 		    	TVectorD gr;
 		    	double v = Cb(beta, gr);
-		    	L_DEBUG << "Got value: " << v;
+		    	if (Verbose) {
+		    		L_DEBUG << "Got value: " << v;	
+		    	}
 		    	return v;
 		    }
 
@@ -50,13 +53,16 @@ namespace NEgo {
 
 		private:
 			TOptLibCallback Cb;
+			bool Verbose;
 		};
 
-		TPair<TVectorD, double> CppOptLibMinimize(EMethod method, const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = TOptional<TPair<TVectorD, TVectorD>>());
+		TOptional<TPair<TVectorD, TVectorD>> NoBounds();
+
+		TPair<TVectorD, double> CppOptLibMinimize(EMethod method, const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = NoBounds(), bool verbose = false);
 
 		template <typename TSolver>
-		TPair<TVectorD, double> CppOptLibMinimize(const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = TOptional<TPair<TVectorD, TVectorD>>()) {
-			TProblem prob(cb);
+		TPair<TVectorD, double> CppOptLibMinimize(const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds = NoBounds(), bool verbose = false) {
+			TProblem prob(cb, verbose);
 			if (bounds) {
 				prob.setLowerBound(bounds->first);
 				prob.setUpperBound(bounds->second);

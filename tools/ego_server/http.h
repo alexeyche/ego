@@ -233,6 +233,12 @@ namespace NEgo {
             Response.Status = "Internal Server Error";
             return *this;
         }
+        
+        TResponseBuilder& ServiceUnavailable() {
+            Response.Code = 503;
+            Response.Status = "Service Unavailable";
+            return *this;
+        }
 
         TString& Body() {
             return Response.Body;

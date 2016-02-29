@@ -142,6 +142,7 @@ namespace NEgo {
 					"GET", "api/list_model_parts",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TModelConfig config;
+						TStrategyConfig stratConfig;
 						TJsonDocument jsonDoc;
 
 						jsonDoc["Cov"]["Values"] = Factory.GetCovNames();
@@ -149,12 +150,14 @@ namespace NEgo {
 						jsonDoc["Lik"]["Values"] = Factory.GetLikNames();
 						jsonDoc["Inf"]["Values"] = Factory.GetInfNames();
 						jsonDoc["Acq"]["Values"] = Factory.GetAcqNames();
+						jsonDoc["BatchPolicy"]["Values"] = Factory.GetBatchPolicyNames();
 
 						jsonDoc["Cov"]["Default"] = config.Cov;
 						jsonDoc["Mean"]["Default"] = config.Mean;
 						jsonDoc["Lik"]["Default"] = config.Lik;
 						jsonDoc["Inf"]["Default"] = config.Inf;
 						jsonDoc["Acq"]["Default"] = config.Acq;
+						jsonDoc["BatchPolicy"]["Default"] = stratConfig.BatchPolicy;
 
 						resp.Body() += jsonDoc.GetPrettyString();
 						resp.Good();

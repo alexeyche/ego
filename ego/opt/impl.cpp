@@ -13,19 +13,23 @@
 namespace NEgo {
 	namespace NOpt {
 
+		TOptional<TPair<TVectorD, TVectorD>> NoBounds() {
+			return TOptional<TPair<TVectorD, TVectorD>>();
+		}
 
-		TPair<TVectorD, double> CppOptLibMinimize(EMethod method, const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds) {
+
+		TPair<TVectorD, double> CppOptLibMinimize(EMethod method, const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds, bool verbose) {
 			switch(method) {
 				case CG:
 					throw TEgoException() << "Method is not in cppoptlib";
 				case CG_OPTLIB:
-					return CppOptLibMinimize<cppoptlib::ConjugatedGradientDescentSolver<double>>(start, cb);
+					return CppOptLibMinimize<cppoptlib::ConjugatedGradientDescentSolver<double>>(start, cb, bounds, verbose);
 				case BFGS:
-					return CppOptLibMinimize<cppoptlib::BfgsSolver<double>>(start, cb);
+					return CppOptLibMinimize<cppoptlib::BfgsSolver<double>>(start, cb, bounds, verbose);
 				case LBFGS:
-					return CppOptLibMinimize<cppoptlib::LbfgsSolver<double>>(start, cb);
+					return CppOptLibMinimize<cppoptlib::LbfgsSolver<double>>(start, cb, bounds, verbose);
 				case LBFGSB:
-					return CppOptLibMinimize<cppoptlib::LbfgsbSolver<double>>(start, cb, bounds);
+					return CppOptLibMinimize<cppoptlib::LbfgsbSolver<double>>(start, cb, bounds, verbose);
 				default:
 					throw TEgoException() << "Method is not implemented";
 			}

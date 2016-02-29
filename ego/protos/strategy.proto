@@ -7,6 +7,7 @@ message TOptConfig {
     optional uint32 MinimizersNum = 2 [default = 100];
     optional uint32 MaxEval = 3 [default = 100];
     optional double Tolerance = 4 [default = 1e-10];
+    optional bool Verbose = 5 [default = false];
 }
 
 
@@ -14,12 +15,14 @@ message TStrategyConfig {
     optional TOptConfig HyperOpt = 7;
     optional TOptConfig AcqOpt = 8;
 
-    optional uint32 InitSamplesNum = 9 [default = 10];
+    optional uint32 InitSampleSize = 9 [default = 10];
     optional uint32 BatchSize = 10 [default = 1];
     optional uint32 IterationsNum = 11 [default = 100];
     optional uint32 HyperOptFreq = 12 [default = 1];
     optional double HyperLowerBound = 13 [default = -100];
     optional double HyperUpperBound = 14 [default = 100];
+
+    optional string BatchPolicy = 15 [default = "bpRandom"];
 };
 
 message TStrategyState {

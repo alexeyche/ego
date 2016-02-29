@@ -19,6 +19,7 @@ set(EGO_SRCS ${DIR_SRCS})
 set(DIRS
     acq
     base
+    batch
     contrib
     cov
     util

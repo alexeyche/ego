@@ -3,6 +3,7 @@
 #include "config.h"
 
 #include <ego/model/model.h>
+#include <ego/util/serial.h>
 
 #include <ego/protos/strategy.pb.h>
 
@@ -35,15 +36,11 @@ namespace NEgo {
 
         void OptimizeHypers(const TOptConfig& optConfig);
 
-        TPair<TVectorD, double> OptimizeAcquisition(const TOptConfig& optConfig);
-
-        void Optimize(TOptimCallback cb);
-
-        void OptimizeStep(TOptimCallback cb);
-
         void SerialProcess(TSerializer& serial) override;
 
         void SetModel(SPtr<TModel> model);
+
+        SPtr<TModel> GetModel() const;
 
         void AddPoint(const TPoint& p, double target);
 
@@ -64,6 +61,7 @@ namespace NEgo {
 		TStrategyConfig Config;
 
 		SPtr<TModel> Model;
+        SPtr<IBatchPolicy> BatchPolicy;
 	};
 
 } // namespace NEgo

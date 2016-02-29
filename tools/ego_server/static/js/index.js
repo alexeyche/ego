@@ -1,4 +1,6 @@
 
+
+
 $('#int-variable-type').on('click', function() {
     $('#float-variable-type').removeClass('active');
     $('#enum-variable-type').removeClass('active');
@@ -71,10 +73,14 @@ $('#add-variable-button').on('click', function() {
                 .append('<button type="button" class="btn btn-default" id="row-delete-button-'+$('#variable-table tr').length+'">Delete</button>')
                 .on('click', function(event) {
                     $(this).parent().remove();
+                    if ($('#variable-table tr').length == 0) {
+                        $("#submit-problem-btn").prop("disabled", true);
+                    }
                     compileProblemConfig();
                 })
             )
         );
+    $("#submit-problem-btn").prop("disabled", false);
     compileProblemConfig();
 })
 
@@ -164,7 +170,11 @@ function compileProblemConfig() {
     cfg += ind + "Inf: \"" + $("#inf-btn-group .active").text() + "\"\n";
     cfg += ind + "Acq: \"" + $("#acq-btn-group .active").text() + "\"\n";
     cfg += "}\n";
-
+    cfg += "StrategyConfig {\n";
+    cfg += ind + "BatchPolicy: \"" + $("#batchpolicy-btn-group .active").text() + "\"\n";
+    cfg += ind + "BatchSize: " + $("#batch-size").val() + "\n";
+    cfg += ind + "InitSampleSize: " + $("#init-sample-size").val() + "\n";
+    cfg += "}\n";
 
     $("#textarea-problem-config").val(cfg);
 }

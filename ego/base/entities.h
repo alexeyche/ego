@@ -6,6 +6,8 @@
 // #include <ego/cov/seard.h>
 // #include <ego/cov/gaborard.h>
 
+#include <ego/batch/random.h>
+
 #include <ego/cov/stationary.h>
 
 
