@@ -21,11 +21,7 @@ namespace NEgo {
         MetaEntity = true;
 
         InitWithConfig(Config, D);
-
         X = TMatrixD(0, D);
-
-        // TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
-        // SetParameters(v);
     }
 
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y)
@@ -37,9 +33,6 @@ namespace NEgo {
 
         size_t D = x.n_cols;
         InitWithConfig(Config, D);
-
-        // TVector<double> v(GetParametersSize(), TModel::ParametersDefault);
-        // SetParameters(v);
         SetData(x, y);
     }
 
@@ -119,6 +112,7 @@ namespace NEgo {
     ui32 TModel::GetDimSize() const {
         return X.n_cols;
     }
+
     // Functor methods
 
     size_t TModel::GetParametersSize() const {
@@ -147,7 +141,7 @@ namespace NEgo {
         TVectorD kss = NLa::Diag(crossCovRes.Value());
 
         TVectorD Fmu = ms + NLa::Trans(Ks) * Posterior->Alpha;
-        
+
         TVectorD Fs2;
         TMatrixD V;
 
@@ -170,7 +164,7 @@ namespace NEgo {
         // NLa::DebugSave(Fmu, "Fmu");
         // NLa::DebugSave(V, "V");
         // NLa::DebugSave(Fs2, "Fs2");
-        
+
         auto likRes = Lik->GetMarginalMeanAndVariance(Fmu, Fs2);
 
         TPair<TVectorD, TVectorD> distr = likRes.Value();

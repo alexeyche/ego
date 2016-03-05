@@ -80,6 +80,8 @@ def run(server, problem, args, num_of_evaluations):
 
     spec = ego.get_specification()
 
+    procs = []
+
     for ev_id in xrange(num_of_evaluations):
         point = ego.get_next_point()
         logging.debug("Got point with id {}".format(point["Id"]))
@@ -87,6 +89,7 @@ def run(server, problem, args, num_of_evaluations):
         input_line = " ".join([ str(i) for i in point["Point"].values() ]) + "\n"
         logging.info("Running: \n\t{}\nwith input: {}".format(" ".join(args), input_line))
         p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
+        procs.append(p)
         stdout, stderr = p.communicate(input = input_line)
         if p.returncode != 0:
             raise Exception("Found failed command: \n{}\n{}".format(stdout, stderr))

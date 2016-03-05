@@ -31,7 +31,7 @@ ModelState {
 StrategyState {
   StrategyConfig {
     InitSampleSize: 10
-    BatchSize: 8
+    BatchSize: 1
     BatchPolicy: "bpRandom"
   }
   StartIterationNum: 0

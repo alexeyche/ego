@@ -20,6 +20,9 @@ if (seed > 0) {
     set.seed(custom_seed)
 }
 
+sleep = get.env("SLEEP", 0)
+Sys.sleep(sleep)
+
 x = NULL
 in.r.studio = TRUE
 if(length(grep("RStudio", args)) == 0) {
@@ -44,12 +47,10 @@ for (std in stdevs) {
     y.spl = c(y.spl, rnorm(p.num/length(stdevs), 0, std))
 }
 y.spl = sample(y.spl)
-
 spl = splinefun(x.spl, y.spl)
 if (in.r.studio) {
     plot(spl, xlim = c(min(x.spl), max(x.spl)))
 }
-
 cat(spl(x), "\n")
 
 

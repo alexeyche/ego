@@ -60,11 +60,11 @@ namespace NEgo {
     void TStrategy::SetModel(SPtr<TModel> model) {
         Model = model;
     }
-    
+
     SPtr<TModel> TStrategy::GetModel() const {
         return Model;
     }
-    
+
     void TStrategy::OptimizeHypers(const TOptConfig& optConfig) {
         ENSURE(Model, "Model is not set while optimizing hyperparameters");
 
@@ -104,7 +104,7 @@ namespace NEgo {
         Model->Update();
     }
 
-    
+
     void TStrategy::AddPoint(const TPoint& p, double target) {
         TGuard lock(AddPointMut);
 
@@ -136,23 +136,24 @@ namespace NEgo {
                 NStr::TStringBuilder() << StartIterationNum << "-init",
                 InitSamples.row(StartIterationNum++)
             );
-        } else 
+        } else
         if (StartIterationNum == InitSamples.n_rows) {
             L_DEBUG << "Updating model hyperparameters with init samples";
             OptimizeHypers(Config.HyperOpt);
         }
-        
+
         if ((StartIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {
             if (StartIterationNum != EndIterationNum) {
                 L_DEBUG << "There are some calculation still goind on (" << StartIterationNum - EndIterationNum  << ")";
                 throw TEgoNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
             }
+            ++BatchNumber;
             BatchPolicy->InitNewBatch();
-            L_DEBUG << "Creating a new batch";
+            L_DEBUG << "Creating a new batch (# " << BatchSize << ")";
         }
 
         return TPoint(
-            NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber, 
+            NStr::TStringBuilder() << StartIterationNum++ << "-" << BatchNumber,
             BatchPolicy->GetNextElementInBatch()
         );
     }
