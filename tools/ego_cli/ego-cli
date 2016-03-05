@@ -10,6 +10,7 @@ import random as rnd
 import logging
 from collections import OrderedDict
 import numpy as np
+import time
 
 def lhs_sample(n, rng):
     return (rng.permutation(range(1,n+1)) - rng.random_sample(n))/float(n)
@@ -40,9 +41,18 @@ class TEgoClient(object):
     def __init__(self, server, problem):
         self.server = server
         self.problem = problem
+        self.calculations = []
+        self.spec = self.get_specification()
 
     def __ask(self, fun):
-        ans_str = urllib2.urlopen("{}/api/{}".format(self.server, fun)).read()
+        try:
+            ans_str = urllib2.urlopen("{}/api/{}".format(self.server, fun)).read()
+        except urllib2.HTTPError, err:
+            if err.code == 503:
+                logging.info("Server is busy")
+                return None
+            raise
+
         logging.debug("Got answer: {}".format(ans_str))
         ans = json.loads(ans_str, object_pairs_hook=OrderedDict)
         return ans;
@@ -65,40 +75,62 @@ class TEgoClient(object):
         logging.debug("Result of telling: {}".format(d))
 
 
-    def get_specification(self):
-        return self.__ask_problem("specification")
-
-    def get_next_point(self):
-        return self.__ask_problem("next_point")
-
-    def add_point(self, point):
-        self.__tell_problem("add_point", point)
-
-
-def run(server, problem, args, num_of_evaluations):
-    ego = TEgoClient(server, problem)
-
-    spec = ego.get_specification()
-
-    procs = []
-
-    for ev_id in xrange(num_of_evaluations):
-        point = ego.get_next_point()
-        logging.debug("Got point with id {}".format(point["Id"]))
-
-        input_line = " ".join([ str(i) for i in point["Point"].values() ]) + "\n"
-        logging.info("Running: \n\t{}\nwith input: {}".format(" ".join(args), input_line))
-        p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
-        procs.append(p)
-        stdout, stderr = p.communicate(input = input_line)
+    def __communicate(self, p):
+        stdout, stderr = p.communicate()
         if p.returncode != 0:
             raise Exception("Found failed command: \n{}\n{}".format(stdout, stderr))
         if stderr:
             raise Exception("Found failed command: \nstdout:\n{}\nstderr:\n{}".format(stdout, stderr))
-        ans = float(stdout.strip())
+        return float(stdout.strip())
 
-        point["Point"][spec["Name"]] = ans
-        ego.add_point(point)
+    def get_specification(self):
+        return self.__ask_problem("specification")
+
+    def get_next_point(self):
+        while True:
+            point = self.__ask_problem("next_point")
+            if point:
+                return point
+            self.sync_finished()
+            time.sleep(1.0)
+
+    def add_calculation(self, point, proc):
+        self.calculations.append( (point, proc) )
+
+    def add_point(self, point):
+        self.__tell_problem("add_point", point)
+
+    def sync_finished(self):
+        finished_calcs, non_finished_calcs = [], []
+        for point, proc in self.calculations:
+            if proc.poll() is None:
+                non_finished_calcs.append( (point, proc) )
+            else:
+                finished_calcs.append( (point, proc) )
+        self.calculations = non_finished_calcs
+
+        for point, proc in finished_calcs:
+            point["Point"][self.spec["Name"]] = self.__communicate(proc)
+            self.add_point(point)
+
+    def sync(self):
+        while len(self.calculations) > 0:
+            self.sync_finished()
+            time.sleep(1.0)
+
+def run(server, problem, args, num_of_evaluations):
+    ego = TEgoClient(server, problem)
+
+    for ev_id in xrange(num_of_evaluations):
+        point = ego.get_next_point()
+        input_line = " ".join([ str(i) for i in point["Point"].values() ]) + "\n"
+        logging.info("Running: \n\t{}\nwith input: {}".format(" ".join(args), input_line))
+        p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
+        p.stdin.write(input_line)
+
+        ego.add_calculation(point, p)
+    
+    ego.sync()
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Ego client')

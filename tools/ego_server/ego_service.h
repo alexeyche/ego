@@ -41,6 +41,7 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "problem/{problem_name}",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						GetProblem(req); // Check if we have that problem
 						resp.StaticFile("problem.html");
 						resp.Good();
 					}
@@ -204,7 +205,7 @@ namespace NEgo {
 			TString problemName = problemNamePtr->second;
 			auto problemPtr = Problems.find(problemName);
 			if (problemPtr == Problems.end()) {
-				throw TEgoLogicError() << "Can't find problem with the name " << problemName;
+				throw TEgoElementNotFound() << "Can't find problem with the name " << problemName;
 			}
 
 			return problemPtr->second;

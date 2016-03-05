@@ -13,8 +13,17 @@ function ajaxPerformanceRenderer(url, plot, options) {
         success: function(data) {
          ret = data;
         }
-    });
+    }).fail(
+        function(jqXHR, textStatus, errorThrown) {
+            if (errorThrown == 404) {
+                return;
+            }
+        }
+    );
     var indexedRet = [[]];
+    if (ret === null) {
+        return indexedRet;
+    }
     for (var vi=0; vi < ret.length; vi += 1) {
         indexedRet[0].push([vi, ret[vi]]);
     }
@@ -76,11 +85,9 @@ function loadVariableSliceChart(chartId, variableName) {
     if (lastAlert.hasClass("alert")) {
         lastAlert.remove();
     }
-    // try {
+    try {
         $("#" + chartId).removeClass("hidden");
         
-        
-
         var sliceData = null;
         $.ajax({
             async: false,
@@ -142,6 +149,9 @@ function loadVariableSliceChart(chartId, variableName) {
                 show: false
             }
         });
+    } catch(err) {
+        console.log(err);
+    }
 }
 var variableSlicePlots = {}
 

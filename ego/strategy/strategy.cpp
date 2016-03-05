@@ -67,39 +67,6 @@ namespace NEgo {
 
     void TStrategy::OptimizeHypers(const TOptConfig& optConfig) {
         ENSURE(Model, "Model is not set while optimizing hyperparameters");
-
-        // TMatrixD starts = GenerateSobolGrid(Config.HyperOpt.MinimizersNum, Model->GetParametersSize(), Config.HyperLowerBound, Config.HyperUpperBound);
-
-        // TVector<std::future<TPair<TVector<double>, double>>> results;
-        // for (size_t minNum=0; minNum < Config.HyperOpt.MinimizersNum; ++minNum) {
-        //     results.push_back(std::async(
-        //         std::launch::async,
-        //         [&]() {
-        //             TVectorD start = NLa::Trans(starts.row(minNum));
-        //             TModel modelOpt(*Model);
-        //             try {
-        //                 return NOpt::OptimizeModelLogLik(modelOpt, NLa::VecToStd(start), Config.HyperOpt);
-        //             } catch (const TEgoAlgebraError& err) {
-        //                 L_DEBUG << "Got algebra error, ignoring";
-        //                 return MakePair(TVector<double>(), std::numeric_limits<double>::max());
-        //             }
-        //         }
-        //     ));
-        // }
-        // double bestNegLogLik = std::numeric_limits<double>::max();
-        // TVector<double> bestParams;
-        // for (auto& f: results) {
-        //     auto r = f.get();
-        //     L_DEBUG << "Got result from starting at " << NLa::VecToStr(r.first) << " -> " << r.second;
-        //     if (r.second < bestNegLogLik) {
-        //         bestNegLogLik = r.second;
-        //         bestParams = r.first;
-        //     }
-        // }
-        // ENSURE(bestParams.size() > 0, "Best optimization result is not selected");
-        // L_DEBUG << "Found best optimization result at " << NLa::VecToStr(bestParams) << " -> " << bestNegLogLik;
-        // Model->SetParameters(bestParams);
-        // Model->Update();
         NOpt::OptimizeModelLogLik(*Model, Model->GetParameters(), optConfig);
         Model->Update();
     }
@@ -125,6 +92,12 @@ namespace NEgo {
         }
     }
 
+    void TStrategy::CheckAvailavility() const {
+        if (StartIterationNum != EndIterationNum) {
+            L_DEBUG << "There are some calculation still goind on (" << StartIterationNum - EndIterationNum  << " of calculations need to gather)";
+            throw TEgoNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
+        }
+    }
 
     TPoint TStrategy::GetNextPoint() {
         TGuard lock(NextPointMut);
@@ -138,18 +111,16 @@ namespace NEgo {
             );
         } else
         if (StartIterationNum == InitSamples.n_rows) {
+            CheckAvailavility();
             L_DEBUG << "Updating model hyperparameters with init samples";
             OptimizeHypers(Config.HyperOpt);
         }
 
         if ((StartIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {
-            if (StartIterationNum != EndIterationNum) {
-                L_DEBUG << "There are some calculation still goind on (" << StartIterationNum - EndIterationNum  << ")";
-                throw TEgoNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
-            }
+            CheckAvailavility();
             ++BatchNumber;
             BatchPolicy->InitNewBatch();
-            L_DEBUG << "Creating a new batch (# " << BatchSize << ")";
+            L_DEBUG << "Creating a new batch (# " << BatchNumber << ")";
         }
 
         return TPoint(

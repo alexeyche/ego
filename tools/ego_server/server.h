@@ -266,13 +266,13 @@ namespace NEgo {
 				    .FormResponse();
 			} catch (const TEgoFileNotFound& e) {
 				resp = respBuilder
-					.Body(e.what())
+					.StaticFile("not_found.html")
 					.NotFound()
 				    .FormResponse();
 			    if (DebugMode) throw;
 			} catch (const TEgoElementNotFound& e) {
 				resp = respBuilder
-					.Body(e.what())
+					.StaticFile("not_found.html")
 					.NotFound()
 				    .FormResponse();
 			    if (DebugMode) throw;

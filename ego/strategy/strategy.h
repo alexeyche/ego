@@ -47,6 +47,8 @@ namespace NEgo {
         TPoint GetNextPoint();
 
         const TStrategyConfig& GetConfig() const;
+
+        void CheckAvailavility() const;
 	private:
         ui32 BatchNumber;
 

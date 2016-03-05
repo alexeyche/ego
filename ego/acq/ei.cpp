@@ -3,8 +3,6 @@
 #include <ego/model/model.h>
 #include <ego/util/log/log.h>
 
-#include <sstream>
-
 namespace NEgo {
 
 

@@ -227,9 +227,15 @@ function loadModelParts() {
                 }
                 var name = subVal;
                 btnGrp.append(
-                    "<button type='button' class='btn btn-default "+act+"' data-toggle='button' id="+name+"'model-part'>"+name+"</button>"
+                    "<button type='button' class='btn btn-default "+act+"' data-toggle='button' id='"+name+"-model-part' onclick='toggleButtonGroup(this.id)'>"+name+"</button>"
                 );
             })
         });
     });
+}
+
+function toggleButtonGroup(idButton) {
+    var butt = $("#"+idButton);
+    butt.parent().children().removeClass("active");
+    butt.addClass("active");
 }
