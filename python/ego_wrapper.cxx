@@ -106,10 +106,6 @@ TCovWrap::TCovWrap(const char* covName, size_t dim_size, vector<double> params) 
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << params;
 		Cov->SetParameters(params);
-	} else {
-		TVector<double> p(Cov->GetParametersSize(), TModel::ParametersDefault);
-		L_DEBUG << "Setting default hyperparameters " << p;
-		Cov->SetParameters(p);
 	}
 }
 
@@ -135,10 +131,6 @@ TMeanWrap::TMeanWrap(const char* meanName, size_t dim_size, vector<double> param
 	if(params.size()>0) {
 		L_DEBUG << "Setting hyperparameters " << NLa::Trans(NLa::StdToVec(params));
 		Mean->SetParameters(params);
-	} else {
-		TVector<double> p(Mean->GetParametersSize(), TModel::ParametersDefault);
-		L_DEBUG << "Setting default hyperparameters " << p;
-		Mean->SetParameters(p);
 	}
 }
 
@@ -264,9 +256,10 @@ TVector<TDistrWrap> TModelWrap::GetPrediction(const TMatWrap &x) {
 }
 
 void TModelWrap::Optimize(FOptimCallback cb, void* userData) {
-	Model.Optimize([&userData, &cb](const TVectorD &x) -> double {
-		return cb(NLa::VecToStd(x), userData);
-	});
+	throw TEgoNotImplemented() << "Implement this";
+	// Model.Optimize([&userData, &cb](const TVectorD &x) -> double {
+	// 	return cb(NLa::VecToStd(x), userData);
+	// });
 }
 
 TPair<TMatWrap, TMatWrap> TModelWrap::GetData() const {
@@ -275,5 +268,6 @@ TPair<TMatWrap, TMatWrap> TModelWrap::GetData() const {
 }
 
 void TModelWrap::OptimizeHyp() {
-	Model.OptimizeHyp();
+	throw TEgoNotImplemented() << "Implement this";
+	// Model.OptimizeHyp();
 }

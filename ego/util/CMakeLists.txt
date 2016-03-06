@@ -9,6 +9,7 @@ foreach(dir ${DIRS})
 endforeach()
 
 set(SOURCES
+    any.cpp
     proto_options.cpp
     string.cpp
     parse_parenthesis.cpp

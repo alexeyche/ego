@@ -1,33 +1,15 @@
 #pragma once
 
-#include "config.h"
+#include "base_model.h"
 
-#include <ego/base/entities.h>
-#include <ego/base/la.h>
-#include <ego/opt/opt.h>
-
-#include <ego/util/log/log.h>
-#include <ego/util/optional.h>
-#include <ego/util/serial.h>
-
-#include <ego/distr/distr.h>
+#include <ego/acq/acq.h>
 
 namespace NEgo {
 
-    class IAcq;
-
-    using TOptimCallback = std::function<double(const TVectorD&)>;
-
-    class TModel
-        : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>
-        , public ISerial<NEgoProto::TModelState>
+    class TModel: public IModel
     {
     public:
-        using TParent = TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>;
-
-        static const double ParametersDefault;
-
-        TModel();
+        using TBase = IModel;
 
         TModel(const TModelConfig& config, ui32 D);
 
@@ -37,27 +19,13 @@ namespace NEgo {
 
         TModel(const TModel& model);
 
-        void InitWithConfig(const TModelConfig& config, ui32 D);
-
-        // Setters
-
-        void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq);
-
-        void SetData(const TMatrixD &x, const TVectorD &y);
-
-        TPair<TRefWrap<const TMatrixD>, TRefWrap<const TVectorD>> GetData() const;
-
-        void SetConfig(const TModelConfig& config);
-
-        const double& GetMinimumY() const;
-
-        TVectorD GetMinimumX() const;
-
-        void SetMinimum(double v, ui32 idx);
-
-        ui32 GetDimSize() const;
-
         // Functor methods
+
+        virtual SPtr<IModel> Copy() const override;
+
+        void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) override;
+
+        SPtr<ILik> GetLikelihood() const override;
 
         size_t GetParametersSize() const override;
 
@@ -67,51 +35,27 @@ namespace NEgo {
 
         TModel::Result UserCalc(const TMatrixD& Xnew) const override;
 
+        IAcq::Result CalcCriterion(const TVectorD& x) const override;
+
         // Helpers
 
-        void OptimizeHyp();
+        TInfResult GetNegativeLogLik() const override final;
 
-        void Optimize(TOptimCallback cb);
+        void AddPoint(const TVectorD& x, double y) override;
 
-        void OptimizeStep(TOptimCallback cb);
+        void Update() override;
 
-        TInfResult GetNegativeLogLik(const TVector<double>& v);
-
-        TInfResult GetNegativeLogLik() const;
-
-        TDistrVec GetPrediction(const TMatrixD &Xnew);
-
-        TDistrVec GetPredictionWithDerivative(const TMatrixD &Xnew);
-
-        SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew);
-
-        SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew);
-
-        void SerialProcess(TSerializer& serial) override;
-
-        void AddPoint(const TVectorD& x, double y);
-
-        void Update();
-
-        bool Empty() const;
-
-        SPtr<IAcq> GetAcq() const;
     private:
-        TMatrixD X;
-        TVectorD Y;
-
         SPtr<IMean> Mean;
         SPtr<ICov> Cov;
         SPtr<ILik> Lik;
         SPtr<IInf> Inf;
         SPtr<IAcq> Acq;
 
-        TModelConfig Config;
-
         TOptional<TPosterior> Posterior;
-
-        TPair<double, ui32> MinF;
     };
+
+    REGISTER_MODEL(TModel);
 
 } // namespace NEgo
 

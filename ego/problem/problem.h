@@ -2,10 +2,13 @@
 
 #include "config.h"
 
-#include <ego/strategy/strategy.h>
-#include <ego/model/model.h>
+#include <ego/base/la.h>
+
+#include <ego/util/serial.h>
 #include <ego/util/json.h>
 #include <ego/util/fs.h>
+#include <ego/util/any.h>
+#include <ego/util/string.h>
 
 namespace NEgo {
 
@@ -22,38 +25,83 @@ namespace NEgo {
 	template <typename T>
 	T FromUnit(const TVariable& var, double unitVal);
 
+    class TRawPoint {
+    public:
+        template <typename T>
+        T GetValue(TString varName) const {
+            auto varPtr = Variables.find(varName);
+            ENSURE(varPtr != Variables.end(), "Can't find variable with name " << varName);
+            return varPtr->second.GetValue<T>();
+        }
 
-	class TProblem : public ISerial<NEgoProto::TProblemState> {
-	public:
-		TProblem(const TFsPath srcFile);
+        template <typename T>
+        void SetValue(TString varName, T value) {
+            TAny any;
+            any.SetValue<T>(value);
+            auto res = Variables.insert( MakePair(varName, any) );
+            ENSURE(res.second, "Found duplicates of variable " << varName);
+        }
+        
+        std::map<TString, TAny>& GetVariables() {
+            return Variables;
+        }
+        
+        const TString& GetId() const {
+            return Id;
+        }
+        void SetId(TString id) {
+            Id = id;
+        }
 
-		TProblem(const TProblemSpec& spec);
+    private:
+        TString Id;
 
-		TString GetName() const;
+        std::map<TString, TAny> Variables;
+    };
 
-		void AddPoint(const TJsonDocument& inputSpec);
 
-		void DumpState(const TFsPath dstFile);
+    struct TPoint {
+        TPoint(TVectorD x, double y, TString id) 
+            : X(x)
+            , Y(y)
+            , Id(id)
+        {
+        }
 
-		void LoadState(const TFsPath srcFile);
+        TPoint(TString id, TVectorD x)
+            : X(x)
+            , Id(id)
+        {}
 
-		void SerialProcess(TSerializer& serial) override;
+        TVectorD X;
+        double Y;
+        TString Id;
+    };
 
-        TModel& GetModel();
+
+    class TProblem: public ISerial<NEgoProto::TProblemState> {
+    public:
+        TProblem() {}
+
+        void SerialProcess(TSerializer& serial);
+
+        TProblem(const TProblemConfig& config);
+
+        TPoint Remap(const TRawPoint& rawPoint);
+
+        TRawPoint RemapBack(const TPoint& point);
+
+        TString GetName() const;
+    
+        ui32 GetDimSize() const;
 
         const TProblemConfig& GetConfig() const;
 
-        TJsonDocument GetVariableSlice(const TString& varName, ui32 gridSize);
+        const std::map<TString, TVariable>& GetVariables() const;
 
-        TStrategy& GetStrategy();
+    private:
+        TProblemConfig Config;
+    };
 
-        TJsonDocument GetNextPoint();
-
-	private:
-		TProblemConfig Config;
-		SPtr<TModel> Model;
-
-        TStrategy Strategy;
-	};
 
 } // namespace NEgo

@@ -32,7 +32,8 @@ set(DIRS
     opt
     func
     problem
-    strategy
+    solver
+    #strategy
 )
 
 foreach(dir ${DIRS})

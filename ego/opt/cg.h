@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ego/base/la.h>
-#include <ego/strategy/config.h>
+#include <ego/solver/config.h>
 
 namespace NEgo {
 	namespace NOpt {

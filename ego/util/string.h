@@ -46,6 +46,11 @@ namespace NEgo {
 
 	    template <typename T>
 	    T As(const TString& s);
+	    
+	    template <typename T>
+	    TString ToString(T v) {
+	    	return std::to_string(v);
+	    }
 
 	} // namespace NStr
 } // namespace NEgo

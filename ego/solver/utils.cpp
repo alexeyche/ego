@@ -1,4 +1,4 @@
-#include "strategy_funcs.h"
+#include "utils.h"
 
 #include <ego/util/sobol.h>
 
@@ -6,30 +6,30 @@
 
 namespace NEgo {
 
-	TPair<TVectorD, double> OptimizeAcquisition(TModel& model, const TOptConfig& optConfig) {
-		TMatrixD starts = GenerateSobolGrid(optConfig.MinimizersNum, model.GetDimSize());
+	TPair<TVectorD, double> OptimizeAcquisition(SPtr<IModel> model, const TOptConfig& optConfig) {
+		TMatrixD starts = GenerateSobolGrid(optConfig.MinimizersNum, model->GetDimSize());
 
-        TVector<std::future<TPair<TVectorD, double>>> results;
+        TVector<TPair<std::future<TPair<TVectorD, double>>, TVectorD>> results;
         for (size_t minNum=0; minNum < optConfig.MinimizersNum; ++minNum) {
-            auto acqFun = model.GetAcq();
             TVectorD start = NLa::Trans(starts.row(minNum));
-            results.push_back(std::async(
+
+            results.push_back(std::make_pair(std::async(
                 std::launch::async,
                 [=]() {
                     try {
-                        return NOpt::OptimizeAcquisitionFunction(acqFun, start, optConfig);
+                        return NOpt::OptimizeAcquisitionFunction(model, start, optConfig);
                     } catch (const TEgoAlgebraError& err) {
                         L_DEBUG << "Got algebra error, ignoring";
                         return MakePair(TVectorD(), std::numeric_limits<double>::max());
                     }
                 }
-            ));
+            ), start));
         }
         double bestAcqFun = std::numeric_limits<double>::max();
         TVectorD bestParams;
         for (auto& f: results) {
-            auto r = f.get();
-            L_DEBUG << "Got result from starting at " << NLa::VecToStr(r.first) << " -> " << r.second;
+            auto r = f.first.get();
+            L_DEBUG << "Got result from starting at " << NLa::VecToStr(f.second) << " -> " << r.second << " at " << NLa::VecToStr(r.first);
             if (r.second < bestAcqFun) {
                 bestAcqFun = r.second;
                 bestParams = r.first;

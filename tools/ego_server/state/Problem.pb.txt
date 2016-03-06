@@ -1,19 +1,55 @@
-ProblemConfig {
-  Name: "Problem"
-  Variable {
-    Name: "Var0"
-    Min: 0
-    Max: 1
-    Type: FLOAT
-  }
-}
-ModelState {
+SolverConfig {
+  InitSampleSize: 10
+  BatchSize: 8
+  ModelType: "Model"
   ModelConfig {
     Cov: "cExpISO"
     Mean: "mConst"
     Inf: "iExact"
     Lik: "lGauss"
     Acq: "aEI"
+  }
+  BatchPolicy: "bpPredictive"
+}
+StartIterationNum: 0
+EndIterationNum: 0
+BatchNumber: 0
+InitSamples {
+  row {
+    x: 0.6875
+  }
+  row {
+    x: 0.9375
+  }
+  row {
+    x: 0.4375
+  }
+  row {
+    x: 0.3125
+  }
+  row {
+    x: 0.8125
+  }
+  row {
+    x: 0.5625
+  }
+  row {
+    x: 0.0625
+  }
+  row {
+    x: 0.09375
+  }
+  row {
+    x: 0.59375
+  }
+  row {
+    x: 0.84375
+  }
+  n_rows: 10
+  n_cols: 1
+}
+ModelState {
+  ModelConfig {
   }
   X {
     n_rows: 0
@@ -28,47 +64,14 @@ ModelState {
     x: -4.60517
   }
 }
-StrategyState {
-  StrategyConfig {
-    InitSampleSize: 10
-    BatchSize: 8
-    BatchPolicy: "bpPredictive"
-  }
-  StartIterationNum: 0
-  EndIterationNum: 0
-  BatchNumber: 0
-  InitSamples {
-    row {
-      x: 0.6875
+ProblemState {
+  ProblemConfig {
+    Name: "Problem"
+    Variable {
+      Name: "Var0"
+      Min: 0
+      Max: 1
+      Type: FLOAT
     }
-    row {
-      x: 0.9375
-    }
-    row {
-      x: 0.4375
-    }
-    row {
-      x: 0.3125
-    }
-    row {
-      x: 0.8125
-    }
-    row {
-      x: 0.5625
-    }
-    row {
-      x: 0.0625
-    }
-    row {
-      x: 0.09375
-    }
-    row {
-      x: 0.59375
-    }
-    row {
-      x: 0.84375
-    }
-    n_rows: 10
-    n_cols: 1
   }
 }

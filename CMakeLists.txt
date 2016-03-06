@@ -67,5 +67,5 @@ include(UseCython)
 
 # Recurse into the rest of the project.
 add_subdirectory(ego)
-add_subdirectory(python)
+#add_subdirectory(python)
 add_subdirectory(tools)

@@ -6,6 +6,8 @@ cmake_minimum_required(VERSION 2.8)
 set(SOURCES
 	tests.cpp
 	register.cpp
+  util_tests.cpp
+  test_framework.cpp
 )
 
 # add directory name to sources
@@ -18,7 +20,7 @@ set(EGO_SRCS ${EGO_SRCS} ${DIR_SRCS} PARENT_SCOPE)
 
 # executable
 add_executable(test_ego
-    test_main.cpp
+    main.cpp
     ${SOURCES}
 )
 

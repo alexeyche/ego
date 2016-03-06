@@ -1,0 +1,47 @@
+package NEgoProto;
+
+import "la.proto";
+import "model.proto";
+import "problem.proto";
+
+message TOptConfig {
+    optional string Method = 1;
+    optional uint32 MinimizersNum = 2 [default = 100];
+    optional uint32 MaxEval = 3 [default = 100];
+    optional double Tolerance = 4 [default = 1e-10];
+    optional bool Verbose = 5 [default = false];
+}
+
+
+message TSolverConfig {
+    optional TOptConfig HyperOpt = 1;
+    optional TOptConfig AcqOpt = 2;
+
+    optional uint32 InitSampleSize = 3 [default = 10];
+    optional uint32 BatchSize = 4 [default = 1];
+    optional uint32 IterationsNum = 5 [default = 100];
+    optional uint32 HyperOptFreq = 6 [default = 1];
+    optional double HyperLowerBound = 7 [default = -100];
+    optional double HyperUpperBound = 8 [default = 100];
+
+    optional string ModelType = 9 [default = "Model"];
+    optional TModelConfig ModelConfig = 10;
+    optional string BatchPolicy = 11 [default = "bpPredictive"];
+};
+
+message TSolverState {
+    optional TSolverConfig SolverConfig = 1;
+
+    optional uint32 StartIterationNum = 2;
+    optional uint32 EndIterationNum = 3;
+    optional uint32 BatchNumber = 4;
+    optional TMatrixD InitSamples = 5;
+    
+    optional TModelState ModelState = 6;
+    optional TProblemState ProblemState = 7;
+};
+
+message TSolverSpec {
+    optional TSolverConfig SolverConfig = 1;
+    optional TProblemConfig ProblemConfig = 2;
+};

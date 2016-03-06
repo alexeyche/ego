@@ -221,15 +221,16 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
     objFunc.gradient(x, g);
     // conv. crit.
     auto noConvergence =
-    [&](Vector<Dtype> & x, Vector<Dtype> & g)->bool {
-      return (arma::norm(ElWiseMin<Dtype>(ElWiseMax<Dtype>(Vector<Dtype>(x - g), lboundTemplate), uboundTemplate) - x, "inf") >= 1e-4);
-    };
+      [&](Vector<Dtype> & x, Vector<Dtype> & g)->bool {
+        return (arma::norm(ElWiseMin<Dtype>(ElWiseMax<Dtype>(Vector<Dtype>(x - g), lboundTemplate), uboundTemplate) - x, "inf") >= 1e-4);
+      };
     while (noConvergence(x, g) && (k < this->settings_.maxIter)) {
       Dtype f_old = f;
       Vector<Dtype> x_old = x;
       Vector<Dtype> g_old = g;
       // STEP 2: compute the cauchy point
-      Vector<Dtype> CauchyPoint = Zero<Dtype>(DIM, 1), c = Zero<Dtype>(DIM, 1);
+      Vector<Dtype> CauchyPoint = Zero<Dtype>(DIM, 1);
+      Vector<Dtype> c = Zero<Dtype>(DIM, 1);
       GetGeneralizedCauchyPoint(x, g, CauchyPoint, c);
       // STEP 3: compute a search direction d_k by the primal method for the sub-problem
       Vector<Dtype> SubspaceMin;

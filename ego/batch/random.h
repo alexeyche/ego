@@ -8,7 +8,7 @@ namespace NEgo {
 
 	class TBatchPolicyRandom : public IBatchPolicy {
 	public:
-		TBatchPolicyRandom(SPtr<TModel> model, const TStrategyConfig& config);
+		TBatchPolicyRandom(SPtr<IModel> model, const TSolverConfig& config);
 
         void InitNewBatch() override final;
 

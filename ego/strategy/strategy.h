@@ -26,9 +26,9 @@ namespace NEgo {
 	class TStrategy : public ISerial<NEgoProto::TStrategyState> {
 	public:
 
-        TStrategy() {}
+        TStrategy();
 
-		TStrategy(const TStrategyConfig& config, SPtr<TModel> model);
+        void InitWithConfig(const TStrategyConfig& config, SPtr<IModel> model);
 
         TStrategy(const TStrategy& strategy);
 
@@ -38,9 +38,9 @@ namespace NEgo {
 
         void SerialProcess(TSerializer& serial) override;
 
-        void SetModel(SPtr<TModel> model);
+        void SetModel(SPtr<IModel> model);
 
-        SPtr<TModel> GetModel() const;
+        SPtr<IModel> GetModel() const;
 
         void AddPoint(const TPoint& p, double target);
 
@@ -62,7 +62,7 @@ namespace NEgo {
 
 		TStrategyConfig Config;
 
-		SPtr<TModel> Model;
+		SPtr<IModel> Model;
         SPtr<IBatchPolicy> BatchPolicy;
 	};
 

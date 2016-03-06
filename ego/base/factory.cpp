@@ -5,7 +5,7 @@
 #include <ego/util/parse_parenthesis.h>
 
 #include <ego/model/model.h>
-#include <ego/strategy/config.h>
+#include <ego/solver/config.h>
 
 namespace NEgo {
 
@@ -14,6 +14,9 @@ namespace NEgo {
 		return _inst;
 	}
 
+    SPtr<IModel> TFactory::CreateModel(TString name, const TModelConfig& config, size_t dimSize) {
+        return CreateEntity<IModel>(name, ModelMap, config, dimSize);
+    }
 
     SPtr<ICov> TFactory::CreateCov(TString name, size_t dimSize) {
     	return CreateEntity<ICov>(name, CovMap, dimSize);
@@ -55,7 +58,7 @@ namespace NEgo {
         return CreateEntity<IAcq>(name, AcqMap, dimSize);
     }
 
-    SPtr<IBatchPolicy> TFactory::CreateBatchPolicy(TString name, SPtr<TModel> model, const TStrategyConfig& config) {
+    SPtr<IBatchPolicy> TFactory::CreateBatchPolicy(TString name, SPtr<IModel> model, const TSolverConfig& config) {
         return CreateEntity<IBatchPolicy>(name, BatchPolicyMap, model, config);
     }
 
@@ -100,6 +103,10 @@ namespace NEgo {
     
     TVector<TString> TFactory::GetBatchPolicyNames() const {
         return GetNames(BatchPolicyMap);
+    }
+
+    TVector<TString> TFactory::GetModelNames() const {
+        return GetNames(ModelMap);
     }
 
     bool TFactory::CheckInfName(const TString &s) const {

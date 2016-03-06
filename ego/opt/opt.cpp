@@ -1,6 +1,6 @@
 #include "opt.h"
 
-#include <ego/model/model.h>
+#include <ego/model/base_model.h>
 
 namespace NEgo {
 	namespace NOpt {
@@ -36,7 +36,7 @@ namespace NEgo {
  		}
 
 
-		TPair<TVector<double>, double> OptimizeModelLogLik(TModel &model, const TVector<double>& start, const TOptConfig& config) {
+		TPair<TVector<double>, double> OptimizeModelLogLik(SPtr<IModel> model, const TVector<double>& start, const TOptConfig& config) {
 			L_DEBUG << "Going to minimize model log likelihood with " << config.Method;
 			EMethod method = MethodFromString(config.Method);
 			switch(method) {
@@ -45,7 +45,7 @@ namespace NEgo {
 						auto res = CgMinimize(
 					        start,
 					        [&] (const TVectorD &x) -> TPair<double, TVectorD> {
-					            auto res = model.GetNegativeLogLik(NLa::VecToStd(x));
+					            auto res = model->GetNegativeLogLik(NLa::VecToStd(x));
 					            double val = res.Value();
 					            L_DEBUG << "Got value: " << val;
 					            return MakePair(val, NLa::StdToVec(res.ParamDeriv()));
@@ -53,7 +53,7 @@ namespace NEgo {
 					        TCgMinimizeConfig(config)
 					    );
 					    TVector<double> par = NLa::VecToStd(res.first);
-					    model.SetParameters(par);
+					    model->SetParameters(par);
 					    return MakePair(par, res.second);
 					}
 				default:
@@ -62,7 +62,7 @@ namespace NEgo {
 							method,
 							start,
 							[&] (const TVectorD& x, TVectorD& grad) -> double {
-					            auto res = model.GetNegativeLogLik(NLa::VecToStd(x));
+					            auto res = model->GetNegativeLogLik(NLa::VecToStd(x));
 					            grad = NLa::StdToVec(res.ParamDeriv());
 					            return res.Value();
 					        },
@@ -70,13 +70,13 @@ namespace NEgo {
 					        config.Verbose
 						);
 						TVector<double> par = NLa::VecToStd(res.first);
-					    model.SetParameters(par);
+					    model->SetParameters(par);
 					    return MakePair(par, res.second);
 					}
 			}
 		}
 
-		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IAcq> acq, const TVectorD& start, const TOptConfig& config) {
+		TPair<TVectorD, double> OptimizeAcquisitionFunction(SPtr<IModel> model, const TVectorD& start, const TOptConfig& config) {
 			switch(MethodFromString(config.Method)) {
 				case CG:
 				case CG_OPTLIB:
@@ -91,7 +91,7 @@ namespace NEgo {
 							LBFGSB,
 							start,
 							[&] (const TVectorD& x, TVectorD& grad) -> double {
-								auto res = acq->Calc(x);
+								auto res = model->CalcCriterion(x);
 								
 								double val = res.Value();
 								for (ui32 index=0; index < grad.size(); ++index) {
@@ -99,7 +99,7 @@ namespace NEgo {
 								}
 								return val;
 					        },
-					        MakePair(NLa::Zeros(acq->GetDimSize()), NLa::Ones(acq->GetDimSize())),
+					        MakePair(NLa::Zeros(model->GetDimSize()), NLa::Ones(model->GetDimSize())),
 					        config.Verbose
 						);
 					}

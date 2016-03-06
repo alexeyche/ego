@@ -16,12 +16,19 @@ namespace NEgo {
 	class IInf;
 	class IAcq;
 	class IBatchPolicy;
-	class TModel;
-	class TStrategyConfig;
-
+	class IModel;
+	class TSolverConfig;
+	class TModelConfig;
+	
 	class TFactory {
 		template <typename BASE, template <typename> class FUN>
 		using TCreateMap = std::map<TString, FUN<BASE>>;
+
+		// Model Ctor
+		template <typename BASE>
+		using TModelCtor = SPtr<BASE> (*)(const TModelConfig&, size_t);
+
+		template<typename BASE, typename INST> static SPtr<BASE> CreateCbModel(const TModelConfig& config, size_t D) { return std::move(SPtr<BASE>(new INST(config, D))); }
 
 		// Simple Ctor
 		template <typename BASE>
@@ -46,11 +53,16 @@ namespace NEgo {
 		// High order ctors
 
 		template <typename BASE>
-		using TBatchPolicyCtor = SPtr<BASE> (*)(SPtr<TModel>, const TStrategyConfig&);
+		using TBatchPolicyCtor = SPtr<BASE> (*)(SPtr<IModel>, const TSolverConfig&);
 
-		template<typename BASE, typename INST> static SPtr<BASE> CreateCbBatchPolicy(SPtr<TModel> model, const TStrategyConfig& config) { return std::move(SPtr<BASE>(new INST(model, config))); }
+		template<typename BASE, typename INST> static SPtr<BASE> CreateCbBatchPolicy(SPtr<IModel> model, const TSolverConfig& config) { return std::move(SPtr<BASE>(new INST(model, config))); }
 
 	public:
+		template <typename T>
+	    void RegisterModel(TString type) {
+	    	ModelMap[type] = &CreateCbModel<IModel, T>;
+	    }
+
 	    template <typename T>
 	    void RegisterCov(TString type) {
 	    	CovMap[type] = &CreateCbSimple<ICov, T>;
@@ -94,6 +106,7 @@ namespace NEgo {
 			return cbPtr->second(params ... );
 	    }
 
+	    SPtr<IModel> CreateModel(TString name, const TModelConfig& config, size_t dimSize);
 
 	    SPtr<ICov> CreateCov(TString name, size_t dimSize);
 
@@ -109,7 +122,7 @@ namespace NEgo {
 
 	    SPtr<IAcq> CreateAcq(TString name, size_t dimSize);
 
-	    SPtr<IBatchPolicy> CreateBatchPolicy(TString name, SPtr<TModel> model, const TStrategyConfig& config);
+	    SPtr<IBatchPolicy> CreateBatchPolicy(TString name, SPtr<IModel> model, const TSolverConfig& config);
 
 	    static TFactory& Instance();
 
@@ -136,6 +149,8 @@ namespace NEgo {
 
 	    TVector<TString> GetBatchPolicyNames() const;
 
+	    TVector<TString> GetModelNames() const;
+
 	    bool CheckInfName(const TString &s) const;
 	private:
 		TCreateMap<ICov, TSimpleEntityCtor> CovMap;
@@ -149,6 +164,8 @@ namespace NEgo {
 		TCreateMap<IAcq, TSimpleEntityCtor> AcqMap;
 
 		TCreateMap<IBatchPolicy, TBatchPolicyCtor> BatchPolicyMap;
+
+		TCreateMap<IModel, TModelCtor> ModelMap;
 	};
 
 	#define REGISTRATOR_CLASS(Name, SuffixToReplace, ReplaceBy) \
@@ -167,6 +184,7 @@ namespace NEgo {
 	REGISTRATOR_CLASS(Inf, "TInf", "i");
 	REGISTRATOR_CLASS(Acq, "TAcq", "a");
 	REGISTRATOR_CLASS(BatchPolicy, "TBatchPolicy", "bp");
+	REGISTRATOR_CLASS(Model, "T", "");
 
 	#define REGISTER_COV(CovType) static TCovRegistrator<CovType> JOIN(TCovRegistrator, CovType)(#CovType);
 	#define REGISTER_MEAN(MeanType) static TMeanRegistrator<MeanType> JOIN(TMeanRegistrator, MeanType)(#MeanType);
@@ -175,7 +193,8 @@ namespace NEgo {
 	#define REGISTER_COMP_MEAN(CompMeanType) static TCompMeanRegistrator<CompMeanType> JOIN(TCompMeanRegistrator, CompMeanType)(#CompMeanType);
 	#define REGISTER_ACQ(AcqType) static TAcqRegistrator<AcqType> JOIN(TAcqRegistrator, AcqType)(#AcqType);
 	#define REGISTER_BATCH_POLICY(BatchPolicyType) static TBatchPolicyRegistrator<BatchPolicyType> JOIN(TBatchPolicyRegistrator, BatchPolicyType)(#BatchPolicyType);
-
+	#define REGISTER_MODEL(ModelType) static TModelRegistrator<ModelType> JOIN(TModelRegistrator, ModelType)(#ModelType);
+	
 } // namespace NEgo
 
 #define Factory NEgo::TFactory::Instance()

@@ -162,15 +162,16 @@ function compileProblemConfig() {
         $("#cov-btn-group > .active")
     }
     cfg += "}\n";
+    cfg += "SolverConfig {\n";
 
-    cfg += "ModelConfig {\n";
-    cfg += ind + "Mean: \"" + $("#mean-btn-group .active").text() + "\"\n";
-    cfg += ind + "Cov: \"" + $("#cov-btn-group .active").text() + "\"\n";
-    cfg += ind + "Lik: \"" + $("#lik-btn-group .active").text() + "\"\n";
-    cfg += ind + "Inf: \"" + $("#inf-btn-group .active").text() + "\"\n";
-    cfg += ind + "Acq: \"" + $("#acq-btn-group .active").text() + "\"\n";
-    cfg += "}\n";
-    cfg += "StrategyConfig {\n";
+    cfg += ind + "ModelConfig {\n";
+    cfg += ind + ind + "Mean: \"" + $("#mean-btn-group .active").text() + "\"\n";
+    cfg += ind + ind + "Cov: \"" + $("#cov-btn-group .active").text() + "\"\n";
+    cfg += ind + ind + "Lik: \"" + $("#lik-btn-group .active").text() + "\"\n";
+    cfg += ind + ind + "Inf: \"" + $("#inf-btn-group .active").text() + "\"\n";
+    cfg += ind + ind + "Acq: \"" + $("#acq-btn-group .active").text() + "\"\n";
+    cfg += ind + "}\n";
+    cfg += ind + "ModelType: \"" + $("#modeltype-btn-group .active").text() + "\"\n";
     cfg += ind + "BatchPolicy: \"" + $("#batchpolicy-btn-group .active").text() + "\"\n";
     cfg += ind + "BatchSize: " + $("#batch-size").val() + "\n";
     cfg += ind + "InitSampleSize: " + $("#init-sample-size").val() + "\n";

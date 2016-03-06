@@ -4,6 +4,7 @@
 
 #include <ego/base/base.h>
 #include <ego/util/optional.h>
+#include <ego/util/any.h>
 
 #include <ego/contrib/rapidjson/writer.h>
 #include <ego/contrib/rapidjson/document.h>
@@ -16,6 +17,9 @@ namespace NEgo {
 	class TJsonDocument {
 	// 	friend class TJsonDocumentWrap;
 	public:
+
+		static TJsonDocument FromAny(const TAny& any); 
+
 		template <typename T>
 		static TJsonDocument Array(T array) {
 			TJsonDocument doc;
@@ -41,6 +45,8 @@ namespace NEgo {
 			doc.Doc->SetObject();
 			return doc;
 		}
+
+		static TString PrettyString(const NJson::Value& v);
 
 		TJsonDocument() {
 			Doc = std::make_shared<NJson::Document>();
@@ -121,6 +127,9 @@ namespace NEgo {
 
         friend std::ostream& operator<<(std::ostream& stream, const TJsonDocument& doc);
 
+        TVector<TString> GetKeys() const;
+
+        TAny ToAny() const;
 	private:
 		NJson::Value& CurrentValue() {
 			if (Leaf) {
@@ -142,4 +151,4 @@ namespace NEgo {
 		TOptional<const NJson::Value&> CLeaf;
 	};
 
-} // namespace NEgo
+} // namespace NEgo 

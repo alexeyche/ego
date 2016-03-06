@@ -40,15 +40,15 @@ int main(int argc, const char** argv) {
     if(config.verbose()) {
         TLog::Instance().SetLogLevel(TLog::DEBUG_LEVEL);
     }
-    L_DEBUG << "Got ego options: \n\n" << config.DebugString();
+    // L_DEBUG << "Got ego options: \n\n" << config.DebugString();
 
     // NEgoProto::TProblemState problemState;
     // ReadProtoTextFromFile(config.config(), problemState);
 
-    TProblem prob(config.config());
-    auto point = prob.GetNextPoint();
+    // TProblem prob(config.config());
+    // auto point = prob.GetNextPoint();
 
-    L_DEBUG << point.GetPrettyString();
+    // L_DEBUG << point.GetPrettyString();
 
     // L_DEBUG << "Got ego config: \n\n" << problemState.DebugString();
 

@@ -2,16 +2,15 @@
 
 #include <ego/base/base.h>
 #include <ego/base/la.h>
-#include <ego/strategy/config.h>
+#include <ego/solver/config.h>
 
 namespace NEgo {
 
-	class TStrategyConfig;
-    class TModel;
+	class IModel;
     
     class IBatchPolicy {
     public:
-        IBatchPolicy(SPtr<TModel> model, const TStrategyConfig& config);
+        IBatchPolicy(SPtr<IModel> model, const TSolverConfig& config);
 
         virtual ~IBatchPolicy() {
         }
@@ -21,8 +20,8 @@ namespace NEgo {
         virtual TVectorD GetNextElementInBatch() = 0;
 
      protected:
-        SPtr<TModel> Model;
-        TStrategyConfig Config;
+        SPtr<IModel> Model;
+        TSolverConfig Config;
     };
 
 

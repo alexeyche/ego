@@ -142,6 +142,16 @@ namespace NEgo {
         }
 
         template <>
+        int As<int>(const TString& s) {
+            return std::stoi(s);
+        }
+
+        template <>
+        double As<double>(const TString& s) {
+            return std::stof(s);
+        }
+
+        template <>
         TString As<TString>(const TString& s) {
             return s;
         }

@@ -8,16 +8,18 @@
 #include <future>
 
 namespace NEgo {
-
-    TStrategy::TStrategy(const TStrategyConfig& config, SPtr<TModel> model)
-        : Config(config)
-        , Model(model)
-        , StartIterationNum(0)
+    TStrategy::TStrategy() 
+        : StartIterationNum(0)
         , EndIterationNum(0)
         , BatchNumber(0)
     {
-        InitSamples = GenerateSobolGrid(Config.InitSampleSize, Model->GetDimSize());
+    }
 
+    void TStrategy::InitWithConfig(const TStrategyConfig& config, SPtr<IModel> model) {
+        Model = model;
+        Config = config;
+
+        InitSamples = GenerateSobolGrid(Config.InitSampleSize, Model->GetDimSize());
         BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
     }
 
@@ -57,17 +59,17 @@ namespace NEgo {
         }
     }
 
-    void TStrategy::SetModel(SPtr<TModel> model) {
+    void TStrategy::SetModel(SPtr<IModel> model) {
         Model = model;
     }
 
-    SPtr<TModel> TStrategy::GetModel() const {
+    SPtr<IModel> TStrategy::GetModel() const {
         return Model;
     }
 
     void TStrategy::OptimizeHypers(const TOptConfig& optConfig) {
         ENSURE(Model, "Model is not set while optimizing hyperparameters");
-        NOpt::OptimizeModelLogLik(*Model, Model->GetParameters(), optConfig);
+        NOpt::OptimizeModelLogLik(Model, Model->GetParameters(), optConfig);
         Model->Update();
     }
 

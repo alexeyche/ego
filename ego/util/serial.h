@@ -21,6 +21,8 @@ namespace NEgo {
 
         void operator() (ui32& v, int protoField);
 
+        void operator() (TString& v, int protoField);
+
         void operator() (TVector<double>& v, int protoField);
 
         template <typename T>

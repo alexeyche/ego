@@ -1,19 +1,18 @@
 #include "predictive.h"
 
-#include <ego/model/model.h>
-#include <ego/strategy/strategy.h>
-#include <ego/strategy/strategy_funcs.h>
-#include <ego/strategy/config.h>
+
+#include <ego/solver/config.h>
+#include <ego/solver/utils.h>
 
 namespace NEgo {
 
-	TBatchPolicyPredictive::TBatchPolicyPredictive(SPtr<TModel> model, const TStrategyConfig& config)
+	TBatchPolicyPredictive::TBatchPolicyPredictive(SPtr<IModel> model, const TSolverConfig& config)
 		: IBatchPolicy(model, config)
 	{
 	}
 
     void TBatchPolicyPredictive::InitNewBatch() {
-    	AccModel = MakeShared(new TModel(*Model));
+    	AccModel = Model->Copy();
         LastPoint = TOptional<TVectorD>();
     }
 
@@ -24,10 +23,10 @@ namespace NEgo {
             SPtr<IDistr> pointDistr = AccModel->GetPointPrediction(*LastPoint);
             L_DEBUG << "Predicted " << pointDistr->GetMean();
             AccModel->AddPoint(*LastPoint, pointDistr->GetMean());
-            NOpt::OptimizeModelLogLik(*AccModel, AccModel->GetParameters(), Config.HyperOpt);
+            NOpt::OptimizeModelLogLik(AccModel, AccModel->GetParameters(), Config.HyperOpt);
             AccModel->Update();
         }
-    	TPair<TVectorD, double> opt = OptimizeAcquisition(*AccModel, Config.AcqOpt);
+    	TPair<TVectorD, double> opt = OptimizeAcquisition(AccModel, Config.AcqOpt);
         LastPoint = opt.first;
         return opt.first;
     }

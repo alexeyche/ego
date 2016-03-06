@@ -1,0 +1,37 @@
+package NEgoProto;
+
+import "model.proto";
+import "strategy.proto";
+
+enum EVariableType {
+	FLOAT = 0;
+	INT = 1;
+	ENUM = 2;
+}
+
+message TVariable {
+	optional string Name = 1;
+	optional double Min = 2;
+	optional double Max = 3;
+	optional EVariableType Type = 4;
+	repeated string Option = 5;
+}
+
+message TProblemOldConfig {
+	optional string Name = 1;
+	repeated TVariable Variable = 2;
+}
+
+message TProblemOldSpec {
+	optional TProblemOldConfig ProblemOldConfig = 1;
+	optional string ModelType = 2 [default = "Model"];
+	optional TModelConfig ModelConfig = 3;
+	optional TStrategyConfig StrategyConfig = 4;
+}
+
+message TProblemOldState {
+	optional TProblemOldConfig ProblemOldConfig = 1;
+	optional string ModelType = 2;
+	optional TModelState ModelState = 3;
+	optional TStrategyState StrategyState = 4;
+}

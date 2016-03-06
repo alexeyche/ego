@@ -1,13 +1,11 @@
 #include "random.h"
 
-#include <ego/model/model.h>
-#include <ego/strategy/strategy.h>
-#include <ego/strategy/strategy_funcs.h>
-#include <ego/strategy/config.h>
+#include <ego/solver/config.h>
+#include <ego/solver/utils.h>
 
 namespace NEgo {
 
-	TBatchPolicyRandom::TBatchPolicyRandom(SPtr<TModel> model, const TStrategyConfig& config)
+	TBatchPolicyRandom::TBatchPolicyRandom(SPtr<IModel> model, const TSolverConfig& config)
 		: IBatchPolicy(model, config)
 		, NewBatch(false)
 	{
@@ -20,7 +18,7 @@ namespace NEgo {
     TVectorD TBatchPolicyRandom::GetNextElementInBatch() {
     	if (NewBatch) {
     		NewBatch = false;
-    		return OptimizeAcquisition(*Model, Config.AcqOpt).first;
+    		return OptimizeAcquisition(Model, Config.AcqOpt).first;
     	}
     	return NLa::UnifVec(Model->GetDimSize());
     }

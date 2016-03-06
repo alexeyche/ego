@@ -6,14 +6,14 @@
 #include <ego/util/log/log.h>
 #include <ego/util/optional.h>
 
-#include <ego/strategy/config.h>
+#include <ego/solver/config.h>
 
 #include <functional>
 
 #include <ego/contrib/cppoptlib/problem.h>
 
 namespace NEgo {
-	class TModel;
+	class IModel;
 	class IAcq;
 
 	namespace NOpt {

@@ -3,7 +3,7 @@
 #include "server.h"
 
 #include <ego/model/model.h>
-#include <ego/problem/problem.h>
+#include <ego/solver/solver.h>
 #include <ego/util/json.h>
 #include <ego/util/protobuf.h>
 #include <ego/base/factory.h>
@@ -25,9 +25,9 @@ namespace NEgo {
 					continue;
 				}
 				L_DEBUG << "Going to deserialize problem from " << fullPath;
-				TProblem prob(fullPath);
-				auto res = Problems.insert(MakePair(prob.GetName(), prob));
-				ENSURE(res.second, "Problem with the name `" << prob.GetName() << "' is already exist");
+				TSolver prob(fullPath);
+				auto res = ProblemSolvers.insert(MakePair(prob.GetProblemName(), prob));
+				ENSURE(res.second, "Problem with the name `" << prob.GetProblemName() << "' is already exist");
 			}
 
 			Server
@@ -41,7 +41,7 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "problem/{problem_name}",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						GetProblem(req); // Check if we have that problem
+						GetProblemSolver(req); // Check if we have that problem
 						resp.StaticFile("problem.html");
 						resp.Good();
 					}
@@ -55,7 +55,7 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/problem/{problem_name}/performance",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						const TVectorD& Y = GetProblem(req).GetModel().GetData().second;
+						const TVectorD& Y = GetProblemSolver(req).GetModel()->GetData().second;
 						resp.Body() += TJsonDocument::Array(Y).GetPrettyString();
 						resp.Good();
 					}
@@ -63,8 +63,8 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/problem/{problem_name}/specification",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						TProblem& prob = GetProblem(req);
-						TString json = NPbJson::ProtobufToJson(prob.GetConfig().ProtoConfig);
+						TSolver& solver = GetProblemSolver(req);
+						TString json = NPbJson::ProtobufToJson(solver.GetProblem().GetConfig().ProtoConfig);
 						resp.Body() += json;
 						resp.Good();
 					}
@@ -72,15 +72,15 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/problem/{problem_name}/state",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						TProblem& prob = GetProblem(req);
-				        resp.Body() += ProtoTextToString(prob.Serialize());
+						TSolver& probSolver = GetProblemSolver(req);
+				        resp.Body() += ProtoTextToString(probSolver.Serialize());
 						resp.Good();
 					}
 				)
 				.AddCallback(
 					"GET", "api/problem/{problem_name}/variable_slice",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						resp.Body() += GetProblem(req).GetVariableSlice(
+						resp.Body() += GetProblemSolver(req).GetVariableSlice<TJsonDocument>(
 							FindUrlArg<TString>(req, "variable_name"),
 							FindUrlArg<ui32>(req, "grid_size", 1000)
 						).GetPrettyString();
@@ -90,31 +90,31 @@ namespace NEgo {
 				.AddCallback(
 					"GET", "api/problem/{problem_name}/next_point",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						resp.Body() += GetProblem(req).GetNextPoint().GetPrettyString();
+						resp.Body() += GetProblemSolver(req).GetNextPoint<TJsonDocument>().GetPrettyString();
 						resp.Good();
 					}
 				)
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/update_model",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						GetProblem(req).GetModel().Update();
+						GetProblemSolver(req).GetModel()->Update();
 						resp.Accepted();
 					}
 				)
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/optimize_hypers",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						auto strat = GetProblem(req).GetStrategy();
-						TOptConfig optConfig = strat.GetConfig().HyperOpt;
+						TSolver& solver = GetProblemSolver(req);
+						TOptConfig optConfig = solver.GetConfig().HyperOpt;
 						optConfig.Method = FindUrlArg<TString>(req, "method", optConfig.Method);
-						strat.OptimizeHypers(optConfig);
+						solver.OptimizeHypers(optConfig);
 						resp.Accepted();
 					}
 				)
 				.AddCallback(
 					"POST", "api/problem/{problem_name}/add_point",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						auto& p = GetProblem(req);
+						auto& p = GetProblemSolver(req);
 						p.AddPoint(TJsonDocument(req.Body));
 						// SaveProblem(p);
 						resp.Accepted();
@@ -132,7 +132,7 @@ namespace NEgo {
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TJsonDocument jsonDoc = TJsonDocument::Array();
 
-						for (const auto& p: Problems) {
+						for (const auto& p: ProblemSolvers) {
 							jsonDoc.PushBack(p.first);
 						}
 						resp.Body() += jsonDoc.GetPrettyString();
@@ -143,7 +143,7 @@ namespace NEgo {
 					"GET", "api/list_model_parts",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TModelConfig config;
-						TStrategyConfig stratConfig;
+						TSolverConfig solverConfig;
 						TJsonDocument jsonDoc;
 
 						jsonDoc["Cov"]["Values"] = Factory.GetCovNames();
@@ -152,13 +152,15 @@ namespace NEgo {
 						jsonDoc["Inf"]["Values"] = Factory.GetInfNames();
 						jsonDoc["Acq"]["Values"] = Factory.GetAcqNames();
 						jsonDoc["BatchPolicy"]["Values"] = Factory.GetBatchPolicyNames();
+						jsonDoc["ModelType"]["Values"] = Factory.GetModelNames();
 
 						jsonDoc["Cov"]["Default"] = config.Cov;
 						jsonDoc["Mean"]["Default"] = config.Mean;
 						jsonDoc["Lik"]["Default"] = config.Lik;
 						jsonDoc["Inf"]["Default"] = config.Inf;
 						jsonDoc["Acq"]["Default"] = config.Acq;
-						jsonDoc["BatchPolicy"]["Default"] = stratConfig.BatchPolicy;
+						jsonDoc["BatchPolicy"]["Default"] = solverConfig.BatchPolicy;
+						jsonDoc["ModelType"]["Default"] = solverConfig.ModelType;
 
 						resp.Body() += jsonDoc.GetPrettyString();
 						resp.Good();
@@ -167,25 +169,25 @@ namespace NEgo {
 				.AddCallback(
 					"POST", "api/submit_problem",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						NEgoProto::TProblemSpec problemSpecProto;
+						NEgoProto::TSolverSpec solverSpecProto;
 
 						L_DEBUG << "Got problem:\n" << req.Body;
 
-						ReadProtoText(req.Body, problemSpecProto);
-						TProblemSpec problemSpec(problemSpecProto);
+						ReadProtoText(req.Body, solverSpecProto);
+						TSolverSpec solverSpec(solverSpecProto);
 
-					    auto res = Problems.insert(
+					    auto res = ProblemSolvers.insert(
 							MakePair(
-								problemSpec.ProblemConfig.Name,
-								TProblem(problemSpec)
+								solverSpec.ProblemConfig.Name,
+								TSolver(solverSpec)
 							)
 						);
 
 						if (!res.second) {
-							throw TEgoLogicError() << "Problem with the name `" << problemSpec.ProblemConfig.Name << "' is already exist";
+							throw TEgoLogicError() << "Problem with the name `" << solverSpec.ProblemConfig.Name << "' is already exist";
 						}
 
-						SaveProblem(res.first->second);
+						SaveProblemSolver(res.first->second);
 
 						resp.Body("{}");
 						resp.Accepted();
@@ -194,17 +196,17 @@ namespace NEgo {
 				.MainLoop();
 		}
 
-		void SaveProblem(TProblem& p) {
-			p.DumpState(TFsPath(StateDir) / TFsPath(p.GetName()) + ".pb.txt");
+		void SaveProblemSolver(TSolver& p) {
+			p.DumpState(TFsPath(StateDir) / TFsPath(p.GetProblemName()) + ".pb.txt");
 		}
 
-		TProblem& GetProblem(const THttpRequest& req) {
+		TSolver& GetProblemSolver(const THttpRequest& req) {
 			auto problemNamePtr = req.KeywordsMap.find("problem_name");
 			ENSURE(problemNamePtr != req.KeywordsMap.end(), "Keywords for request are not fullfilled");
 
 			TString problemName = problemNamePtr->second;
-			auto problemPtr = Problems.find(problemName);
-			if (problemPtr == Problems.end()) {
+			auto problemPtr = ProblemSolvers.find(problemName);
+			if (problemPtr == ProblemSolvers.end()) {
 				throw TEgoElementNotFound() << "Can't find problem with the name " << problemName;
 			}
 
@@ -212,7 +214,7 @@ namespace NEgo {
 		}
 
 	private:
-		std::map<TString, TProblem> Problems;
+		std::map<TString, TSolver> ProblemSolvers;
 
 		TServer Server;
 		TString StateDir;
