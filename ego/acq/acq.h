@@ -6,7 +6,7 @@
 
 namespace NEgo {
 
-	class TModel;
+	class IModel;
 
 
     class IAcq : public TOneArgFunctor<double, TVectorD> {
@@ -21,10 +21,10 @@ namespace NEgo {
         virtual ~IAcq() {
         }
 
-        void SetModel(TModel& model);
+        void SetModel(IModel& model);
 
      protected:
-        TOptional<TModel&> Model;
+        TOptional<IModel&> Model;
     };
 
 

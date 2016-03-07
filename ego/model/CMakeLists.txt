@@ -4,6 +4,7 @@ set(SOURCES
 	base_model.cpp
 	config.cpp
     model.cpp
+    tree_model.cpp
 )
 
 set(DIR_SRCS)

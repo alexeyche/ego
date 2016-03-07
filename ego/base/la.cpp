@@ -520,5 +520,9 @@ namespace NEgo {
             L(n-1, n-1) = sqrt(L_j);
         }
 
+        TVectorUW SortIndex(const TVectorD& v) {
+            return arma::sort_index(v);
+        }
+
     } // namespace NLa
 } //namespace NEgo

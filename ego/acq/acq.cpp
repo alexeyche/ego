@@ -1,10 +1,10 @@
 #include "acq.h"
 
-#include <ego/model/model.h>
+#include <ego/model/base_model.h>
 
 namespace NEgo {
 
-	void IAcq::SetModel(TModel& model) {
+	void IAcq::SetModel(IModel& model) {
 		Model.emplace(model);
 	}
 

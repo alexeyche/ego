@@ -100,7 +100,6 @@ namespace NEgo {
     void TSolver::AddPoint(const TRawPoint& rawPoint) {
         TGuard lock(AddPointMut);
         
-        L_DEBUG << "Remapping point";        
         TPoint point = Problem.Remap(rawPoint);
 
         L_DEBUG << "Got point with id " << point.Id;
@@ -121,9 +120,6 @@ namespace NEgo {
             Model->Update();
         }
     }
-
-
-
 
     void TSolver::CheckAvailavility() const {
         if (StartIterationNum != EndIterationNum) {

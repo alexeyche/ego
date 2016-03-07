@@ -224,6 +224,8 @@ namespace NEgo {
             }
         }
 
+        TVectorUW SortIndex(const TVectorD& v);
+
     } // namespace NLa
 
     using NLa::TMatrixD;
