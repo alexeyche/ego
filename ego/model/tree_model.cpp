@@ -5,6 +5,11 @@
 
 namespace NEgo {
 
+    const ui32 TTreeModel::MeanLeafSize = 10;
+    const ui32 TTreeModel::SplitSizeCriteria = 50;
+
+
+
     TTreeModel::TTreeModel(const TModelConfig& config, ui32 D) {
         InitWithConfig(Config, D);
     }
@@ -38,7 +43,7 @@ namespace NEgo {
         Acq = acq;
         Acq->SetModel(*this);
     }
-    
+
     SPtr<ILik> TTreeModel::GetLikelihood() const {
         return Lik;
     }
@@ -161,12 +166,14 @@ namespace NEgo {
         X = NLa::RowBind(X, NLa::Trans(x));
         Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
 
-        if (X.n_rows > 50) {
+        if (X.n_rows > SplitSizeCriteria) {
             Split();
         }
     }
 
     void TTreeModel::Split() {
+        ENSURE(X.n_rows > MeanLeafSize*2, "Need more rows for split");
+
         TDistrVec preds = GetPrediction(X);
 
         TVectorD squaredError(preds.size());
@@ -175,13 +182,14 @@ namespace NEgo {
             squaredError(idx) = (p->GetMean() - Y(idx)) * (p->GetMean() - Y(idx));
             ++idx;
         }
-        
+
         double wholeUncertainty = NLa::Sum(squaredError) / squaredError.size();
 
         ui32 dimId = 0;
         auto sortIds = NLa::SortIndex(X.col(dimId));
-        for (auto sortId = sortIds.begin()+1; sortId != sortIds.end(); ++sortId) {
-            Y(sortId)
+        for (auto id = MeanLeafSize; id < (sortIds.size()-MeanLeafSize); ++id) {
+            const TVectorUW leftLeafIds(sortIds.subvec(0, id-1));
+            const TVectorUW rightLeafIds(sortIds.subvec(id, sortIds.size()-1));
         }
     }
 

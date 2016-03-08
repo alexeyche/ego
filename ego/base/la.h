@@ -230,6 +230,7 @@ namespace NEgo {
 
     using NLa::TMatrixD;
     using NLa::TVectorD;
+    using NLa::TVectorUW;
     using NLa::TCubeD;
 
 } //namespace NEgo

@@ -9,6 +9,10 @@ namespace NEgo {
     class TTreeModel: public IModel
     {
     public:
+
+        static const ui32 MeanLeafSize;
+        static const ui32 SplitSizeCriteria;
+
         using TBase = IModel;
 
         TTreeModel(const TModelConfig& config, ui32 D);
@@ -46,7 +50,7 @@ namespace NEgo {
         void Update() override;
 
         void Split();
-        
+
     private:
         TOptional<TPair<SPtr<TTreeModel>, SPtr<TTreeModel>>> Nodes;
 
