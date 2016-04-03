@@ -8,7 +8,7 @@
 
 #include <ego/util/log/log.h>
 #include <ego/util/optional.h>
-#include <ego/util/serial.h>
+#include <ego/util/serial/proto_serial.h>
 
 #include <ego/distr/distr.h>
 
@@ -16,7 +16,7 @@ namespace NEgo {
 
     class IModel
         : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>
-        , public ISerial<NEgoProto::TModelState>
+        , public IProtoSerial<NEgoProto::TModelState>
     {
     public:
         using TParent = TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>;
@@ -71,7 +71,7 @@ namespace NEgo {
 
         TInfResult GetNegativeLogLik(const TVector<double>& v);
 
-        void SerialProcess(TSerializer& serial) override;
+        void SerialProcess(TProtoSerial& serial) override;
 
     protected:
         TMatrixD X;

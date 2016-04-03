@@ -41,7 +41,7 @@ namespace NEgo {
 
         TInfResult() :
             CalcPosteriorCb([=]() -> TPosterior {
-                throw TEgoNotImplemented() << "Calculation of posterior is not implemented";
+                throw TErrNotImplemented() << "Calculation of posterior is not implemented";
             })
         {
         }

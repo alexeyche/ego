@@ -9,7 +9,9 @@ set(SOURCES
 #    seiso.cpp
 #    gaborard.cpp
 #    gaboriso.cpp
-    stationary.cpp
+	square_dist.cpp
+    stationary_iso.cpp
+    stationary_ard.cpp
     stationary_kernels.cpp
 )
 

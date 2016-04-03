@@ -65,13 +65,13 @@ namespace NEgo {
 							// L_DEBUG<< "\tgot " << f3 << " " << NLa::VecToStr(df3);
 							if(std::isnan(f3) || NLa::IsNan(df3) || std::isinf(f3)) {
 								// L_DEBUG<< "Oopsie, got error while eval";
-								throw TEgoException() << "Got nans";
+								throw TErrException() << "Got nans";
 							}
 							// L_DEBUG<< "Line search " << i << ", function value " << f3;
 
 							lineSearchSuccess = true;
 							// L_DEBUG<< "Line search good with function value " << f3;
-						} catch(const TEgoException &e) {
+						} catch(const TErrException &e) {
 							// L_DEBUG<< "Got error while evaluating function: " << e.what() << "; lets bisect and try again";
 							x3 = (x2+x3)/2.0;
 						}

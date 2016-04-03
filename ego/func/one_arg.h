@@ -16,7 +16,7 @@ namespace NEgo {
 
 		TOneArgFunctorResultBase() :
 			CalcArgDerivCb([]() -> T {
-				throw TEgoNotImplemented() << "Calculation of argument derivative was not implemented";
+				throw TErrNotImplemented() << "Calculation of argument derivative was not implemented";
 			})
 		{
 		}

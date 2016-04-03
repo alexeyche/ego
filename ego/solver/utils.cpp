@@ -18,7 +18,7 @@ namespace NEgo {
                 [=]() {
                     try {
                         return NOpt::OptimizeAcquisitionFunction(model, start, optConfig);
-                    } catch (const TEgoAlgebraError& err) {
+                    } catch (const TErrAlgebraError& err) {
                         L_DEBUG << "Got algebra error, ignoring";
                         return MakePair(TVectorD(), std::numeric_limits<double>::max());
                     }

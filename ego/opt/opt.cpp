@@ -83,7 +83,7 @@ namespace NEgo {
 				case BFGS:
 				case LBFGS:
 					{
-						throw TEgoException() << "Can't use unconstrained method for optimization";
+						throw TErrException() << "Can't use unconstrained method for optimization";
 					}
 				case LBFGSB:
 					{

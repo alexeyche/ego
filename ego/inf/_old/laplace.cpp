@@ -242,7 +242,7 @@ namespace NEgo {
         );
     }
     void TInfLaplace::UpdatePosterior(const TMatrixD &X, const TVectorD &Y, TPosterior& post) {
-        throw TEgoException() << "Not implemented";
+        throw TErrException() << "Not implemented";
     }
 
 } // namespace NEgo

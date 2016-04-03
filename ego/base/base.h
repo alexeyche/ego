@@ -8,6 +8,7 @@
 #include <tuple>
 #include <thread>
 #include <mutex>
+#include <deque>
 
 namespace NEgo {
 
@@ -81,5 +82,31 @@ namespace NEgo {
 	using TMutex = std::mutex;
 
 	using TGuard = std::lock_guard<TMutex>;
+
+	using TUniqueLock = std::unique_lock<TMutex>;
+
+	#define LA_SYSTEM
+
+	template <typename T>
+	using TDeque = std::deque<T>;
+
+	struct TEmpty {};
+	
+	struct TTime {
+	    TTime(double dt)
+	    	: T(0)
+	    	, Dt(dt)
+	    {
+	    }
+
+	    void operator ++() {
+	        T += Dt;
+	    }
+	    bool operator<(const double &dur) const {
+	        return T < dur;
+	    }
+	    double T;
+	    double Dt;
+	};
 
 } // namespace NEgo

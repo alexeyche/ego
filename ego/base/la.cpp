@@ -212,7 +212,7 @@ namespace NEgo {
 
         TMatrixD Chol(const TMatrixD &m) {
             TMatrixD ans;
-            ENSURE_ERR(arma::chol(ans, m), TEgoAlgebraError() << "Cholesky decomposition failed");
+            ENSURE_ERR(arma::chol(ans, m), TErrAlgebraError() << "Cholesky decomposition failed");
             return ans;
         }
 

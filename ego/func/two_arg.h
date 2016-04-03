@@ -17,10 +17,10 @@ namespace NEgo {
 
 		TTwoArgFunctorResultBase() :
 			CalcFirstArgDerivCb([=]() -> T {
-				throw TEgoNotImplemented() << "Calculation of first argument derivative was not implemented";
+				throw TErrNotImplemented() << "Calculation of first argument derivative was not implemented";
 			}),
 			CalcSecondArgDerivCb([=]() -> T {
-				throw TEgoNotImplemented() << "Calculation of second argument derivative was not implemented";
+				throw TErrNotImplemented() << "Calculation of second argument derivative was not implemented";
 			})
 		{
 		}

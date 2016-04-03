@@ -256,7 +256,7 @@ TVector<TDistrWrap> TModelWrap::GetPrediction(const TMatWrap &x) {
 }
 
 void TModelWrap::Optimize(FOptimCallback cb, void* userData) {
-	throw TEgoNotImplemented() << "Implement this";
+	throw TErrNotImplemented() << "Implement this";
 	// Model.Optimize([&userData, &cb](const TVectorD &x) -> double {
 	// 	return cb(NLa::VecToStd(x), userData);
 	// });
@@ -268,6 +268,6 @@ TPair<TMatWrap, TMatWrap> TModelWrap::GetData() const {
 }
 
 void TModelWrap::OptimizeHyp() {
-	throw TEgoNotImplemented() << "Implement this";
+	throw TErrNotImplemented() << "Implement this";
 	// Model.OptimizeHyp();
 }

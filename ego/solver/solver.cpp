@@ -37,7 +37,7 @@ namespace NEgo {
         BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
     }
 
-    void TSolver::SerialProcess(TSerializer& serial) {
+    void TSolver::SerialProcess(TProtoSerial& serial) {
         NEgoProto::TSolverConfig config = Config.ProtoConfig;
 
         serial(config, NEgoProto::TSolverState::kSolverConfigFieldNumber);
@@ -124,7 +124,7 @@ namespace NEgo {
     void TSolver::CheckAvailavility() const {
         if (StartIterationNum != EndIterationNum) {
             L_DEBUG << "There are some calculation still goind on (" << StartIterationNum - EndIterationNum  << " of calculations need to gather)";
-            throw TEgoNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
+            throw TErrNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
         }
     }
 

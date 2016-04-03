@@ -15,7 +15,7 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 			L_ERROR << "\n" << derivVal.first;
 			L_ERROR << "Real approximate:";
 			L_ERROR << "\n" << approxDerivSecond;
-			throw TEgoException() << "Derivative sanity check failed for first element of pair";
+			throw TErrException() << "Derivative sanity check failed for first element of pair";
 		}
 		L_INFO << name << ", Got derivative sanity check ok for first element of pair: " << res << " < " << LilEpsilon;
 	}
@@ -29,7 +29,7 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 			L_ERROR << "\n" << derivVal.second;
 			L_ERROR << "Real approximate:";
 			L_ERROR << "\n" << approxDerivSecond;
-			throw TEgoException() << "Derivative sanity check failed for second element of pair";
+			throw TErrException() << "Derivative sanity check failed for second element of pair";
 		}
 		L_INFO << name << ", Got derivative sanity check ok for second element of pair: " << res << " < " << LilEpsilon;
 	}

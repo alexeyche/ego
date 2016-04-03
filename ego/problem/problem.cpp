@@ -9,7 +9,7 @@ namespace NEgo {
     double FromUnit(const TVariable& var, double unitVal) {
         if(! (((unitVal <= 1.0) || (std::abs(unitVal - 1.0) < std::numeric_limits<double>::epsilon())) &&
               ((unitVal >= 0.0) || (std::abs(unitVal - 0.0) < std::numeric_limits<double>::epsilon()))) ){
-            throw TEgoLogicError() << "Value of " << var.Name << " out of unit cube: " << unitVal;
+            throw TErrLogicError() << "Value of " << var.Name << " out of unit cube: " << unitVal;
         }
         return var.Min + unitVal * (var.Max - var.Min);
     }
@@ -24,7 +24,7 @@ namespace NEgo {
     {
     }
 
-    void TProblem::SerialProcess(TSerializer& serial) {
+    void TProblem::SerialProcess(TProtoSerial& serial) {
         NEgoProto::TProblemConfig config = Config.ProtoConfig;
         serial(config, NEgoProto::TProblemState::kProblemConfigFieldNumber);
 
@@ -47,7 +47,7 @@ namespace NEgo {
                     x(var.Id) = ToUnit(var, rawPoint.GetValue<double>(var.Name));
                     break;
                 case EVariableType::ENUM:
-                    throw TEgoException() << "Not implemented";
+                    throw TErrException() << "Not implemented";
             }
         }
         L_DEBUG << GetName() << " accepted new data: " << NLa::VecToStr(x) << " -> " << y;
@@ -75,7 +75,7 @@ namespace NEgo {
                     );
                     break;
                 case EVariableType::ENUM:
-                    throw TEgoException() << "Not implemented";
+                    throw TErrException() << "Not implemented";
             }
         }
         return rPoint;

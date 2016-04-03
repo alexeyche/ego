@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 set(DIRS
     log
+    server
+    serial
+    ts
 )
 
 foreach(dir ${DIRS})
@@ -17,7 +20,6 @@ set(SOURCES
     pretty_print.cpp
     protobuf.cpp
     json.cpp
-    serial.cpp
     sobol.cpp
 )
 

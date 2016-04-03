@@ -71,7 +71,7 @@ namespace NEgo {
 
         auto preds = calcRes.Value();
         ENSURE((preds.first.size() == 1) && (preds.second.size() == 1), "UB");
-        ENSURE_ERR(preds.second(0) >= 0, TEgoAlgebraError() << "Got negative variance, something wrong in system. X: " << NLa::VecToStr(Xnew) << ", Mean: " << preds.first(0) << ", Var: " << preds.second(0));
+        ENSURE_ERR(preds.second(0) >= 0, TErrAlgebraError() << "Got negative variance, something wrong in system. X: " << NLa::VecToStr(Xnew) << ", Mean: " << preds.first(0) << ", Var: " << preds.second(0));
 
         double mean = preds.first(0);
         double sd = sqrt(preds.second(0));
@@ -107,7 +107,7 @@ namespace NEgo {
         SetModel(mean, cov, lik, inf, acq);
     }
 
-    void IModel::SerialProcess(TSerializer& serial) {
+    void IModel::SerialProcess(TProtoSerial& serial) {
         NEgoProto::TModelConfig protoConfig = Config.ProtoConfig;
         TVector<double> params;
 

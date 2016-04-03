@@ -12,7 +12,7 @@ namespace NEgo {
         const auto& vars = Problem.GetVariables();
         auto res = vars.find(varName);
         if (res == vars.end()) {
-            throw TEgoElementNotFound() << "Variable " << varName << " is not found in problem " << GetProblemName();
+            throw TErrElementNotFound() << "Variable " << varName << " is not found in problem " << GetProblemName();
         }
         const TVariable& var = res->second;
 

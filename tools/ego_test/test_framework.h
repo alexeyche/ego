@@ -27,7 +27,7 @@ void CheckDerivativeSanity(T derivVal, T leftVal, T rightVal, std::string name) 
 		L_ERROR << "\n" << derivVal;
 		L_ERROR << "Real approximate:";
 		L_ERROR << "\n" << approxDeriv;
-		throw TEgoException() << "Derivative sanity check failed";
+		throw TErrException() << "Derivative sanity check failed";
 	}
 	L_INFO << name << ", Got derivative sanity check ok: " << res << " < " << LilEpsilon;
 }
@@ -69,7 +69,7 @@ struct TTestPartials<Functor, TMatrixD> {
 						resRightEpsPart.Value(),
 						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
 					);
-				} catch(const TEgoNotImplemented &e) {
+				} catch(const TErrNotImplemented &e) {
 					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 				}
 			}
@@ -95,7 +95,7 @@ struct TTestPartials<Functor, TMatrixD> {
 						resRightEpsPart.Value(),
 						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
 					);
-				} catch(const TEgoNotImplemented &e) {
+				} catch(const TErrNotImplemented &e) {
 					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 				}
 			}
@@ -121,7 +121,7 @@ struct TTestPartials<Functor, TMatrixD> {
 						resRightEpsPart.Value(),
 						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
 					);
-				} catch(const TEgoNotImplemented &e) {
+				} catch(const TErrNotImplemented &e) {
 					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 				}
 			}
@@ -151,7 +151,7 @@ struct TTestPartials<Functor, TVectorD> {
 					resRightEpsPart.Value(),
 					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
 				);
-			} catch(const TEgoNotImplemented &e) {
+			} catch(const TErrNotImplemented &e) {
 				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 			}
 		}
@@ -175,7 +175,7 @@ struct TTestPartials<Functor, TVectorD> {
 					resRightEpsPart.Value(),
 					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
 				);
-			} catch(const TEgoNotImplemented &e) {
+			} catch(const TErrNotImplemented &e) {
 				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 			}
 		}
@@ -200,7 +200,7 @@ struct TTestPartials<Functor, TVectorD> {
 					resRightEpsPart.Value(),
 					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
 				);
-			} catch(const TEgoNotImplemented &e) {
+			} catch(const TErrNotImplemented &e) {
 				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 			}
 		}
@@ -226,7 +226,7 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 			resRightEps.Value(),
 			functorName + ", argument derivative"
 		);
-	} catch(const TEgoNotImplemented &e) {
+	} catch(const TErrNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
 
@@ -254,7 +254,7 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 				  , NStr::TStringBuilder() << functorName << ", " << pi << " param derivative"
 				);
 			}
-		} catch(const TEgoNotImplemented &e) {
+		} catch(const TErrNotImplemented &e) {
 			L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 		}
 	}
@@ -284,7 +284,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 			resFirstRightEps.Value(),
 			functorName + ", first argument derivative"
 		);
-	} catch(const TEgoNotImplemented &e) {
+	} catch(const TErrNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
 
@@ -298,7 +298,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 			resSecondRightEps.Value(),
 			functorName + ", second argument derivative"
 		);
-	} catch(const TEgoNotImplemented &e) {
+	} catch(const TErrNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
 
@@ -327,7 +327,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 				  , NStr::TStringBuilder() << functorName << ", " << pi << " param derivative"
 				);
 			}
-		} catch(const TEgoNotImplemented &e) {
+		} catch(const TErrNotImplemented &e) {
 			L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 		}
 	}

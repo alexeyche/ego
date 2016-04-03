@@ -21,7 +21,7 @@ namespace NEgo {
 		TPair<TVectorD, double> CppOptLibMinimize(EMethod method, const TVectorD& start, TOptLibCallback cb, TOptional<TPair<TVectorD, TVectorD>> bounds, bool verbose) {
 			switch(method) {
 				case CG:
-					throw TEgoException() << "Method is not in cppoptlib";
+					throw TErrException() << "Method is not in cppoptlib";
 				case CG_OPTLIB:
 					return CppOptLibMinimize<cppoptlib::ConjugatedGradientDescentSolver<double>>(start, cb, bounds, verbose);
 				case BFGS:
@@ -31,7 +31,7 @@ namespace NEgo {
 				case LBFGSB:
 					return CppOptLibMinimize<cppoptlib::LbfgsbSolver<double>>(start, cb, bounds, verbose);
 				default:
-					throw TEgoException() << "Method is not implemented";
+					throw TErrException() << "Method is not implemented";
 			}
 		}
 

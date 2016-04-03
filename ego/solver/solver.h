@@ -5,12 +5,12 @@
 #include <ego/model/base_model.h>
 #include <ego/problem/problem.h>
 #include <ego/util/fs.h>
-#include <ego/util/serial.h>
+#include <ego/util/serial/proto_serial.h>
 #include <ego/protos/solver.pb.h>
 
 namespace NEgo {
 
-    class TSolver: public ISerial<NEgoProto::TSolverState> {
+    class TSolver: public IProtoSerial<NEgoProto::TSolverState> {
 	public:
         TSolver(const TSolverSpec& spec);
 
@@ -26,7 +26,7 @@ namespace NEgo {
 
         void LoadState(const TFsPath srcFile);
         
-        void SerialProcess(TSerializer& serial) override;
+        void SerialProcess(TProtoSerial& serial) override;
 
         /////////////////////////////////////////////////
 

@@ -39,7 +39,7 @@ namespace NEgo {
     void TMeanSum::SetHyperParameters(const TVectorD &params) {
         size_t nhyp = GetHyperParametersSize();
         if(nhyp != params.size()) {
-            throw TEgoException() << "Mean composite function has " << Means.size() << " functions and need " << nhyp << " params to work\n"; 
+            throw TErrException() << "Mean composite function has " << Means.size() << " functions and need " << nhyp << " params to work\n"; 
         }
         size_t pIdx = 0;
         for(const auto& m: Means) {

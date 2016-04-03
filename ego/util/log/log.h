@@ -32,7 +32,7 @@ namespace NEgo {
                     spdlog::set_level(spdlog::level::debug);
                     break;
                 default:
-                    throw TEgoException() << "Invalig log level\n";
+                    throw TErrException() << "Invalig log level\n";
             }
         }
         ELogLevel GetLogLevel() {

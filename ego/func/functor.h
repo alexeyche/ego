@@ -13,7 +13,7 @@ namespace NEgo {
 		using TCalcFunction = std::function<T(ui32, ui32)>;
 
 		static T Default(const T& dArg, ui32 indexRow, ui32 indexCol) {
-			throw TEgoNotImplemented() << "Calculation of partial argument derivative was not implemented";
+			throw TErrNotImplemented() << "Calculation of partial argument derivative was not implemented";
 		}
 	};
 
@@ -23,7 +23,7 @@ namespace NEgo {
 		using TCalcFunction = std::function<T(ui32)>;
 
 		static T Default(const T& dArg, ui32 index) {
-			throw TEgoNotImplemented() << "Calculation of partial argument derivative was not implemented";
+			throw TErrNotImplemented() << "Calculation of partial argument derivative was not implemented";
 		}
 	};
 
@@ -41,10 +41,10 @@ namespace NEgo {
 
 		TFunctorResult() :
 			CalcCb([=]() -> T {
-				throw TEgoNotImplemented() << "Calculation was not implemented";
+				throw TErrNotImplemented() << "Calculation was not implemented";
 			}),
 			CalcParamDerivCb([=]() -> TVector<T> {
-				throw TEgoNotImplemented() << "Calculation of parameters derivative was not implemented";
+				throw TErrNotImplemented() << "Calculation of parameters derivative was not implemented";
 			})
 		{
 		}

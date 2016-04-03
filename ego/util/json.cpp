@@ -117,7 +117,7 @@ namespace NEgo {
 		if (any.IsTypeOf<int>()) {
 			doc.CurrentValue() = doc.SetValue<int>(any.GetValue<int>());
 		} else {
-			throw TEgoException() << "Can't find realization for type setter from any";
+			throw TErrException() << "Can't find realization for type setter from any";
 		}
 		return doc;
 	}
@@ -136,7 +136,7 @@ namespace NEgo {
 		if (CurrentValue().IsInt()) {
 			any.SetValue<int>(GetValue<int>(CurrentValue()));
 		} else {
-			throw TEgoException() << "Can't find realization for type getter from json to any for type " << CurrentValue().GetType() << " for value " << PrettyString(CurrentValue());
+			throw TErrException() << "Can't find realization for type getter from json to any for type " << CurrentValue().GetType() << " for value " << PrettyString(CurrentValue());
 		}
 		return any;
 	}

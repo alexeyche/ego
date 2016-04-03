@@ -4,7 +4,7 @@
 
 #include <ego/base/la.h>
 
-#include <ego/util/serial.h>
+#include <ego/util/serial/proto_serial.h>
 #include <ego/util/json.h>
 #include <ego/util/fs.h>
 #include <ego/util/any.h>
@@ -17,7 +17,7 @@ namespace NEgo {
         double unitVal = (val - var.Min)/(var.Max - var.Min);
         if(! (((unitVal <= 1.0) || (std::abs(unitVal - 1.0) < std::numeric_limits<double>::epsilon())) &&
         	  ((unitVal >= 0.0) || (std::abs(unitVal - 0.0) < std::numeric_limits<double>::epsilon()))) ){
-    		throw TEgoLogicError() << "Value of " << var.Name << " out of unit cube: " << unitVal;
+    		throw TErrLogicError() << "Value of " << var.Name << " out of unit cube: " << unitVal;
         }
        	return unitVal;
     }
@@ -79,11 +79,11 @@ namespace NEgo {
     };
 
 
-    class TProblem: public ISerial<NEgoProto::TProblemState> {
+    class TProblem: public IProtoSerial<NEgoProto::TProblemState> {
     public:
         TProblem() {}
 
-        void SerialProcess(TSerializer& serial);
+        void SerialProcess(TProtoSerial& serial);
 
         TProblem(const TProblemConfig& config);
 

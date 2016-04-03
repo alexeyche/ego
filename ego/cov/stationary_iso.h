@@ -1,8 +1,8 @@
-
 #pragma once
 
 #include "cov.h"
 #include "stationary_kernels.h"
+#include "square_dist.h"
 
 #include <ego/base/errors.h>
 #include <ego/base/factory.h>
@@ -18,15 +18,6 @@
 
 namespace NEgo {
 
-	class TSquareDistFunctor : public TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD> {
-	public:
-		using TParent = TTwoArgFunctor<TMatrixD, TMatrixD, TMatrixD>;
-
-		TSquareDistFunctor(size_t dimSize);
-
-		TSquareDistFunctor::Result UserCalc(const TMatrixD &left, const TMatrixD &right) const override final;
-	};
-
 	template <typename TKernelFunctor>
     class TCovStationaryISO : public ICov {
 
@@ -39,15 +30,15 @@ namespace NEgo {
         	, SqDistFunctor(dimSize)
         	, KernelFunctor(dimSize)
         {
-            Parameters = {-4.60517, -0.6931472};
+            Parameters = {-0.6931472, -4.60517};
         }
 
         TCovStationaryISO::Result UserCalc(const TMatrixD &left, const TMatrixD &right) const override final {
         	ENSURE(left.n_cols == DimSize, "Col size of left input matrix are not satisfy to kernel params: " << left.n_cols << " != " << DimSize);
 	        ENSURE(right.n_cols == DimSize, "Col size of right input matrix are not satisfy to kernel params: " << right.n_cols << " != " << DimSize);
 
-	        double l = exp(Parameters[0]);
-        	double var = exp(2.0 * Parameters[1]);
+	        double var = exp(2.0 * Parameters[0]);
+        	double l = exp(Parameters[1]);
 
 	        auto sqDistRes = SqDistFunctor(left, right);
             TMatrixD r = sqDistRes.Value();
@@ -66,8 +57,8 @@ namespace NEgo {
 		            [=]() -> TVector<TMatrixD> {
 		            	TVector<TMatrixD> dK(GetParametersSize());
 
-		                dK[0] = - var * dKdArg % r / l;
-		                dK[1] = 2.0 * var * K;
+		                dK[0] = 2.0 * var * K;
+		                dK[1] = - var * dKdArg % r / l;
 		                return dK;
 		            }
 		        )

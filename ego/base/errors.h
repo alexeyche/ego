@@ -26,18 +26,18 @@ namespace NEgo {
             stringstream ss; \
         };
 
-    DEFINE_ERROR(TEgoException);
-    DEFINE_ERROR(TEgoInterrupt);
-    DEFINE_ERROR(TEgoNotImplemented);
-    DEFINE_ERROR(TEgoFileNotFound);
-    DEFINE_ERROR(TEgoElementNotFound);
-    DEFINE_ERROR(TEgoLogicError);
-    DEFINE_ERROR(TEgoAlgebraError);
-    DEFINE_ERROR(TEgoNotAvailable);
+    DEFINE_ERROR(TErrException);
+    DEFINE_ERROR(TErrInterrupt);
+    DEFINE_ERROR(TErrNotImplemented);
+    DEFINE_ERROR(TErrFileNotFound);
+    DEFINE_ERROR(TErrElementNotFound);
+    DEFINE_ERROR(TErrLogicError);
+    DEFINE_ERROR(TErrAlgebraError);
+    DEFINE_ERROR(TErrNotAvailable);
 
     #define ENSURE(cond, str) \
         if(!(cond)) { \
-            throw TEgoException() << str; \
+            throw TErrException() << str; \
         }\
 
     #define ENSURE_ERR(cond, exc) \

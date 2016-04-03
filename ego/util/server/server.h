@@ -1,6 +1,7 @@
 #pragma once
 
 #include "http.h"
+#include "response_builder.h"
 
 #include <ego/util/log/log.h>
 #include <ego/util/string.h>
@@ -66,11 +67,17 @@ namespace NEgo {
 		    return n==-1?-1:0; // return -1 on failure, 0 on success
 		}
 
-
+		static const auto DefaultMaxConnections = 10;
 	public:
-		TServer(ui32 port, ui32 max_connections = 10, bool debugMode = false)
+		TServer(ui32 port, ui32 max_connections = DefaultMaxConnections, bool debugMode = false)
 			: DebugMode(debugMode)
+			, Port(port)
+			, MaxConnections(max_connections)
+			, ShutDownVar(false)
 		{
+		}
+		
+		void Listen() {
 			int status;
 			struct addrinfo hints;
 
@@ -80,7 +87,7 @@ namespace NEgo {
 			hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
 			std::stringstream pss;
-			pss << port;
+			pss << Port;
 			std::string ps = pss.str();
 
 			struct addrinfo *servinfo;
@@ -114,9 +121,17 @@ namespace NEgo {
 			freeaddrinfo(servinfo);
 
 			ENSURE(
-				listen(SocketNum, max_connections) >= 0,
+				listen(SocketNum, MaxConnections) >= 0,
 				"Failed to listen"
 			);
+		}
+		
+		const ui32& GetPort() const {
+			return Port;
+		}
+
+		void SetPort(ui32 port) {
+			Port = port;
 		}
 
 		TServer& AddCallback(TString method, TString path, TRequestCallback cb) {
@@ -155,19 +170,29 @@ namespace NEgo {
 		}
 
 		void MainLoop() {
+			Listen();
 			while (true) {
+				{
+					TGuard guard(ShutDownMutex);
+					if (ShutDownVar) {
+						L_DEBUG << "Got shut down signal, going out of the main loop";
+						return;
+					}
+				}
 				struct sockaddr_storage their_addr;
 				socklen_t addr_size = sizeof(their_addr);
-
+				
 				int new_fd = accept(SocketNum, (struct sockaddr *)&their_addr, &addr_size);
+				if (ShutDownVar) {
+					L_DEBUG << "Got shut down signal, going out of the main loop";
+					return;
+				}
 				ENSURE(new_fd >= 0, "Failed to accept to socket");
-
+				
 				char s[INET6_ADDRSTRLEN];
 				inet_ntop(their_addr.ss_family,
             		GetInAddr((struct sockaddr *)&their_addr),
             		s, sizeof s);
-
-				// L_DEBUG << "Server: got connection from " << s;
 
 				if (DebugMode) {
 					Receive(new_fd);
@@ -183,13 +208,21 @@ namespace NEgo {
 			}
 		}
 
+		void ShutDown() {
+			L_DEBUG << "Sending shut down signal ...";
+			TGuard guard(ShutDownMutex);
+			ShutDownVar = true;
+			shutdown(SocketNum, 2);
+			close(SocketNum);
+		}
+
 		void Receive(int socket) {
-			std::stringstream ss;
+			TDeque<char> bytes;
 			ui32 bytesReceived = 0;
 			while (true) {
-				char chunk[ReceiveChunkSize+1];
+				TVector<char> chunk(ReceiveChunkSize);
 
-				int chunkReceived = recv(socket, chunk, ReceiveChunkSize, 0);
+				int chunkReceived = recv(socket, &chunk[0], ReceiveChunkSize, 0);
 				if (chunkReceived < 0) {
 					perror("Some errors while reading recv socket");
 					exit(0);
@@ -200,23 +233,20 @@ namespace NEgo {
 				}
 
 				bytesReceived += chunkReceived;
-
+				
+				bytes.insert(bytes.end(), chunk.begin(), chunk.begin() + chunkReceived);
+				
 				if (chunkReceived < ReceiveChunkSize) {
-					chunk[chunkReceived] = '\0';
-					ss << std::string(chunk);
 					break;
-				} else {
-					chunk[chunkReceived+1] = '\0';
-					ss << std::string(chunk);
 				}
 			}
+
 			if (bytesReceived == 0) {
 				L_DEBUG << "Received zero bytes from socket. Ignoring";
 				return;
 			}
-
-
-			THttpRequest req = ParseHttpRequest(ss.str());
+			
+			THttpRequest req = ParseHttpRequest(std::move(bytes));
 
 			TOptional<TRequestCallback> cb;
 
@@ -264,25 +294,25 @@ namespace NEgo {
 				(*cb)(req, respBuilder);
 				resp = respBuilder
 				    .FormResponse();
-			} catch (const TEgoFileNotFound& e) {
+			} catch (const TErrFileNotFound& e) {
 				resp = respBuilder
 					.StaticFile("not_found.html")
 					.NotFound()
 				    .FormResponse();
 			    if (DebugMode) throw;
-			} catch (const TEgoElementNotFound& e) {
+			} catch (const TErrElementNotFound& e) {
 				resp = respBuilder
 					.StaticFile("not_found.html")
 					.NotFound()
 				    .FormResponse();
 			    if (DebugMode) throw;
-			} catch (const TEgoLogicError& e) {
+			} catch (const TErrLogicError& e) {
 				resp = respBuilder
 					.Body(e.what())
 					.BadRequest()
 					.FormResponse();
 				if (DebugMode) throw;
-			} catch (const TEgoNotAvailable& e) {
+			} catch (const TErrNotAvailable& e) {
 				resp = respBuilder
 					.Body(e.what())
 					.ServiceUnavailable()
@@ -313,10 +343,16 @@ namespace NEgo {
 
 	private:
 		bool DebugMode;
+		ui32 Port;
+		ui32 MaxConnections;
 
 		int SocketNum;
 		std::map<TString, TRequestCallback> DefaultCallbacks;
 		std::map<TString, std::vector<TCallbackPath>> Callbacks;
+
+		bool ShutDownVar;
+		std::mutex ShutDownMutex;
+
 	};
 
 } // namespace NEgo

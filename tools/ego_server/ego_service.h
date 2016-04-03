@@ -1,6 +1,6 @@
 #pragma once
 
-#include "server.h"
+#include <ego/util/server/server.h>
 
 #include <ego/model/model.h>
 #include <ego/solver/solver.h>
@@ -49,7 +49,7 @@ namespace NEgo {
 				.AddCallback(
 					"POST",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
-						throw TEgoLogicError() << "Bad request";
+						throw TErrLogicError() << "Bad request";
 					}
 				)
 				.AddCallback(
@@ -184,7 +184,7 @@ namespace NEgo {
 						);
 
 						if (!res.second) {
-							throw TEgoLogicError() << "Problem with the name `" << solverSpec.ProblemConfig.Name << "' is already exist";
+							throw TErrLogicError() << "Problem with the name `" << solverSpec.ProblemConfig.Name << "' is already exist";
 						}
 
 						SaveProblemSolver(res.first->second);
@@ -207,7 +207,7 @@ namespace NEgo {
 			TString problemName = problemNamePtr->second;
 			auto problemPtr = ProblemSolvers.find(problemName);
 			if (problemPtr == ProblemSolvers.end()) {
-				throw TEgoElementNotFound() << "Can't find problem with the name " << problemName;
+				throw TErrElementNotFound() << "Can't find problem with the name " << problemName;
 			}
 
 			return problemPtr->second;
