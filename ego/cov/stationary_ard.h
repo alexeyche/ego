@@ -46,7 +46,7 @@ namespace NEgo {
 	        
 	        auto sqDistRes = SqDistFunctor(left * l, right * l);
 	        TMatrixD r = sqDistRes.Value();
-	        
+
 	        auto Kres = KernelFunctor(r);
 
 	        TMatrixD K = Kres.Value();
@@ -55,36 +55,23 @@ namespace NEgo {
 	        return TCovStationaryARD::Result()
 	        	.SetValue(
 	        		[=]() -> TMatrixD {
-	                	return  r; //var * K;
+	                	return var * K;
 	            	}
 	        	)
 	        	.SetParamDeriv(
 		            [=]() -> TVector<TMatrixD> {
 		            	TVector<TMatrixD> dK(GetParametersSize());
 
-		                // dK[0] = 2.0 * var * K;
-		                dK[0] = NLa::Zeros(left.n_rows, right.n_rows);
+		                dK[0] = 2.0 * var * K;
 		                for (ui32 di=0; di<DimSize; ++di) {
-		                	auto dArg = NLa::Zeros(left.n_rows, right.n_rows);
-		                	
-		                	dArg = SqDistFunctor(left.col(di) * l(di, di), right.col(di) * l(di, di)).Value();
-							dArg = - l(di, di) * dArg % r;
-
-		                	// for (ui32 ri=0; ri < left.n_rows; ++ri) {
-		                	// 	for (ui32 rj=0; rj < right.n_rows; ++rj) {
-		                	// 		double leftV = left(ri, di);
-		                	// 		double rightV = right(rj, di);
-		                
-		                	// 		double diff = rightV - leftV;
-		                	// 		double v = - diff * diff * l(di, di);
-		                			
-		                	// 		dArg(ri, rj) = v / r(ri, rj);
-		                	// 		// dArg(ri, rj) = - l(di, di) * leftV * (l(di, di) * leftV - rightV)/r(ri, rj);
-		                	// 	}
-		                	// }
-
-
-		                	dK[di+1] = dArg;
+		                	dK[di+1] = var * dKdArg;
+		                	for (ui32 ri=0; ri < left.n_rows; ++ri) {
+		                		for (ui32 rj=0; rj < right.n_rows; ++rj) {
+		                			dK[di+1](ri, rj) *= l(di, di) * l(di, di) * 
+		                				(left(ri, di) - right(rj, di)) *
+            							(right(rj, di) - left(ri, di)) / r(ri, rj);
+		                		}
+		                	}
 		                }
 		                return dK;
 		            }
@@ -121,7 +108,13 @@ namespace NEgo {
     }; 
 
     using TCovSqExpARD = TCovStationaryARD<NKernels::TSqExp>;
+    using TCovExpARD = TCovStationaryARD<NKernels::TExp>;
+    using TMatern32ARD = TCovStationaryARD<NKernels::TMatern32>;
+    using TMatern52ARD = TCovStationaryARD<NKernels::TMatern52>;
 
     REGISTER_COV(TCovSqExpARD);
+    REGISTER_COV(TCovExpARD);
+    REGISTER_COV(TMatern32ARD);
+    REGISTER_COV(TMatern52ARD);
 
 } // namespace NEgo

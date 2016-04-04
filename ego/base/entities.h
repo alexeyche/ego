@@ -9,7 +9,7 @@
 #include <ego/batch/random.h>
 
 #include <ego/cov/stationary_iso.h>
-#include <ego/cov/stationary_ard.h>
+// #include <ego/cov/stationary_ard.h>
 
 
 // #include <ego/mean/linear.h>

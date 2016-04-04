@@ -24,6 +24,24 @@ namespace NEgo {
     	};
 
 
+        class TMatern32 : public TOneArgFunctor<TMatrixD, TMatrixD> {
+        public:
+            using TParent = TOneArgFunctor<TMatrixD, TMatrixD>;
+
+            TMatern32(size_t dimSize) : TParent(dimSize) {}
+
+            TMatern32::Result UserCalc(const TMatrixD &r) const override final;
+        };
+
+        class TMatern52 : public TOneArgFunctor<TMatrixD, TMatrixD> {
+        public:
+            using TParent = TOneArgFunctor<TMatrixD, TMatrixD>;
+
+            TMatern52(size_t dimSize) : TParent(dimSize) {}
+
+            TMatern52::Result UserCalc(const TMatrixD &r) const override final;
+        };
+
 
     } // namespace NKernels
 } //namespace NEgo
