@@ -36,7 +36,7 @@ var localCache = {
      * @type {number}
      */
     timeout: 30000,
-    /** 
+    /**
      * @type {{_: number, data: {}}}
      **/
     data: {},
@@ -87,14 +87,14 @@ function loadVariableSliceChart(chartId, variableName) {
     }
     try {
         $("#" + chartId).removeClass("hidden");
-        
+
         var sliceData = null;
         $.ajax({
             async: false,
             url: "/api/problem/"+problemName+ "/variable_slice?variable_name=" + variableName,
             dataType:"json",
             cache: true,
-            complete: function(data) { 
+            complete: function(data) {
                 sliceData = JSON.parse(data.responseText);
             }
         }).fail(
@@ -102,7 +102,7 @@ function loadVariableSliceChart(chartId, variableName) {
                 if (textStatus == "canceled") {
                     return;
                 }
-                
+
                 $("#" + chartId).addClass("hidden");
                 $("#variable-slice-body").append(
                     "<div class='alert alert-danger'><strong>Post request failed!</strong> " + jqXHR["responseText"] + "</div>"
@@ -111,7 +111,7 @@ function loadVariableSliceChart(chartId, variableName) {
                 console.log(errorThrown);
             }
         );
-        
+
         if (variableName in variableSlicePlots) {
             variableSlicePlots[variableName].destroy();
         }
@@ -123,20 +123,20 @@ function loadVariableSliceChart(chartId, variableName) {
             },
             seriesColors: ['#17BDB8', '#EBC400', '#FF0000', '#ff0066'],
             series: [
-                { 
+                {
                     yaxis: 'yaxis',
                     markerOptions: { size: 1, style: "circle" },
                     rendererOptions: { bandData: [sliceData["left_band"], sliceData["right_band"]] }
-                }, 
-                { 
-                    yaxis: 'yaxis',
-                    showLine:false 
                 },
                 {
-                    yaxis: 'yaxis', 
-                    showLine:false 
+                    yaxis: 'yaxis',
+                    showLine:false
                 },
-                { 
+                {
+                    yaxis: 'yaxis',
+                    showLine:false
+                },
+                {
                     yaxis: 'y2axis',
                     markerOptions: { size: 0.1, style: "circle" }
                 }
@@ -177,29 +177,29 @@ $(document).ready(function(){
         });
         $("#problem-performance-panel-title").empty();
         $("#problem-performance-panel-title").append("<i class='fa fa-bar-chart-o fa-fw'></i> Problem performance");
-               
+
     } catch(err) {
         if (err.message == "No data specified") {
             $("#problem-performance-panel-title").empty();
             $("#problem-performance-panel-title").append("<i class='fa fa-bar-chart-o fa-fw'></i> Problem performance (no data specified)");
-            console.log(err);    
+            console.log(err);
         } else {
             throw err;
         }
     }
-    
-    
+
+
     $.getJSON("/api/problem/" + problemName + "/specification", function(data) {
         $("#variable-slices-tab").empty();
         $("#variable-slices-tab-content").empty();
-        
+
         $("#variable-slices-tab").append(
             "<li role='presentation' class='active'></li>"
         );
         $("#variable-slices-tab-content").append(
             "<div id='empty-tab' class='tab-pane in'></div>"
         );
-        
+
         $.each(data["Variable"], function(key, val) {
             var tabHeadingIdPfx = "tab-heading-";
             var aHrefTabIdPfx = "link-to-tab-";
@@ -208,16 +208,16 @@ $(document).ready(function(){
 
             $("#variable-slices-tab").append(
                 "<li id='"+tabHeadingIdPfx+key+"' role='presentation'>" +
-                    "<a data-toggle='tab' href='#"+val["Name"]+"' id='" + aHrefTabIdPfx+key + "'>" + val["Name"] + "</a>" + 
+                    "<a data-toggle='tab' href='#"+val["Name"]+"' id='" + aHrefTabIdPfx+key + "'>" + val["Name"] + "</a>" +
                 "</li>"
             );
 
             $("#variable-slices-tab-content").append(
                 "<div id='" + paneIdPfx+key +"' class='tab-pane in>" +
-                    "<div class='col-md-12'>" + 
+                    "<div class='col-md-12'>" +
                         "<br>" +
                         "<div id='" + chartIdPfx+key + "'></div>" +
-                    "</div>" + 
+                    "</div>" +
                 "</div>"
             );
 
@@ -226,10 +226,10 @@ $(document).ready(function(){
                     $("#"+paneIdPfx+skey).removeClass("active");
                     $("#"+tabHeadingIdPfx+skey).removeClass("active");
                 });
-                
+
                 $("#"+paneIdPfx+key).addClass("active");
                 $("#"+tabHeadingIdPfx+key).addClass("active");
-                
+
                 loadVariableSliceChart(chartIdPfx+key, val["Name"]);
                 window.location.href = "#" + val["Name"];
             });

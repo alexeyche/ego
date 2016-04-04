@@ -38,12 +38,12 @@ namespace NEgo {
 	        ENSURE(right.n_cols == DimSize, "Col size of right input matrix are not satisfy to kernel params: " << right.n_cols << " != " << DimSize);
 
 	        double var = exp(2.0 * Parameters[0]);
-	        
+
 	        TMatrixD l = NLa::Zeros(DimSize, DimSize);
 	        for (ui32 di=0; di<DimSize; ++di) {
 	        	l(di, di) = 1.0/exp(Parameters[di+1]);
 	        }
-	        
+
 	        auto sqDistRes = SqDistFunctor(left * l, right * l);
 	        TMatrixD r = sqDistRes.Value();
 
@@ -65,17 +65,33 @@ namespace NEgo {
 		                dK[0] = 2.0 * var * K;
 		                for (ui32 di=0; di<DimSize; ++di) {
 		                	dK[di+1] = var * dKdArg;
-		                	for (ui32 ri=0; ri < left.n_rows; ++ri) {
+
+                            for (ui32 ri=0; ri < left.n_rows; ++ri) {
 		                		for (ui32 rj=0; rj < right.n_rows; ++rj) {
-		                			dK[di+1](ri, rj) *= l(di, di) * l(di, di) * 
-		                				(left(ri, di) - right(rj, di)) *
-            							(right(rj, di) - left(ri, di)) / r(ri, rj);
+		                			if(std::abs(r(ri, rj)) < std::numeric_limits<double>::epsilon()) {
+                                        dK[di+1](ri, rj) *= 0.0;
+                                    } else {
+                                        dK[di+1](ri, rj) *= l(di, di) * l(di, di) *
+                                            (left(ri, di) - right(rj, di)) *
+                                            (right(rj, di) - left(ri, di)) / r(ri, rj);
+                                    }
+
 		                		}
 		                	}
 		                }
 		                return dK;
 		            }
-		        );
+		        )
+                .SetSecondArgDeriv(
+                    [=]() -> TMatrixD {
+                        return var * dKdArg % sqDistRes.SecondArgDeriv();
+                    }
+                );
+                // .SetSecondArgPartialDeriv(
+                //     [=](ui32 indexRow, ui32 indexCol) -> TMatrixD {
+                //         return var * dKdArg % sqDistRes.SecondArgPartialDeriv(indexRow, indexCol);
+                //     }
+                // );
 	    }
 
 	    size_t GetParametersSize() const override final {
@@ -105,7 +121,7 @@ namespace NEgo {
    	private:
     	TSquareDistFunctor SqDistFunctor;
 		TKernelFunctor KernelFunctor;
-    }; 
+    };
 
     using TCovSqExpARD = TCovStationaryARD<NKernels::TSqExp>;
     using TCovExpARD = TCovStationaryARD<NKernels::TExp>;

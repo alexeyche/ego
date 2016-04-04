@@ -50,7 +50,7 @@ namespace NEgo {
 					}
 				);
 		}
-		
+
 		TMatern52::Result TMatern52::UserCalc(const TMatrixD &r) const {
 			TMatrixD sqrt5r = sqrt(5.0) * r;
 			TMatrixD sq = NLa::Pow(r, 2.0) * 5.0/3.0;

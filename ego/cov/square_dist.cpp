@@ -16,7 +16,7 @@ namespace NEgo {
         TMatrixD rightSums = NLa::RepMat(NLa::Trans(right2sum), left.n_rows, 1);
 
         TMatrixD res2 = - 2.0 * left * NLa::Trans(right) + leftSums + rightSums;
-        
+
         NLa::ForEach(res2, [](double &v) { if (v<0.0) v = 0.0; });
         TMatrixD r = NLa::Sqrt(res2);
 

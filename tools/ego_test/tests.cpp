@@ -17,14 +17,18 @@ TWO_ARG_FUN_TEST(TSquareDistFunctor);
 
 ONE_ARG_FUN_TEST(TSqExp);
 ONE_ARG_FUN_TEST(TExp);
+
 TWO_ARG_FUN_TEST(TCovSqExpISO);
 TWO_ARG_FUN_TEST(TCovExpISO);
+TWO_ARG_FUN_TEST(TMatern32ISO);
+TWO_ARG_FUN_TEST(TMatern52ISO);
+
 TWO_ARG_FUN_TEST(TCovSqExpARD);
 TWO_ARG_FUN_TEST(TCovExpARD);
 TWO_ARG_FUN_TEST(TMatern32ARD);
 TWO_ARG_FUN_TEST(TMatern52ARD);
 
-INF_TEST(TInfExact, TMeanConst, TCovSqExpISO, TLikGauss);
-MODEL_TEST(TModel, TMeanConst, TCovSqExpISO, TLikGauss, TInfExact, TAcqEI);
-ACQ_TEST(TAcqEI, TMeanConst, TCovSqExpISO, TLikGauss, TInfExact, TModel);
-ACQ_TEST(TAcqLCB, TMeanConst, TCovSqExpISO, TLikGauss, TInfExact, TModel);
+INF_TEST(TInfExact, TMeanConst, TMatern52ARD, TLikGauss);
+MODEL_TEST(TModel, TMeanConst, TMatern52ARD, TLikGauss, TInfExact, TAcqEI);
+ACQ_TEST(TAcqEI, TMeanConst, TMatern52ARD, TLikGauss, TInfExact, TModel);
+ACQ_TEST(TAcqLCB, TMeanConst, TMatern52ARD, TLikGauss, TInfExact, TModel);
