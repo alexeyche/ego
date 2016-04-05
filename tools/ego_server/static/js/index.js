@@ -220,7 +220,7 @@ window.onload = loadModelParts();
 function loadModelParts() {
     $.getJSON("/api/list_model_parts", function(data) {
         $.each(data, function(key, val) {
-            var btnGrp = $("#"+key.toLowerCase() + "-btn-group");
+            var btnGrp = $("#"+key.toLowerCase() + "-model-part-btn");
             $.each(val["Values"], function(subKey, subVal) {
                 var act = ""
                 if (subVal == val["Default"]) {
@@ -231,6 +231,17 @@ function loadModelParts() {
                     "<button type='button' class='btn btn-default "+act+"' data-toggle='button' id='"+name+"-model-part' onclick='toggleButtonGroup(this.id)'>"+name+"</button>"
                 );
             })
+            var selGrp = $("#"+key.toLowerCase() + "-model-part-select");
+            $.each(val["Values"], function(subKey, subVal) {
+                var sel = ""
+                if (subVal == val["Default"]) {
+                    sel = "selected";
+                }
+                var name = subVal;
+                selGrp.append(
+                    "<option id='"+name+"-model-part' "+sel+">" + name + "</option>"
+                );
+            });
         });
     });
 }

@@ -19,7 +19,7 @@ endforeach()
 set(EGO_SRCS ${EGO_SRCS} ${DIR_SRCS} PARENT_SCOPE)
 
 # executable
-add_executable(test_ego
+add_executable(ego-test
     main.cpp
     ${SOURCES}
 )
@@ -27,7 +27,7 @@ add_executable(test_ego
 include_directories(${CMAKE_SOURCE_DIR}/ego)
 #include_directories(${CMAKE_BINARY_DIR}/protos)
 # link dependencies of executable
-target_link_libraries(test_ego
+target_link_libraries(ego-test
 	${PROTOBUF_LIBRARY}
     ego
     m
@@ -35,16 +35,16 @@ target_link_libraries(test_ego
 install(TARGETS RUNTIME DESTINATION bin)
 
 add_custom_command(
-  OUTPUT test_ego.pass
+  OUTPUT ego-test.pass
   POST_BUILD
-  COMMAND test_ego && touch test_ego.pass
+  COMMAND ego-test && touch ego-test.pass
   COMMENT "Running test"
-  DEPENDS test_ego
+  DEPENDS ego-test
 )
 
 add_custom_target(
     check_test ALL
-    DEPENDS test_ego.pass
+    DEPENDS ego-test.pass
 )
 
 

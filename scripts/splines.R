@@ -16,7 +16,6 @@ if (seed > 0) {
     set.seed(seed)
 } else {
     custom_seed = as.numeric(Sys.time())
-    cat("Using custom seed: ", custom_seed, "\n")
     set.seed(custom_seed)
 }
 

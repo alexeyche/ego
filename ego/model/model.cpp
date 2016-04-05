@@ -6,11 +6,11 @@
 namespace NEgo {
 
     TModel::TModel(const TModelConfig& config, ui32 D) {
-        InitWithConfig(Config, D);
+        InitWithConfig(config, D);
     }
 
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) {
-        InitWithConfig(Config, x.n_cols);
+        InitWithConfig(config, x.n_cols);
         SetData(x, y);
     }
 

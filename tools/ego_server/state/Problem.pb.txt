@@ -1,6 +1,6 @@
 SolverConfig {
   InitSampleSize: 10
-  BatchSize: 8
+  BatchSize: 1
   ModelType: "Model"
   ModelConfig {
     Cov: "cExpISO"

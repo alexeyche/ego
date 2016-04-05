@@ -172,7 +172,7 @@ namespace NEgo {
 		template <class TObj> \
 		struct T##Name##Registrator { \
 			T##Name##Registrator(TString name) { \
-				NStr::Replace(name, SuffixToReplace, ReplaceBy); \
+				NStr::Replace(name, SuffixToReplace, ReplaceBy, 1); \
 				TFactory::Instance().Register##Name<TObj>(name); \
 			} \
 		};\

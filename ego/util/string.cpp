@@ -136,6 +136,14 @@ namespace NEgo {
             }
         }
 
+        bool StartsWith(const TString &str, const TString&& prefix) {
+            if (str.length() >= prefix.length()) {
+               return (0 == str.compare(0, prefix.length(), prefix));
+            } else {
+                return false;
+            }   
+        }
+
         template <>
         ui32 As<ui32>(const TString& s) {
             return std::stoi(s);
