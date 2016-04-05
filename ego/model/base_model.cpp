@@ -37,7 +37,7 @@ namespace NEgo {
         return MinF.first;
     }
 
-	TVectorD IModel::GetMinimumX() const {	
+	TVectorD IModel::GetMinimumX() const {
         ENSURE(X.n_rows > 0, "Failed to find minimum for empty model");
         return X.row(MinF.second);
     }

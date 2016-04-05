@@ -38,7 +38,7 @@ namespace NEgo {
         Acq = acq;
         Acq->SetModel(*this);
     }
-    
+
     SPtr<ILik> TModel::GetLikelihood() const {
         return Lik;
     }

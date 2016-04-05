@@ -84,14 +84,27 @@ namespace NEgo {
 		        )
                 .SetSecondArgDeriv(
                     [=]() -> TMatrixD {
-                        return var * dKdArg % sqDistRes.SecondArgDeriv();
+                        TMatrixD secArgDeriv = var * dKdArg;
+                        for (ui32 ri=0; ri < left.n_rows; ++ri) {
+                            for (ui32 rj=0; rj < right.n_rows; ++rj) {
+                                if(std::abs(r(ri, rj)) < std::numeric_limits<double>::epsilon()) {
+                                    secArgDeriv(ri, rj) *= 0.0;
+                                } else {
+                                    TMatrixD diff = left.row(ri) - right.row(rj);
+                                    double sum = - NLa::Sum((diff * l) * l);
+                                    secArgDeriv(ri, rj) *= sum / r(ri, rj);
+                                }
+
+                            }
+                        }
+                        return secArgDeriv;
+                    }
+                )
+                .SetSecondArgPartialDeriv(
+                    [=](ui32 indexRow, ui32 indexCol) -> TMatrixD {
+                        return var * dKdArg % sqDistRes.SecondArgPartialDeriv(indexRow, indexCol) * l(indexCol, indexCol);
                     }
                 );
-                // .SetSecondArgPartialDeriv(
-                //     [=](ui32 indexRow, ui32 indexCol) -> TMatrixD {
-                //         return var * dKdArg % sqDistRes.SecondArgPartialDeriv(indexRow, indexCol);
-                //     }
-                // );
 	    }
 
 	    size_t GetParametersSize() const override final {
