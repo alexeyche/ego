@@ -13,7 +13,7 @@
 #include <ego/distr/distr.h>
 
 namespace NEgo {
-
+    
     class IModel
         : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>
         , public IProtoSerial<NEgoProto::TModelState>
@@ -29,11 +29,9 @@ namespace NEgo {
 
         virtual void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) = 0;
         
-        virtual SPtr<IAcq> GetCriterion() const = 0;
+        virtual IAcq::Result CalcCriterion(const TVectorD& x) const = 0;
 
-        virtual void AddPoint(const TVectorD& x, double y);
-
-        virtual SPtr<ILik> GetLikelihood() const = 0;
+        virtual void AddPoint(const TVectorD& x, double y) = 0;
 
         virtual TInfResult GetNegativeLogLik() const = 0;
 
@@ -41,47 +39,48 @@ namespace NEgo {
 
         virtual SPtr<IModel> Copy() const = 0;
 
+        virtual void SetData(const TMatrixD &x, const TVectorD &y) = 0;
+        
+        virtual TMatrixD GetX() const = 0;
+
+        virtual TVectorD GetY() const = 0;
+
+        virtual ui32 GetDimSize() const = 0;
+       
+        virtual ui32 GetSize() const = 0; 
+
+        virtual const double& GetMinimumY() const = 0;
+
+        virtual TVectorD GetMinimumX() const = 0;
+
+        virtual SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew) = 0;
+
+        virtual SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew) = 0;
+
+        virtual TDistrVec GetPrediction(const TMatrixD &Xnew) = 0;
+
+
         // Common getters setters
 
         void InitWithConfig(const TModelConfig& config, ui32 D);
 
-        TPair<TRefWrap<const TMatrixD>, TRefWrap<const TVectorD>> GetData() const;
-
         void SetConfig(const TModelConfig& config);
 
-        const double& GetMinimumY() const;
+        const TModelConfig& GetConfig() const;
 
-        TVectorD GetMinimumX() const;
-
-        void SetMinimum(double v, ui32 idx);
-
-        ui32 GetDimSize() const;
-       
-        bool Empty() const;
 
         // Helpers
 
-        IAcq::Result CalcCriterion(const TVectorD& x) const;
-
-        void SetData(const TMatrixD &x, const TVectorD &y);
-
-        SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew);
-
-        SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew);
-
-		TDistrVec GetPrediction(const TMatrixD &Xnew);
-
         TInfResult GetNegativeLogLik(const TVector<double>& v);
 
-        void SerialProcess(TProtoSerial& serial) override;
-
+        bool Empty() const;
+        
+        TPair<TMatrixD, TVectorD> GetData() const;
+        
+        
     protected:
-        TMatrixD X;
-        TVectorD Y;
 
         TModelConfig Config;
-
-        TPair<double, ui32> MinF;
     };
 
 } // namespace NEgo

@@ -11,12 +11,16 @@ namespace NEgo {
 		TAcqLCB(size_t dimSize)
             : IAcq(dimSize)
         {
-        	Parameters = {2.0};
+        	Parameters = {2.0, 100.0};
         }
 
         TAcqLCB::Result UserCalc(const TVectorD& x) const override final;
         
         size_t GetParametersSize() const override final;
+
+        void SetParameters(const TVector<double>& parameters) override final;
+
+        void Update() override final;
 	};
 
 

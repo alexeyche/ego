@@ -2,6 +2,10 @@
 #include <iostream>
 #include <list>
 
+#include <ego/base/errors.h>
+
+using namespace NEgo;
+
 #include "isolver.h"
 #include "../linesearch/morethuente.h"
 #ifndef LBFGSBSOLVER_H_
@@ -196,6 +200,14 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
     }
   }
  public:
+  
+  void CheckX(const Vector<Dtype>& v) {
+    for (size_t vi=0; vi < v.size(); ++vi) {
+      ENSURE(v(vi) <= uboundTemplate(vi), v << " is out of upper bound (" << v(vi) << " > " << uboundTemplate(vi));
+      ENSURE(v(vi) >= lboundTemplate(vi), v << " is out of lower bound (" << v(vi) << " < " << lboundTemplate(vi));
+    }
+  }
+
   void minimize(Problem<Dtype> &objFunc, Vector<Dtype> & x0) {
     objFunc_ = &objFunc;
     DIM = x0.n_rows;
@@ -237,9 +249,11 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
       SubspaceMinimization(CauchyPoint, x, c, g, SubspaceMin);
       // STEP 4: perform linesearch and STEP 5: compute gradient
       Dtype alpha_init = 1.0;
-      const Dtype rate = MoreThuente<Dtype, decltype(objFunc), 1>::linesearch(x,  SubspaceMin-x ,  objFunc, alpha_init);
+      Vector<Dtype> searchDir = ElWiseMin<Dtype>(ElWiseMax<Dtype>(SubspaceMin-x, lboundTemplate), uboundTemplate);
+      const Dtype rate = MoreThuente<Dtype, decltype(objFunc), 1>::linesearch(x, searchDir,  objFunc, alpha_init);
       // update current guess and function information
       x = x - rate*(x-SubspaceMin);
+      x = ElWiseMin<Dtype>(ElWiseMax<Dtype>(x, lboundTemplate), uboundTemplate);
       f = objFunc.value(x);
       objFunc.gradient(x, g);
       xHistory.push_back(x);

@@ -102,12 +102,12 @@ namespace NEgo {
 
     using TCovSqExpISO = TCovStationaryISO<NKernels::TSqExp>;
     using TCovExpISO = TCovStationaryISO<NKernels::TExp>;
-    using TMatern32ISO = TCovStationaryISO<NKernels::TMatern32>;
-    using TMatern52ISO = TCovStationaryISO<NKernels::TMatern52>;
+    using TCovMatern32ISO = TCovStationaryISO<NKernels::TMatern32>;
+    using TCovMatern52ISO = TCovStationaryISO<NKernels::TMatern52>;
 
     REGISTER_COV(TCovSqExpISO);
     REGISTER_COV(TCovExpISO);
-    REGISTER_COV(TMatern32ISO);
-    REGISTER_COV(TMatern52ISO);
+    REGISTER_COV(TCovMatern32ISO);
+    REGISTER_COV(TCovMatern52ISO);
 
 } //namespace NEgo

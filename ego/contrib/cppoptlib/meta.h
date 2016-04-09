@@ -58,7 +58,7 @@ Vector<T> Ones(size_t v) {
 
 template <typename T>
 Vector<T> ElWiseMax(const Vector<T> &v, const Vector<T>& mv) {
-    Vector<T> newv(v);
+    Vector<T> newv(v.size());
     for (size_t i=0; i<v.size(); ++i) {
         newv(i) = std::max(v(i), mv(i));
     }
@@ -68,7 +68,7 @@ Vector<T> ElWiseMax(const Vector<T> &v, const Vector<T>& mv) {
 
 template <typename T>
 Vector<T> ElWiseMin(const Vector<T> &v, const Vector<T>& mv) {
-    Vector<T> newv(v);
+    Vector<T> newv(v.size());
     for (size_t i=0; i<v.size(); ++i) {
         newv(i) = std::min(v(i), mv(i));
     }

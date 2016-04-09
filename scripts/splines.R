@@ -26,8 +26,8 @@ if(length(grep("RStudio", args)) == 0) {
     in.r.studio = FALSE
 }
 
-p.num = 4*10
-stdevs = c(1, 2.5, 5.0, 7.5)
+p.num = 10*10
+stdevs = rexp(5, 0.25)
 
 
 x.spl = seq(0, 1, length.out=p.num)
@@ -36,7 +36,7 @@ y.spl = NULL
 for (std in stdevs) {
     y.spl = c(y.spl, rnorm(p.num/length(stdevs), 0, std))
 }
-y.spl = sample(y.spl)
+#y.spl = sample(y.spl)
 spl = splinefun(x.spl, y.spl)
 if (in.r.studio) {
     plot(spl, xlim = c(min(x.spl), max(x.spl)))

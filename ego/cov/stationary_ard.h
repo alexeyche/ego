@@ -138,12 +138,12 @@ namespace NEgo {
 
     using TCovSqExpARD = TCovStationaryARD<NKernels::TSqExp>;
     using TCovExpARD = TCovStationaryARD<NKernels::TExp>;
-    using TMatern32ARD = TCovStationaryARD<NKernels::TMatern32>;
-    using TMatern52ARD = TCovStationaryARD<NKernels::TMatern52>;
+    using TCovMatern32ARD = TCovStationaryARD<NKernels::TMatern32>;
+    using TCovMatern52ARD = TCovStationaryARD<NKernels::TMatern52>;
 
     REGISTER_COV(TCovSqExpARD);
     REGISTER_COV(TCovExpARD);
-    REGISTER_COV(TMatern32ARD);
-    REGISTER_COV(TMatern52ARD);
+    REGISTER_COV(TCovMatern32ARD);
+    REGISTER_COV(TCovMatern52ARD);
 
 } // namespace NEgo

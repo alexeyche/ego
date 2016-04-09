@@ -6,6 +6,18 @@
 
 namespace NEgo {
 
+    struct TSplitPoint {
+        TSplitPoint() {}
+
+        TSplitPoint(ui32 dimId, double value)
+            : DimId(dimId)
+            , Value(value)
+        {}
+
+        ui32 DimId;
+        double Value;
+    };
+
     class TTreeModel: public IModel
     {
     public:
@@ -25,11 +37,9 @@ namespace NEgo {
 
         // Functor methods
 
-        virtual SPtr<IModel> Copy() const override;
+        SPtr<IModel> Copy() const override;
 
         void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) override;
-
-        SPtr<ILik> GetLikelihood() const override;
 
         size_t GetParametersSize() const override;
 
@@ -39,9 +49,7 @@ namespace NEgo {
 
         TTreeModel::Result UserCalc(const TMatrixD& Xnew) const override;
 
-        SPtr<IAcq> GetCriterion() const override;
-
-        // Helpers
+        IAcq::Result CalcCriterion(const TVectorD& x) const override;
 
         TInfResult GetNegativeLogLik() const override final;
 
@@ -49,18 +57,39 @@ namespace NEgo {
 
         void Update() override;
 
+        TMatrixD GetX() const override;
+
+        TVectorD GetY() const override;
+
+        ui32 GetDimSize() const override;
+       
+        ui32 GetSize() const override;
+        
+        const double& GetMinimumY() const override;
+
+        TVectorD GetMinimumX() const override;
+
+        void SetData(const TMatrixD &x, const TVectorD &y) override;
+
+        void SerialProcess(TProtoSerial& serial) override;
+
+        SPtr<IDistr> GetPointPrediction(const TVectorD& Xnew) override;  
+
+        SPtr<IDistr> GetPointPredictionWithDerivative(const TVectorD& Xnew) override;
+
+        TDistrVec GetPrediction(const TMatrixD &Xnew) override;
+
         void Split();
 
     private:
-        TOptional<TPair<SPtr<TTreeModel>, SPtr<TTreeModel>>> Nodes;
+        bool Root = true;
 
-        SPtr<IMean> Mean;
-        SPtr<ICov> Cov;
-        SPtr<ILik> Lik;
-        SPtr<IInf> Inf;
-        SPtr<IAcq> Acq;
+        SPtr<IModel> LeftLeaf;
+        SPtr<IModel> RightLeaf;
+        
+        TSplitPoint SplitPoint;
 
-        TOptional<TPosterior> Posterior;
+        SPtr<IModel> Model;
     };
 
     REGISTER_MODEL(TTreeModel);

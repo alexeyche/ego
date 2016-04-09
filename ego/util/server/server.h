@@ -317,7 +317,6 @@ namespace NEgo {
 					.Body(e.what())
 					.ServiceUnavailable()
 					.FormResponse();
-				if (DebugMode) throw;
 			} catch (const std::exception& e) {
 				L_DEBUG << "Internal error: " << e.what();
 				resp = respBuilder

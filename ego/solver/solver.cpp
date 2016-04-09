@@ -48,6 +48,7 @@ namespace NEgo {
         if (serial.IsInput()) {
             Model = Factory.CreateModel(Config.ModelType, Config.ModelConfig, Problem.GetDimSize());
             BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
+            BatchPolicy->InitNewBatch();
         }
 
         serial(*Model, NEgoProto::TSolverState::kModelStateFieldNumber);
@@ -67,6 +68,7 @@ namespace NEgo {
             Problem = solver.Problem;
             Model = solver.Model;
             BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
+            BatchPolicy->InitNewBatch();
         }
         return *this;
     }

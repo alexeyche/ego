@@ -5,20 +5,29 @@
 
 namespace NEgo {
 
-    TModel::TModel(const TModelConfig& config, ui32 D) {
+    TModel::TModel(const TModelConfig& config, ui32 D) 
+        : MinF(MakePair(std::numeric_limits<double>::max(), 0))
+    {
         InitWithConfig(config, D);
     }
 
-    TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) {
+    TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) 
+        : MinF(MakePair(std::numeric_limits<double>::max(), 0))
+    {
         InitWithConfig(config, x.n_cols);
         SetData(x, y);
     }
 
-    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
+    TModel::TModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq)
+        : MinF(MakePair(std::numeric_limits<double>::max(), 0))
+    {
         SetModel(mean, cov, lik, inf, acq);
     }
 
-    TModel::TModel(const TModel& model) {
+    TModel::TModel(const TModel& model)
+        : MinF(MakePair(std::numeric_limits<double>::max(), 0))
+    {
+
         InitWithConfig(model.Config, model.GetDimSize());
         SetParameters(model.GetParameters());
         SetData(model.X, model.Y);
@@ -28,7 +37,32 @@ namespace NEgo {
         return MakeShared(new TModel(*this));
     }
 
-    // Setters
+    void TModel::SetData(const TMatrixD &x, const TVectorD &y) {
+        X = x;
+        Y = y;
+        if (X.size()>0) {
+            MinF = NLa::MinIdx(Y);
+            DimSize = X.n_cols;
+            L_DEBUG << "Got input values with size [" << X.n_rows << "x" << X.n_cols << "] and " << " target values with size [" << Y.n_rows << "x" << Y.n_cols << "] with minimum target " << MinF.first;
+            Update();
+        } else {
+            L_DEBUG << "Got empty input values";
+        }
+    }
+
+    void TModel::SetMinimum(double v, ui32 idx) {
+        MinF = MakePair(v, idx);
+    }
+
+    const double& TModel::GetMinimumY() const {
+        return MinF.first;
+    }
+
+    TVectorD TModel::GetMinimumX() const {
+        ENSURE(X.n_rows > 0, "Failed to find minimum for empty model");
+        return X.row(MinF.second);
+    }
+
 
     void TModel::SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
         Mean = mean;
@@ -37,10 +71,6 @@ namespace NEgo {
         Inf = inf;
         Acq = acq;
         Acq->SetModel(*this);
-    }
-
-    SPtr<ILik> TModel::GetLikelihood() const {
-        return Lik;
     }
 
     // Functor methods
@@ -143,8 +173,45 @@ namespace NEgo {
             );
     }
 
-    SPtr<IAcq> TModel::GetCriterion() const {
-        return Acq;
+    TDistrVec TModel::GetPrediction(const TMatrixD &Xnew) {
+        auto calcRes = Calc(Xnew).Value();
+        return Lik->GetPredictiveDistributions(calcRes.first, calcRes.second, Config.Seed);
+    }
+
+    SPtr<IDistr> TModel::GetPointPrediction(const TVectorD& Xnew) {
+        TDistrVec v = GetPrediction(NLa::Trans(Xnew));
+        ENSURE(v.size() == 1, "UB");
+        return v[0];
+    }
+
+    SPtr<IDistr> TModel::GetPointPredictionWithDerivative(const TVectorD& Xnew) {
+        TMatrixD XnewM = NLa::Trans(Xnew);
+        auto calcRes = Calc(XnewM);
+
+        auto preds = calcRes.Value();
+        ENSURE((preds.first.size() == 1) && (preds.second.size() == 1), "UB");
+        ENSURE_ERR(preds.second(0) >= 0, TErrAlgebraError() << "Got negative variance, something wrong in system. X: " << NLa::VecToStr(Xnew) << ", Mean: " << preds.first(0) << ", Var: " << preds.second(0));
+
+        double mean = preds.first(0);
+        double sd = sqrt(preds.second(0));
+
+        TVectorD meanDeriv(Xnew.size());
+        TVectorD sdDeriv(Xnew.size());
+        for (size_t index=0; index < Xnew.size(); ++index) {
+            auto deriv = calcRes.ArgPartialDeriv(0, index);
+            ENSURE((deriv.first.size() == 1) && (deriv.second.size() == 1), "UB");
+
+            meanDeriv(index) = deriv.first(0);
+            sdDeriv(index) = 0.5 * deriv.second(0) / sd;
+        }
+
+        auto d = Lik->GetDistributionsWithDerivative(mean, sd, meanDeriv, sdDeriv, Config.Seed);
+        return d;
+    }
+
+
+    IAcq::Result TModel::CalcCriterion(const TVectorD& x) const {
+        return Acq->Calc(x);
     }
 
     // Helpers
@@ -158,5 +225,57 @@ namespace NEgo {
         L_DEBUG << "Updating posterior";
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
+
+    void TModel::SerialProcess(TProtoSerial& serial) {
+        TVector<double> params;
+        if (serial.IsOutput()) {
+            params = GetParameters();
+            Config.AcqParameters = Acq->GetParameters();
+        }
+        TMatrixD x(X);
+        TVectorD y(Y);
+
+        serial(Config, NEgoProto::TModelState::kModelConfigFieldNumber);
+        serial(x, NEgoProto::TModelState::kXFieldNumber);
+        serial(y, NEgoProto::TModelState::kYFieldNumber);
+        serial(params, NEgoProto::TModelState::kParametersFieldNumber);
+
+        if (serial.IsInput()) {
+            InitWithConfig(Config, x.n_cols);
+            SetParameters(params);
+            SetData(x, y);
+        }
+    }
+
+    void TModel::AddPoint(const TVectorD& x, double y) {
+        if(y < GetMinimumY()) {
+            L_DEBUG << "Got new minimum (" << y << " < " << GetMinimumY() << ")";
+            SetMinimum(y, X.n_rows);
+        }
+        X = NLa::RowBind(X, NLa::Trans(x));
+        Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
+        L_DEBUG << "Updating criterion";
+        Acq->Update();
+    }
+
+
+    TMatrixD TModel::GetX() const {
+        return X;
+    }
+    
+    TVectorD TModel::GetY() const {
+        return Y;
+    }
+
+    ui32 TModel::GetSize() const {
+        return X.n_rows;
+    }
+
+    ui32 TModel::GetDimSize() const {
+        return X.n_cols;
+    }
+
+    
+
 
 } // namespace NEgo

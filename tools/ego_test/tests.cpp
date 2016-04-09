@@ -20,15 +20,15 @@ ONE_ARG_FUN_TEST(TExp);
 
 TWO_ARG_FUN_TEST(TCovSqExpISO);
 TWO_ARG_FUN_TEST(TCovExpISO);
-TWO_ARG_FUN_TEST(TMatern32ISO);
-TWO_ARG_FUN_TEST(TMatern52ISO);
+TWO_ARG_FUN_TEST(TCovMatern32ISO);
+TWO_ARG_FUN_TEST(TCovMatern52ISO);
 
 TWO_ARG_FUN_TEST(TCovSqExpARD);
 TWO_ARG_FUN_TEST(TCovExpARD);
-TWO_ARG_FUN_TEST(TMatern32ARD);
-TWO_ARG_FUN_TEST(TMatern52ARD);
+TWO_ARG_FUN_TEST(TCovMatern32ARD);
+TWO_ARG_FUN_TEST(TCovMatern52ARD);
 
-INF_TEST(TInfExact, TMeanConst, TMatern52ARD, TLikGauss);
-MODEL_TEST(TModel, TMeanConst, TMatern52ARD, TLikGauss, TInfExact, TAcqEI);
-ACQ_TEST(TAcqEI, TMeanConst, TMatern52ARD, TLikGauss, TInfExact, TModel);
-ACQ_TEST(TAcqLCB, TMeanConst, TMatern52ARD, TLikGauss, TInfExact, TModel);
+INF_TEST(TInfExact, TMeanConst, TCovMatern52ARD, TLikGauss);
+MODEL_TEST(TModel, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TAcqEI);
+ACQ_TEST(TAcqEI, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TModel);
+ACQ_TEST(TAcqLCB, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TModel);
