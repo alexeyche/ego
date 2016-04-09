@@ -4,37 +4,43 @@
 #include <ego/base/errors.h>
 #include <ego/protos/model.pb.h>
 
+#include <ego/util/serial/proto_serial.h>
+
 #include <ctime>
 
 
 namespace NEgo {
 
-    struct TModelConfig {
-        TModelConfig(NEgoProto::TModelConfig config = NEgoProto::TModelConfig())
-            : ProtoConfig(config)
-        {
-            Cov = ProtoConfig.cov();
-            Mean = ProtoConfig.mean();
-            Lik = ProtoConfig.lik();
-            Inf = ProtoConfig.inf();
-            Acq = ProtoConfig.acq();
-
-            if(ProtoConfig.has_seed() || ProtoConfig.seed()>0) {
-                Seed = ProtoConfig.seed();
-            } else {
+    struct TModelConfig: public IProtoSerial<NEgoProto::TModelConfig> {
+        void SerialProcess(TProtoSerial& serial) {
+            serial(Cov);
+            serial(Mean);
+            serial(Inf);
+            serial(Lik);
+            serial(Acq);
+            serial(AcqParameters);
+            serial(Seed);
+            if (serial.IsInput() && !serial.HasField(NEgoProto::TModelConfig::kSeedFieldNumber)) {
                 Seed = std::time(0);
             }
         }
+        
+        TModelConfig() 
+            : Seed(std::time(0)) {}
 
-        TString Cov;
-        TString Mean;
-        TString Lik;
-        TString Inf;
-        TString Acq;
+        TModelConfig(NEgoProto::TModelConfig config) {
+            Deserialize(config);
+        }
+
+        TString Cov = "cExpISO";
+        TString Mean = "mConst";
+        TString Lik = "lGauss";
+        TString Inf = "iExact";
+        TString Acq = "aEI";
+
+        TVector<double> AcqParameters;
 
         ui32 Seed;
-
-        NEgoProto::TModelConfig ProtoConfig;
     };
 
 } // namespace NEgo

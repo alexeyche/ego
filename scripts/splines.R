@@ -11,13 +11,7 @@ get.env = function(p, def=NULL) {
 
 args = commandArgs(trailingOnly = FALSE)
 
-seed = get.env("SEED", -1)
-if (seed > 0) {
-    set.seed(seed)
-} else {
-    custom_seed = as.numeric(Sys.time())
-    set.seed(custom_seed)
-}
+set.seed(get.env("SEED", 100))
 
 sleep = get.env("SLEEP", 0)
 Sys.sleep(sleep)
@@ -30,13 +24,10 @@ if(length(grep("RStudio", args)) == 0) {
     line = readLines(f,n=1)
     x = as.numeric(line)
     in.r.studio = FALSE
-} else {
-    #set.seed(100)
 }
 
 p.num = 4*10
 stdevs = c(1, 2.5, 5.0, 7.5)
-
 
 
 x.spl = seq(0, 1, length.out=p.num)
@@ -51,8 +42,4 @@ if (in.r.studio) {
     plot(spl, xlim = c(min(x.spl), max(x.spl)))
 }
 cat(spl(x), "\n")
-
-
-
-
 

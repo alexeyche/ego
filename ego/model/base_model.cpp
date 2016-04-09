@@ -104,30 +104,46 @@ namespace NEgo {
         auto lik = Factory.CreateLik(Config.Lik, D);
         auto inf = Factory.CreateInf(Config.Inf, mean, cov, lik);
         auto acq = Factory.CreateAcq(Config.Acq, D);
+        if (Config.AcqParameters.size()>0) {
+            acq->SetParameters(Config.AcqParameters);    
+        }
         SetModel(mean, cov, lik, inf, acq);
     }
 
     void IModel::SerialProcess(TProtoSerial& serial) {
-        NEgoProto::TModelConfig protoConfig = Config.ProtoConfig;
         TVector<double> params;
-
         if (serial.IsOutput()) {
             params = GetParameters();
+            Config.AcqParameters = GetCriterion()->GetParameters();
         }
         TMatrixD x(X);
         TVectorD y(Y);
 
-        serial(protoConfig, NEgoProto::TModelState::kModelConfigFieldNumber);
+        serial(Config, NEgoProto::TModelState::kModelConfigFieldNumber);
         serial(x, NEgoProto::TModelState::kXFieldNumber);
         serial(y, NEgoProto::TModelState::kYFieldNumber);
         serial(params, NEgoProto::TModelState::kParametersFieldNumber);
 
         if (serial.IsInput()) {
-            TModelConfig newConfig(protoConfig);
-            InitWithConfig(newConfig, x.n_cols);
+            InitWithConfig(Config, x.n_cols);
             SetParameters(params);
             SetData(x, y);
         }
+    }
+
+    IAcq::Result IModel::CalcCriterion(const TVectorD& x) const {
+        return GetCriterion()->Calc(x);
+    }
+
+    void IModel::AddPoint(const TVectorD& x, double y) {
+        if(y < GetMinimumY()) {
+            L_DEBUG << "Got new minimum (" << y << " < " << GetMinimumY() << ")";
+            SetMinimum(y, X.n_rows);
+        }
+        X = NLa::RowBind(X, NLa::Trans(x));
+        Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
+        L_DEBUG << "Updating criterion";
+        GetCriterion()->Update();
     }
 
 

@@ -3,6 +3,7 @@
 #include <ego/base/base.h>
 #include <ego/protos/problem.pb.h>
 #include <ego/model/config.h>
+#include <ego/util/string.h>
 
 namespace NEgo {
 
@@ -23,15 +24,20 @@ namespace NEgo {
 	};
 
 
-    struct TProblemConfig {
-    	TProblemConfig() {}
-
-        TProblemConfig(const NEgoProto::TProblemConfig& config)
-            : ProtoConfig(config)
-        {
-            Name = ProtoConfig.name();
+    struct TProblemConfig: public IProtoSerial<NEgoProto::TProblemConfig> {
+    	void SerialProcess(TProtoSerial& serial) {
+            serial(Name);
+            if (serial.IsInput()) {
+                DeserialVariables(serial.GetMessage<NEgoProto::TProblemConfig>());
+            }
+            if (serial.IsOutput()) {
+                SerialVariables(serial.GetMutMessage<NEgoProto::TProblemConfig>());
+            }
+        }
+        
+        void DeserialVariables(const NEgoProto::TProblemConfig& config) {
             ui32 variableId = 0;
-            for (const auto& v: ProtoConfig.variable()) {
+            for (const auto& v: config.variable()) {
                 if (v.type() == NEgoProto::FLOAT) {
                     TVariable var;
                     var.Name = v.name();
@@ -63,16 +69,52 @@ namespace NEgo {
                         ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                     }
                 }
+                DimSize = Variables.size();
             }
-            DimSize = Variables.size();
+        }
+        void SerialVariables(NEgoProto::TProblemConfig& config) const {
+            std::map<ui32, TVariable> variablesSorted;
+            for (const auto& v: Variables) {
+                variablesSorted.emplace(v.second.Id, v.second);
+            }
+            NEgoProto::TVariable* var(nullptr);
+            TString enumName;
+            for (const auto& vPair: variablesSorted) {
+                const TVariable& v = vPair.second;
+                if (v.Type == EVariableType::FLOAT) {
+                    var = config.add_variable();
+                    var->set_type(NEgoProto::FLOAT);
+                    var->set_min(v.Min);
+                    var->set_max(v.Max);
+                    var->set_name(v.Name);
+                } else 
+                if (v.Type == EVariableType::INT) {
+                    var = config.add_variable();
+                    var->set_type(NEgoProto::INT);
+                    var->set_min(v.Min);
+                    var->set_max(v.Max);
+                    var->set_name(v.Name);
+                } else {
+                    TVector<TString> name_spl = NStr::Split(v.Name, "-");
+                    ENSURE(name_spl.size() == 2, "UB");
+                    if (!var || (enumName != name_spl[0])) {
+                        var = config.add_variable();
+                    }
+                    var->add_option(name_spl[1]);
+                }
+            }
+        }
+
+        TProblemConfig() {}
+
+        TProblemConfig(const NEgoProto::TProblemConfig& config) {
+            Deserialize(config);
         }
 
         TString Name;
 
         ui32 DimSize;
         std::map<TString, TVariable> Variables;
-
-        NEgoProto::TProblemConfig ProtoConfig;
     };
 
 } // namespace NEgo

@@ -80,10 +80,10 @@ namespace NEgo {
     #undef CHECK_FIELD
 
     template <typename T>
-    typename IProtoSerial<T>::TProto IProtoSerial<T>::Serialize() {
+    typename IProtoSerial<T>::TProto IProtoSerial<T>::Serialize() const {
         TProto mess;
         TProtoSerial serial(mess, TProtoSerial::ESerialMode::OUT);
-        SerialProcess(serial);
+        const_cast<IProtoSerial<T>&>(*this).SerialProcess(serial);
         return mess;
     }
 

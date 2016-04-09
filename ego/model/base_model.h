@@ -29,9 +29,9 @@ namespace NEgo {
 
         virtual void SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) = 0;
         
-        virtual IAcq::Result CalcCriterion(const TVectorD& x) const = 0;
+        virtual SPtr<IAcq> GetCriterion() const = 0;
 
-        virtual void AddPoint(const TVectorD& x, double y) = 0;
+        virtual void AddPoint(const TVectorD& x, double y);
 
         virtual SPtr<ILik> GetLikelihood() const = 0;
 
@@ -60,6 +60,8 @@ namespace NEgo {
         bool Empty() const;
 
         // Helpers
+
+        IAcq::Result CalcCriterion(const TVectorD& x) const;
 
         void SetData(const TMatrixD &x, const TVectorD &y);
 

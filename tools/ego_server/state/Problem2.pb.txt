@@ -1,6 +1,24 @@
 SolverConfig {
+  HyperOpt {
+    Method: "LBFGS"
+    MinimizersNum: 100
+    MaxEval: 100
+    Tolerance: 1e-10
+    Verbose: false
+  }
+  AcqOpt {
+    Method: "LBFGSB"
+    MinimizersNum: 100
+    MaxEval: 100
+    Tolerance: 1e-10
+    Verbose: false
+  }
   InitSampleSize: 10
   BatchSize: 8
+  IterationsNum: 100
+  HyperOptFreq: 1
+  HyperLowerBound: -100
+  HyperUpperBound: 100
   ModelType: "Model"
   ModelConfig {
     Cov: "cExpISO"
@@ -9,9 +27,10 @@ SolverConfig {
     Lik: "lGauss"
     Acq: "aEI"
     AcqParameters {
-      x: 2
+      x: 10
       x: 100
     }
+    Seed: 1460209458
   }
   BatchPolicy: "bpPredictive"
 }
@@ -60,10 +79,10 @@ ModelState {
     Lik: "lGauss"
     Acq: "aEI"
     AcqParameters {
-      x: 2
+      x: 10
       x: 100
     }
-    Seed: 1460206320
+    Seed: 1460209458
   }
   X {
     n_rows: 0
@@ -80,7 +99,7 @@ ModelState {
 }
 ProblemState {
   ProblemConfig {
-    Name: "Problem"
+    Name: "Problem2"
     Variable {
       Name: "Var0"
       Min: 0

@@ -53,7 +53,7 @@ namespace NEgo {
         return Inf->GetParameters();
     }
 
-    void TModel::SetParameters(const TVector<double> &v) {
+    void TModel::SetParameters(const TVector<double>& v) {
         Inf->SetParameters(v);
     }
 
@@ -143,8 +143,8 @@ namespace NEgo {
             );
     }
 
-    IAcq::Result TModel::CalcCriterion(const TVectorD& x) const {
-        return Acq->Calc(x);
+    SPtr<IAcq> TModel::GetCriterion() const {
+        return Acq;
     }
 
     // Helpers
@@ -153,15 +153,7 @@ namespace NEgo {
         return Inf->Calc(X, Y);
     }
 
-    void TModel::AddPoint(const TVectorD& x, double y) {
-        if(y < GetMinimumY()) {
-            L_DEBUG << "Got new minimum (" << y << " < " << GetMinimumY() << ")";
-            SetMinimum(y, X.n_rows);
-        }
-        X = NLa::RowBind(X, NLa::Trans(x));
-        Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
-    }
-
+    
     void TModel::Update() {
         L_DEBUG << "Updating posterior";
         Posterior.emplace(Inf->Calc(X, Y).Posterior());

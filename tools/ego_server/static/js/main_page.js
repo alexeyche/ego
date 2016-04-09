@@ -159,20 +159,27 @@ function compileProblemConfig() {
             }
         }
         cfg += ind + "}\n";
-        $("#cov-btn-group > .active")
+        // $("#cov-model-part-btn > .active")
     }
     cfg += "}\n";
+    var acq_pars = $("#acq-pars").val().split(";");
+    for (var pid=0; pid < acq_pars.length; ++pid) {
+        acq_pars[pid] = ind + ind + ind + "x: " + acq_pars[pid].trim();
+    }
+
     cfg += "SolverConfig {\n";
 
     cfg += ind + "ModelConfig {\n";
-    cfg += ind + ind + "Mean: \"" + $("#mean-btn-group .active").text() + "\"\n";
-    cfg += ind + ind + "Cov: \"" + $("#cov-btn-group .active").text() + "\"\n";
-    cfg += ind + ind + "Lik: \"" + $("#lik-btn-group .active").text() + "\"\n";
-    cfg += ind + ind + "Inf: \"" + $("#inf-btn-group .active").text() + "\"\n";
-    cfg += ind + ind + "Acq: \"" + $("#acq-btn-group .active").text() + "\"\n";
+    cfg += ind + ind + "Mean: \"" + $("#mean-model-part-btn .active").text() + "\"\n";
+    cfg += ind + ind + "Cov: \"" + $("#cov-model-part-select option:selected").text() + "\"\n";
+    cfg += ind + ind + "Lik: \"" + $("#lik-model-part-btn .active").text() + "\"\n";
+    cfg += ind + ind + "Inf: \"" + $("#inf-model-part-btn .active").text() + "\"\n";
+    cfg += ind + ind + "Acq: \"" + $("#acq-model-part-btn .active").text() + "\"\n";
+    cfg += ind + ind + "AcqParameters { \n" + acq_pars.join("\n") + "\n";
+    cfg += ind + ind + "}\n";
     cfg += ind + "}\n";
-    cfg += ind + "ModelType: \"" + $("#modeltype-btn-group .active").text() + "\"\n";
-    cfg += ind + "BatchPolicy: \"" + $("#batchpolicy-btn-group .active").text() + "\"\n";
+    cfg += ind + "ModelType: \"" + $("#modeltype-model-part-btn .active").text() + "\"\n";
+    cfg += ind + "BatchPolicy: \"" + $("#batchpolicy-model-part-btn .active").text() + "\"\n";
     cfg += ind + "BatchSize: " + $("#batch-size").val() + "\n";
     cfg += ind + "InitSampleSize: " + $("#init-sample-size").val() + "\n";
     cfg += "}\n";

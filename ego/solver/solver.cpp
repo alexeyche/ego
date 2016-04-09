@@ -38,9 +38,7 @@ namespace NEgo {
     }
 
     void TSolver::SerialProcess(TProtoSerial& serial) {
-        NEgoProto::TSolverConfig config = Config.ProtoConfig;
-
-        serial(config, NEgoProto::TSolverState::kSolverConfigFieldNumber);
+        serial(Config, NEgoProto::TSolverState::kSolverConfigFieldNumber);
         serial(Problem, NEgoProto::TSolverState::kProblemStateFieldNumber);
         serial(StartIterationNum, NEgoProto::TSolverState::kStartIterationNumFieldNumber);
         serial(EndIterationNum, NEgoProto::TSolverState::kEndIterationNumFieldNumber);
@@ -48,7 +46,6 @@ namespace NEgo {
         serial(InitSamples, NEgoProto::TSolverState::kInitSamplesFieldNumber);
         
         if (serial.IsInput()) {
-            Config = TSolverConfig(config);
             Model = Factory.CreateModel(Config.ModelType, Config.ModelConfig, Problem.GetDimSize());
             BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
         }

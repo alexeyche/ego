@@ -39,7 +39,7 @@ namespace NEgo {
 
         TTreeModel::Result UserCalc(const TMatrixD& Xnew) const override;
 
-        IAcq::Result CalcCriterion(const TVectorD& x) const override;
+        SPtr<IAcq> GetCriterion() const override;
 
         // Helpers
 

@@ -85,6 +85,19 @@ namespace NEgo {
             }
         }
 
+        template <typename T>
+        T& GetMutMessage() {
+            try {
+                return dynamic_cast<T&>(Message);
+            } catch (const std::bad_cast& error) {
+                T m;
+                L_INFO << "Failed to cast " << Message.GetTypeName() << " into " << m.GetTypeName();
+                throw;
+            }
+        }
+
+        bool HasField(int protoField);
+        
     private:
         template <typename T>
         T* GetEmbedMutMessage(int protoField, bool newMessage = false) {
@@ -114,7 +127,7 @@ namespace NEgo {
             return m;
         }
 
-        bool HasField(int protoField);
+        
 
     private:
         const NPb::Reflection* Refl;
@@ -130,7 +143,7 @@ namespace NEgo {
     public:
         using TProto = T;
 
-        TProto Serialize();
+        TProto Serialize() const;
 
         void Deserialize(TProto& proto);
 

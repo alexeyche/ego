@@ -168,11 +168,18 @@
                                         <div class="col-md-2">
                                             <label>Acquisition: </label>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-4">
                                             <div class="btn-group" data-toggle="buttons"  role="group" aria-label="..." id="acq-model-part-btn">
                                             </div>
                                         </div>
+                                        <div class="col-md-2">
+                                            <label>Parameters: </label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="acq-pars" pattern="^[- ;+.eE0-9]+$" maxlength="7"  placeholder="Acquisition parameters" value="2; 100">
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                             <label>Solver config</label>
@@ -234,7 +241,7 @@
 
 
     <!-- #include virtual = "includes.html" -->
-    <script src="/js/index.js"></script>
+    <script src="/js/main_page.js"></script>
     
     <script type="text/javascript">
         var h = document.location.hash;

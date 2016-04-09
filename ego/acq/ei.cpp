@@ -57,7 +57,23 @@ namespace NEgo {
     }
 
     size_t TAcqEI::GetParametersSize() const {
-        return 1;
+        return 2;
+    }
+
+    void TAcqEI::SetParameters(const TVector<double>& parameters) {
+        if (parameters.size() == 1) {
+            Parameters[0] = parameters[0];
+            return;
+        }
+        if (parameters.size() == 2) {
+            Parameters = parameters;
+            return;
+        }
+        throw TErrLogicError() << "Too many parameters in input for EI: " << parameters.size();
+    }
+
+    void TAcqEI::Update() {
+        Parameters[0] += - Parameters[0]/Parameters[1];
     }
 
 } // namespace NEgo

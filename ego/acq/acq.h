@@ -20,7 +20,8 @@ namespace NEgo {
 
         virtual ~IAcq() {
         }
-
+        virtual void Update() {}
+        
         void SetModel(IModel& model);
 
      protected:

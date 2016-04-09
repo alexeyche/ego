@@ -64,7 +64,7 @@ namespace NEgo {
 					"GET", "api/problem/{problem_name}/specification",
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						TSolver& solver = GetProblemSolver(req);
-						TString json = NPbJson::ProtobufToJson(solver.GetProblem().GetConfig().ProtoConfig);
+						TString json = NPbJson::ProtobufToJson(solver.GetProblem().GetConfig().Serialize());
 						resp.Body() += json;
 						resp.Good();
 					}

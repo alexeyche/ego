@@ -25,12 +25,7 @@ namespace NEgo {
     }
 
     void TProblem::SerialProcess(TProtoSerial& serial) {
-        NEgoProto::TProblemConfig config = Config.ProtoConfig;
-        serial(config, NEgoProto::TProblemState::kProblemConfigFieldNumber);
-
-        if (serial.IsInput()) {
-            Config = TProblemConfig(config);
-        }
+        serial(Config, NEgoProto::TProblemState::kProblemConfigFieldNumber);
     }
 
     TPoint TProblem::Remap(const TRawPoint& rawPoint) {

@@ -148,8 +148,8 @@ namespace NEgo {
             );
     }
 
-    IAcq::Result TTreeModel::CalcCriterion(const TVectorD& x) const {
-        return Acq->Calc(x);
+    SPtr<IAcq> TTreeModel::GetCriterion() const {
+        return Acq;
     }
 
     // Helpers

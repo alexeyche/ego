@@ -35,13 +35,9 @@ namespace NEgo {
 
         TModel::Result UserCalc(const TMatrixD& Xnew) const override;
 
-        IAcq::Result CalcCriterion(const TVectorD& x) const override;
-
-        // Helpers
+        SPtr<IAcq> GetCriterion() const override;
 
         TInfResult GetNegativeLogLik() const override final;
-
-        void AddPoint(const TVectorD& x, double y) override;
 
         void Update() override;
 
