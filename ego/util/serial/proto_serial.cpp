@@ -160,7 +160,8 @@ namespace NEgo {
             case ESerialMode::OUT:
             {
                 NEgoProto::TMatrixD* mat = GetEmbedMutMessage<NEgoProto::TMatrixD>(protoField);
-                mat->set_n_rows(m.n_rows);
+                
+                mat->set_n_rows(m.n_rows + mat->n_rows());
                 mat->set_n_cols(m.n_cols);
                 for (size_t rowIdx=0; rowIdx < m.n_rows; ++rowIdx) {
                     NEgoProto::TVectorD* row = mat->add_row();

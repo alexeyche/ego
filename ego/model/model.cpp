@@ -27,7 +27,6 @@ namespace NEgo {
     TModel::TModel(const TModel& model)
         : MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
-
         InitWithConfig(model.Config, model.GetDimSize());
         SetParameters(model.GetParameters());
         SetData(model.X, model.Y);

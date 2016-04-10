@@ -12,16 +12,16 @@ using namespace NEgo;
 constexpr double Epsilon = 1e-4;
 constexpr double LilEpsilon = 1e-4;
 constexpr ui32 DimSize = 5;
-constexpr ui32 SampleSize = 15;
+constexpr ui32 SampleSize = 25;
 
 
 template <typename T>
-void CheckDerivativeSanity(T derivVal, T leftVal, T rightVal, std::string name) {
+void CheckDerivativeSanity(T derivVal, T leftVal, T rightVal, std::string name, double epsilon) {
 	T approxDeriv = (rightVal - leftVal)/(2.0*Epsilon);
 	double res = NLa::Sum(derivVal - approxDeriv);
 	res = std::abs(res);
-	if(res >= LilEpsilon || std::isnan(res)) {
-		L_ERROR << name << ", Derivative is bad: " << res << " >= " << LilEpsilon;
+	if(res >= epsilon || std::isnan(res)) {
+		L_ERROR << name << ", Derivative is bad: " << res << " >= " << epsilon;
 		L_ERROR << "Those values are not almost equal:";
 		L_ERROR << "Proposed exact value:";
 		L_ERROR << "\n" << derivVal;
@@ -29,11 +29,11 @@ void CheckDerivativeSanity(T derivVal, T leftVal, T rightVal, std::string name) 
 		L_ERROR << "\n" << approxDeriv;
 		throw TErrException() << "Derivative sanity check failed";
 	}
-	L_INFO << name << ", Got derivative sanity check ok: " << res << " < " << LilEpsilon;
+	L_INFO << name << ", Got derivative sanity check ok: " << res << " < " << epsilon;
 }
 
 template <>
-void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> derivVal, TPair<TVectorD, TVectorD> leftVal, TPair<TVectorD, TVectorD> rightVal, std::string name);
+void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> derivVal, TPair<TVectorD, TVectorD> leftVal, TPair<TVectorD, TVectorD> rightVal, std::string name, double epsilon);
 
 template <typename T>
 T CreateTestData();
@@ -50,7 +50,7 @@ struct TTestPartials;
 
 template <typename Functor>
 struct TTestPartials<Functor, TMatrixD> {
-	static void Test(std::string functorName, SPtr<Functor> f,  const TMatrixD& a) {
+	static void Test(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, double epsilon) {
 		auto resCenter = f->Calc(a);
 
 		for (ui32 indexRow=0; indexRow < a.n_rows; ++indexRow) {
@@ -67,7 +67,8 @@ struct TTestPartials<Functor, TMatrixD> {
 						resCenter.ArgPartialDeriv(indexRow, indexCol),
 						resLeftEpsPart.Value(),
 						resRightEpsPart.Value(),
-						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
+						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative"),
+						epsilon
 					);
 				} catch(const TErrNotImplemented &e) {
 					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -76,7 +77,7 @@ struct TTestPartials<Functor, TMatrixD> {
 		}
 	}
 	template <typename TSecond>
-	static void TestFirstArg(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, const TSecond& secArg) {
+	static void TestFirstArg(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, const TSecond& secArg, double epsilon) {
 		auto resCenter = f->Calc(a, secArg);
 
 		for (ui32 indexRow=0; indexRow < a.n_rows; ++indexRow) {
@@ -93,7 +94,8 @@ struct TTestPartials<Functor, TMatrixD> {
 						resCenter.FirstArgPartialDeriv(indexRow, indexCol),
 						resLeftEpsPart.Value(),
 						resRightEpsPart.Value(),
-						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
+						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative"),
+						epsilon
 					);
 				} catch(const TErrNotImplemented &e) {
 					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -102,7 +104,7 @@ struct TTestPartials<Functor, TMatrixD> {
 		}
 	}
 	template <typename TFirst>
-	static void TestSecondArg(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, const TFirst& firstArg) {
+	static void TestSecondArg(std::string functorName, SPtr<Functor> f,  const TMatrixD& a, const TFirst& firstArg, double epsilon) {
 		auto resCenter = f->Calc(firstArg, a);
 
 		for (ui32 indexRow=0; indexRow < a.n_rows; ++indexRow) {
@@ -119,7 +121,8 @@ struct TTestPartials<Functor, TMatrixD> {
 						resCenter.SecondArgPartialDeriv(indexRow, indexCol),
 						resLeftEpsPart.Value(),
 						resRightEpsPart.Value(),
-						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative")
+						functorName + TString(NStr::TStringBuilder() << ", [" << indexRow << ":" << indexCol << "] partial argument derivative"),
+						epsilon
 					);
 				} catch(const TErrNotImplemented &e) {
 					L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -133,7 +136,7 @@ struct TTestPartials<Functor, TMatrixD> {
 
 template <typename Functor>
 struct TTestPartials<Functor, TVectorD> {
-	static void Test(std::string functorName, SPtr<Functor> f,  const TVectorD& a) {
+	static void Test(std::string functorName, SPtr<Functor> f,  const TVectorD& a, double epsilon) {
 		auto resCenter = f->Calc(a);
 
 		for (ui32 index=0; index < a.size(); ++index) {
@@ -149,7 +152,8 @@ struct TTestPartials<Functor, TVectorD> {
 					resCenter.ArgPartialDeriv(index),
 					resLeftEpsPart.Value(),
 					resRightEpsPart.Value(),
-					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
+					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative"),
+					epsilon
 				);
 			} catch(const TErrNotImplemented &e) {
 				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -157,7 +161,7 @@ struct TTestPartials<Functor, TVectorD> {
 		}
 	}
 	template <typename TSecond>
-	static void TestFirstArg(std::string functorName, SPtr<Functor> f,  const TVectorD& a, const TSecond& secArg) {
+	static void TestFirstArg(std::string functorName, SPtr<Functor> f,  const TVectorD& a, const TSecond& secArg, double epsilon) {
 		auto resCenter = f->Calc(a, secArg);
 
 		for (ui32 index=0; index < a.size(); ++index) {
@@ -173,7 +177,8 @@ struct TTestPartials<Functor, TVectorD> {
 					resCenter.FirstArgPartialDeriv(index),
 					resLeftEpsPart.Value(),
 					resRightEpsPart.Value(),
-					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
+					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative"),
+					epsilon
 				);
 			} catch(const TErrNotImplemented &e) {
 				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -182,7 +187,7 @@ struct TTestPartials<Functor, TVectorD> {
 	}
 
 	template <typename TFirst>
-	static void TestSecondArg(std::string functorName, SPtr<Functor> f,  const TVectorD& a, const TFirst& firstArg) {
+	static void TestSecondArg(std::string functorName, SPtr<Functor> f,  const TVectorD& a, const TFirst& firstArg, double epsilon) {
 		auto resCenter = f->Calc(firstArg, a);
 
 		for (ui32 index=0; index < a.size(); ++index) {
@@ -198,7 +203,8 @@ struct TTestPartials<Functor, TVectorD> {
 					resCenter.SecondArgPartialDeriv(index),
 					resLeftEpsPart.Value(),
 					resRightEpsPart.Value(),
-					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative")
+					functorName + TString(NStr::TStringBuilder() << ", [" << index << "] partial argument derivative"),
+					epsilon
 				);
 			} catch(const TErrNotImplemented &e) {
 				L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -209,7 +215,7 @@ struct TTestPartials<Functor, TVectorD> {
 
 
 template <typename Functor>
-void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Functor::TArg a = CreateTestData<typename Functor::TArg>()) {
+void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Functor::TArg a = CreateTestData<typename Functor::TArg>(), double epsilon = LilEpsilon) {
 	if(f->GetParametersSize()>0) {
 		arma::arma_rng::set_seed_random();
 		TVectorD paramV(f->GetParametersSize(), arma::fill::randu);
@@ -224,13 +230,14 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 			resCenter.ArgDeriv(),
 			resLeftEps.Value(),
 			resRightEps.Value(),
-			functorName + ", argument derivative"
+			functorName + ", argument derivative",
+			epsilon
 		);
 	} catch(const TErrNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
 
-	TTestPartials<Functor, typename Functor::TArg>::Test(functorName, f, a);
+	TTestPartials<Functor, typename Functor::TArg>::Test(functorName, f, a, epsilon);
 
 	if(f->GetParametersSize() > 0) {
 		TVector<double> centerParams = f->GetParameters();
@@ -252,6 +259,7 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 				  , resParamLeftEps
 				  , resParamRightEps
 				  , NStr::TStringBuilder() << functorName << ", " << pi << " param derivative"
+				  , epsilon
 				);
 			}
 		} catch(const TErrNotImplemented &e) {
@@ -264,7 +272,8 @@ void OneArgFunctorTester(std::string functorName, SPtr<Functor> f, typename Func
 template <typename Functor>
 void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 	typename Functor::TFirst first = CreateTestData<typename Functor::TFirst>(),
-	typename Functor::TSecond second = CreateTestData<typename Functor::TSecond>())
+	typename Functor::TSecond second = CreateTestData<typename Functor::TSecond>(),
+	double epsilon = LilEpsilon)
 {
 	if (f->GetParametersSize()>0) {
 		arma::arma_rng::set_seed_random();
@@ -282,7 +291,8 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 			resCenter.FirstArgDeriv(),
 			resFirstLeftEps.Value(),
 			resFirstRightEps.Value(),
-			functorName + ", first argument derivative"
+			functorName + ", first argument derivative",
+			epsilon
 		);
 	} catch(const TErrNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
@@ -296,14 +306,15 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 			resCenter.SecondArgDeriv(),
 			resSecondLeftEps.Value(),
 			resSecondRightEps.Value(),
-			functorName + ", second argument derivative"
+			functorName + ", second argument derivative",
+			epsilon
 		);
 	} catch(const TErrNotImplemented &e) {
 		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
 	}
 
-	TTestPartials<Functor, typename Functor::TFirst>::TestFirstArg(functorName, f, first, second);
-	TTestPartials<Functor, typename Functor::TSecond>::TestSecondArg(functorName, f, second, first);
+	TTestPartials<Functor, typename Functor::TFirst>::TestFirstArg(functorName, f, first, second, epsilon);
+	TTestPartials<Functor, typename Functor::TSecond>::TestSecondArg(functorName, f, second, first, epsilon);
 
 	if(f->GetParametersSize() > 0) {
 		TVector<double> centerParams = f->GetParameters();
@@ -325,6 +336,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 				  , resParamLeftEps
 				  , resParamRightEps
 				  , NStr::TStringBuilder() << functorName << ", " << pi << " param derivative"
+				  , epsilon
 				);
 			}
 		} catch(const TErrNotImplemented &e) {
@@ -358,7 +370,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 
 
 
-#define MODEL_TEST(Typename, MeanTypename, CovTypename, LikTypename, InfTypename, AcqTypename) \
+#define MODEL_TEST(Typename, MeanTypename, CovTypename, LikTypename, InfTypename, AcqTypename, epsilon) \
 	TEST(Typename ## DerivativeSanityCheck) { \
 		TMatrixD X(5*SampleSize, DimSize, arma::fill::randn); \
 		TVectorD Y(5*SampleSize, arma::fill::randn); \
@@ -368,10 +380,10 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 		SPtr<ILik> lik = MakeShared(new LikTypename(DimSize)); \
 		SPtr<IInf> inf = MakeShared(new InfTypename(mean, cov, lik)); \
 		SPtr<IAcq> acq = MakeShared(new AcqTypename(DimSize)); \
-		SPtr<TModel> model = MakeShared(new TModel(mean, cov, lik, inf, acq)); \
+		SPtr<Typename> model = MakeShared(new Typename(mean, cov, lik, inf, acq)); \
 		model->SetData(X, Y); \
 		\
-		OneArgFunctorTester<Typename>(#Typename, model);\
+		OneArgFunctorTester<Typename>(#Typename, model, CreateTestData<typename Typename::TArg>(), epsilon);\
 	} \
 
 #define ACQ_TEST(AcqTypename, MeanTypename, CovTypename, LikTypename, InfTypename, ModelTypename) \

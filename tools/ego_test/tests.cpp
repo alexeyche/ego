@@ -8,6 +8,7 @@
 #include <ego/acq/ei.h>
 #include <ego/acq/lcb.h>
 #include <ego/model/model.h>
+#include <ego/model/tree_model.h>
 
 using namespace NKernels;
 
@@ -29,6 +30,7 @@ TWO_ARG_FUN_TEST(TCovMatern32ARD);
 TWO_ARG_FUN_TEST(TCovMatern52ARD);
 
 INF_TEST(TInfExact, TMeanConst, TCovMatern52ARD, TLikGauss);
-MODEL_TEST(TModel, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TAcqEI);
+MODEL_TEST(TModel, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TAcqEI, LilEpsilon);
 ACQ_TEST(TAcqEI, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TModel);
 ACQ_TEST(TAcqLCB, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TModel);
+MODEL_TEST(TTreeModel, TMeanConst, TCovMatern52ARD, TLikGauss, TInfExact, TAcqEI, LilEpsilon*10.0);

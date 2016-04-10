@@ -3,6 +3,9 @@
 #include <ego/base/factory.h>
 
 #include <ego/util/maybe.h>
+#include <ego/util/pretty_print.h>
+
+#include <ego/model/model.h>
 
 namespace NEgo {
 
@@ -12,19 +15,16 @@ namespace NEgo {
 
 
     TTreeModel::TTreeModel(const TModelConfig& config, ui32 D) {
-        Model = Factory.CreateModel("Model", config, D);
-        Model->InitWithConfig(config, D);
+        Model = MakeShared(new TModel(config, D));
     }
 
     TTreeModel::TTreeModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) {
-        Model = Factory.CreateModel("Model", config, x.n_cols);
-        Model->InitWithConfig(config, x.n_cols);
-        Model->SetData(x, y);
+        Model = MakeShared(new TModel(config, x, y));
         Root = false;
     }
 
     TTreeModel::TTreeModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
-        Model = Factory.CreateModel("Model", TModelConfig(), mean->GetDimSize());
+        Model = MakeShared(new TModel(mean, cov, lik, inf, acq));
         Model->SetModel(mean, cov, lik, inf, acq);
     }
 
@@ -32,8 +32,8 @@ namespace NEgo {
         if (model.Model) {
             Model = model.Model->Copy();
         } else {
-            LeftLeaf = model.LeftLeaf->Copy();
-            RightLeaf = model.RightLeaf->Copy();
+            LeftLeaf = std::dynamic_pointer_cast<TTreeModel, IModel>(model.LeftLeaf->Copy());
+            RightLeaf = std::dynamic_pointer_cast<TTreeModel, IModel>(model.RightLeaf->Copy());
         }
         Root = model.Root;
     }
@@ -98,54 +98,30 @@ namespace NEgo {
     }
 
     SPtr<IDistr> TTreeModel::GetPointPrediction(const TVectorD& Xnew) {
-        if (Model) {
-            return Model->GetPointPrediction(Xnew);
-        }
-        if (Xnew(SplitPoint.DimId) <= SplitPoint.Value) {
-            return LeftLeaf->GetPointPrediction(Xnew);
-        } else {
-            return RightLeaf->GetPointPrediction(Xnew);
-        }
+        return Call<SPtr<IDistr>>(Xnew, [&](SPtr<IModel> model) {
+            return model->GetPointPrediction(Xnew);
+        });
     }
 
     SPtr<IDistr> TTreeModel::GetPointPredictionWithDerivative(const TVectorD& Xnew) {
-        if (Model) {
-            return Model->GetPointPredictionWithDerivative(Xnew);
-        }
-        if (Xnew(SplitPoint.DimId) <= SplitPoint.Value) {
-            return LeftLeaf->GetPointPredictionWithDerivative(Xnew);
-        } else {
-            return RightLeaf->GetPointPredictionWithDerivative(Xnew);
-        }
+        return Call<SPtr<IDistr>>(Xnew, [&](SPtr<IModel> model) {
+            return model->GetPointPredictionWithDerivative(Xnew);
+        });
     }
 
     TDistrVec TTreeModel::GetPrediction(const TMatrixD &Xnew) {
-        if (Model) {
-            return Model->GetPrediction(Xnew);
-        }
-        TMatrixD xNewLeft;
-        TMatrixD xNewRight;
-        TVector<ui32> leftIds;
-        TVector<ui32> rightIds;
-        for (ui32 rId=0; rId < Xnew.n_rows; ++rId) {
-            if (Xnew(rId, SplitPoint.DimId) <= SplitPoint.Value) {
-                xNewLeft = NLa::RowBind(xNewLeft, Xnew.row(rId));
-                leftIds.push_back(rId);
-            } else {
-                xNewRight = NLa::RowBind(xNewRight, Xnew.row(rId));
-                rightIds.push_back(rId);
+        return Dispatch<TDistrVec>(
+            Xnew, 
+            [&](SPtr<IModel> model, const TMatrixD& v) {
+                return model->GetPrediction(v);
+            },
+            [&](const TDistrVec& left, const TDistrVec& right, TDistrVec& d) {
+                d.resize(left.size() + right.size());
+            },
+            [&](const TDistrVec& src, ui32 srcId, TDistrVec& dst, ui32 dstId) {
+                dst[dstId] = src[srcId];
             }
-        }
-        auto leftRes = LeftLeaf->GetPrediction(xNewLeft);
-        auto rightRes = RightLeaf->GetPrediction(xNewRight);
-        TDistrVec res(leftRes.size() + rightRes.size());
-        for (ui32 rId = 0; rId < xNewLeft.n_rows; ++rId) {
-            res[leftIds[rId]] = leftRes[rId];
-        }
-        for (ui32 rId = 0; rId < xNewRight.n_rows; ++rId) {
-            res[rightIds[rId]] = rightRes[rId];
-        }
-        return res;
+        );
     }
 
 
@@ -159,14 +135,18 @@ namespace NEgo {
     }
 
     TVector<double> TTreeModel::GetParameters() const {
-        if (Model) {
-            return Model->GetParameters();    
-        }
-        
-        TVector<double> pars = LeftLeaf->GetParameters();
-        const TVector<double> rightPars = RightLeaf->GetParameters();
-        std::copy(rightPars.begin(), rightPars.end(), std::back_inserter(pars));
-        return pars;
+        return Combine<TVector<double>>(
+            [&](SPtr<IModel> model) {
+                return model->GetParameters();
+            },
+            [&](const TVector<double>& left, const TVector<double>& right) {
+                TVector<double> res;
+                res.reserve(left.size() + right.size());
+                res.insert(res.end(), left.begin(), left.end()); 
+                res.insert(res.end(), right.begin(), right.end());
+                return res;
+            }
+        );
     }
 
     void TTreeModel::SetParameters(const TVector<double> &v) {
@@ -179,7 +159,7 @@ namespace NEgo {
         LeftLeaf->SetParameters(leftPars);
 
         TVector<double> rightPars(RightLeaf->GetParametersSize());
-        std::copy(v.begin() + leftPars.size(), v.begin() + leftPars.size() + rightPars.size(), rightPars.begin());
+        std::copy(v.begin() + leftPars.size(), v.end(), rightPars.begin());
         RightLeaf->SetParameters(rightPars);
     }
 
@@ -187,35 +167,31 @@ namespace NEgo {
         if (Model) {
             return Model->UserCalc(Xnew);    
         }
-        TMatrixD xNewLeft;
-        TMatrixD xNewRight;
-        TVector<ui32> leftIds;
-        TVector<ui32> rightIds;
-        for (ui32 rId=0; rId < Xnew.n_rows; ++rId) {
-            if (Xnew(rId, SplitPoint.DimId) <= SplitPoint.Value) {
-                xNewLeft = NLa::RowBind(xNewLeft, Xnew.row(rId));
-                leftIds.push_back(rId);
-            } else {
-                xNewRight = NLa::RowBind(xNewRight, Xnew.row(rId));
-                rightIds.push_back(rId);
-            }
+        
+        auto spl = SplitMatrix(Xnew);
+        TTreeModel::Result leftRes;
+        if (spl.first) {
+            leftRes = LeftLeaf->UserCalc(spl.first.M);
         }
-        auto leftRes = LeftLeaf->UserCalc(xNewLeft);
-        auto rightRes = RightLeaf->UserCalc(xNewRight);
+        TTreeModel::Result rightRes;
+        if (spl.second) {
+            rightRes = RightLeaf->UserCalc(spl.second.M);
+        }
+        
         return TTreeModel::Result()
             .SetValue(
                 [=]() -> TPair<TVectorD, TVectorD> {
                     TVectorD mean(Xnew.n_rows);
                     TVectorD sd(Xnew.n_rows);
                     auto leftVal = leftRes.Value();
-                    for (ui32 rId = 0; rId < xNewLeft.n_rows; ++rId) {
-                        mean(leftIds[rId]) = leftVal.first(rId); 
-                        sd(leftIds[rId]) = leftVal.second(rId);
+                    for (ui32 rId = 0; rId < spl.first.M.n_rows; ++rId) {
+                        mean(spl.first.Ids[rId]) = leftVal.first(rId); 
+                        sd(spl.first.Ids[rId]) = leftVal.second(rId);
                     }
                     auto rightVal = rightRes.Value();
-                    for (ui32 rId = 0; rId < xNewRight.n_rows; ++rId) {
-                        mean(rightIds[rId]) = rightVal.first(rId); 
-                        sd(rightIds[rId]) = rightVal.second(rId);
+                    for (ui32 rId = 0; rId < spl.second.M.n_rows; ++rId) {
+                        mean(spl.second.Ids[rId]) = rightVal.first(rId); 
+                        sd(spl.second.Ids[rId]) = rightVal.second(rId);
                     }
                     return MakePair(mean, sd);
                 }
@@ -225,31 +201,37 @@ namespace NEgo {
                     TVectorD mean(Xnew.n_rows);
                     TVectorD sd(Xnew.n_rows);
                     auto leftVal = leftRes.ArgDeriv();
-                    for (ui32 rId = 0; rId < xNewLeft.n_rows; ++rId) {
-                        mean(leftIds[rId]) = leftVal.first(rId); 
-                        sd(leftIds[rId]) = leftVal.second(rId);
+                    for (ui32 rId = 0; rId < spl.first.M.n_rows; ++rId) {
+                        mean(spl.first.Ids[rId]) = leftVal.first(rId); 
+                        sd(spl.first.Ids[rId]) = leftVal.second(rId);
                     }
                     auto rightVal = rightRes.ArgDeriv();
-                    for (ui32 rId = 0; rId < xNewRight.n_rows; ++rId) {
-                        mean(rightIds[rId]) = rightVal.first(rId); 
-                        sd(rightIds[rId]) = rightVal.second(rId);
+                    for (ui32 rId = 0; rId < spl.second.M.n_rows; ++rId) {
+                        mean(spl.second.Ids[rId]) = rightVal.first(rId); 
+                        sd(spl.second.Ids[rId]) = rightVal.second(rId);
                     }
                     return MakePair(mean, sd);
                 }
             )
             .SetArgPartialDeriv(
                 [=](ui32 indexRow, ui32 indexCol) -> TPair<TVectorD, TVectorD> {
-                    TVectorD mean(Xnew.n_rows);
-                    TVectorD sd(Xnew.n_rows);
-                    auto leftVal = leftRes.ArgPartialDeriv(indexRow, indexCol);
-                    for (ui32 rId = 0; rId < xNewLeft.n_rows; ++rId) {
-                        mean(leftIds[rId]) = leftVal.first(rId); 
-                        sd(leftIds[rId]) = leftVal.second(rId);
-                    }
-                    auto rightVal = rightRes.ArgPartialDeriv(indexRow, indexCol);
-                    for (ui32 rId = 0; rId < xNewRight.n_rows; ++rId) {
-                        mean(rightIds[rId]) = rightVal.first(rId); 
-                        sd(rightIds[rId]) = rightVal.second(rId);
+                    TVectorD mean = NLa::Zeros(Xnew.n_rows);
+                    TVectorD sd = NLa::Zeros(Xnew.n_rows);
+                    auto leftFindRes = std::find(spl.first.Ids.begin(), spl.first.Ids.end(), indexRow);
+                    if (leftFindRes != spl.first.Ids.end()) {
+                        auto leftVal = leftRes.ArgPartialDeriv(leftFindRes - spl.first.Ids.begin(), indexCol);
+                        for (ui32 rId = 0; rId < spl.first.M.n_rows; ++rId) {
+                            mean(spl.first.Ids[rId]) = leftVal.first(rId); 
+                            sd(spl.first.Ids[rId]) = leftVal.second(rId);
+                        }
+                    } else {
+                        auto rightFindRes = std::find(spl.second.Ids.begin(), spl.second.Ids.end(), indexRow);
+                        ENSURE(rightFindRes != spl.second.Ids.end(), "Can't find id: " << indexRow);
+                        auto rightVal = rightRes.ArgPartialDeriv(rightFindRes - spl.second.Ids.begin(), indexCol);
+                        for (ui32 rId = 0; rId < spl.second.M.n_rows; ++rId) {
+                            mean(spl.second.Ids[rId]) = rightVal.first(rId); 
+                            sd(spl.second.Ids[rId]) = rightVal.second(rId);
+                        }    
                     }
                     return MakePair(mean, sd);
                 }
@@ -258,14 +240,12 @@ namespace NEgo {
     }
 
     IAcq::Result TTreeModel::CalcCriterion(const TVectorD& x) const {
-        if (Model) {
-            return Model->CalcCriterion(x);    
-        }
-        if (x(SplitPoint.DimId) <= SplitPoint.Value) {
-            return LeftLeaf->CalcCriterion(x);
-        } else {
-            return RightLeaf->CalcCriterion(x);
-        }
+        return Call<IAcq::Result>(
+            x,
+            [&](SPtr<IModel> model) {
+                return model->CalcCriterion(x);
+            }
+        );
     }
 
     TInfResult TTreeModel::GetNegativeLogLik() const {
@@ -296,20 +276,20 @@ namespace NEgo {
     }
 
     void TTreeModel::AddPoint(const TVectorD& x, double y) {
-        if (Model) {
-            Model->AddPoint(x, y);
+        return Call<void>(
+            x,
+            [&](SPtr<IModel> model) {
+                model->AddPoint(x, y);
 
-            if (Model->GetSize() > SplitSizeCriteria) {
-                Model->Update();
-                Split();
+                if (model->GetSize() > SplitSizeCriteria) {
+                    model->Update();
+                    Split();
+                }
+            },
+            [&](SPtr<IModel> model) {
+                model->AddPoint(x, y);
             }
-            return;    
-        }
-        if (x(SplitPoint.DimId) <= SplitPoint.Value) {
-            LeftLeaf->AddPoint(x, y);
-        } else {
-            RightLeaf->AddPoint(x, y);
-        }
+        );
     }
 
     void TTreeModel::Split() {
@@ -369,27 +349,27 @@ namespace NEgo {
         SplitPoint = TSplitPoint(dimId, x(ids(splitId), dimId));
         Model.reset();
     }
+    
+    void TTreeModel::SplitRecursively() {
+        L_DEBUG << Model->GetSize() << " > " << SplitSizeCriteria << "?";
+        if (Model->GetSize() > SplitSizeCriteria) {
+            Model->Update();
+            Split();
+            // LeftLeaf->SplitRecursively();
+            // RightLeaf->SplitRecursively();
+        }
+    }
 
     void TTreeModel::SetData(const TMatrixD &x, const TVectorD &y) {
         if (Model) {
             Model->SetData(x, y);
+            SplitRecursively();
             return;
         }
-        TMatrixD xLeft;
-        TMatrixD xRight;
-        TVectorD yLeft;
-        TVectorD yRight;
-        for (ui32 rId=0; rId < x.n_rows; ++rId) {
-            if (x(rId, SplitPoint.DimId) <= SplitPoint.Value) {
-                xLeft = NLa::RowBind(xLeft, x.row(rId));
-                yLeft = NLa::RowBind(yLeft, NLa::VectorFromConstant(1, y(rId)));
-            } else {
-                xRight = NLa::RowBind(xRight, x.row(rId));
-                yRight = NLa::RowBind(yRight, NLa::VectorFromConstant(1, y(rId)));
-            }
-        }
-        LeftLeaf->SetData(xLeft, yLeft);
-        RightLeaf->SetData(xRight, yRight);
+        auto xspl = SplitMatrix(x);
+        auto yspl = SplitMatrix(y);
+        LeftLeaf->SetData(xspl.first.M, yspl.first.M);
+        RightLeaf->SetData(xspl.second.M, yspl.second.M);
     }
 
     void TTreeModel::Update() {
@@ -404,8 +384,13 @@ namespace NEgo {
     void TTreeModel::SerialProcess(TProtoSerial& serial) {
         if (Model) {
             Model->SerialProcess(serial);
+            if (serial.IsInput()) {
+                SplitRecursively();    
+            }
             return;    
         }
+        LeftLeaf->SerialProcess(serial);
+        RightLeaf->SerialProcess(serial);
     }
 
 } // namespace NEgo

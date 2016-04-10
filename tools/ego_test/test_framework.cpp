@@ -2,14 +2,14 @@
 
 
 template <>
-void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> derivVal, TPair<TVectorD, TVectorD> leftVal, TPair<TVectorD, TVectorD> rightVal, std::string name) {
+void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> derivVal, TPair<TVectorD, TVectorD> leftVal, TPair<TVectorD, TVectorD> rightVal, std::string name, double epsilon) {
 	TVectorD approxDerivFirst = (rightVal.first - leftVal.first)/(2.0*Epsilon);
 	TVectorD approxDerivSecond = (rightVal.second - leftVal.second)/(2.0*Epsilon);
 	{
 		double res = NLa::Sum(derivVal.first - approxDerivFirst);
 		res = std::abs(res);
-		if(res >= LilEpsilon || std::isnan(res)) {
-			L_ERROR << name << ", Derivative of first element of pair is bad: " << res << " >= " << LilEpsilon;
+		if(res >= epsilon || std::isnan(res)) {
+			L_ERROR << name << ", Derivative of first element of pair is bad: " << res << " >= " << epsilon;
 			L_ERROR << "Those values are not almost equal:";
 			L_ERROR << "Proposed exact value:";
 			L_ERROR << "\n" << derivVal.first;
@@ -17,13 +17,13 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 			L_ERROR << "\n" << approxDerivSecond;
 			throw TErrException() << "Derivative sanity check failed for first element of pair";
 		}
-		L_INFO << name << ", Got derivative sanity check ok for first element of pair: " << res << " < " << LilEpsilon;
+		L_INFO << name << ", Got derivative sanity check ok for first element of pair: " << res << " < " << epsilon;
 	}
 	{
 		double res = NLa::Sum(derivVal.second - approxDerivSecond);
 		res = std::abs(res);
-		if(res >= LilEpsilon || std::isnan(res)) {
-			L_ERROR << name << ", Derivative second element of pair is bad: " << res << " >= " << LilEpsilon;
+		if(res >= epsilon || std::isnan(res)) {
+			L_ERROR << name << ", Derivative second element of pair is bad: " << res << " >= " << epsilon;
 			L_ERROR << "Those values are not almost equal:";
 			L_ERROR << "Proposed exact value:";
 			L_ERROR << "\n" << derivVal.second;
@@ -31,7 +31,7 @@ void CheckDerivativeSanity<TPair<TVectorD, TVectorD>>(TPair<TVectorD, TVectorD> 
 			L_ERROR << "\n" << approxDerivSecond;
 			throw TErrException() << "Derivative sanity check failed for second element of pair";
 		}
-		L_INFO << name << ", Got derivative sanity check ok for second element of pair: " << res << " < " << LilEpsilon;
+		L_INFO << name << ", Got derivative sanity check ok for second element of pair: " << res << " < " << epsilon;
 	}
 }
 

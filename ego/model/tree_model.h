@@ -18,6 +18,20 @@ namespace NEgo {
         double Value;
     };
 
+    struct TSplitMatrix {
+        TSplitMatrix(const TMatrixD& m, const TVector<ui32>& ids)
+            : M(m)
+            , Ids(ids)
+        {}
+        
+        operator bool () const  {
+            return M.n_rows > 0;
+        }
+
+        TMatrixD M;
+        TVector<ui32> Ids;
+    };
+
     class TTreeModel: public IModel
     {
     public:
@@ -81,11 +95,99 @@ namespace NEgo {
 
         void Split();
 
+        void SplitRecursively();
+
+        template <typename Ret>
+        Ret Call(const TVectorD& splitVal, std::function<Ret(SPtr<IModel>)> callback) const {
+            if (Model) {
+                return callback(Model);
+            }
+            if (splitVal(SplitPoint.DimId) <= SplitPoint.Value) {
+                return callback(LeftLeaf);
+            } else {
+                return callback(RightLeaf);
+            }
+        }
+
+        template <typename Ret>
+        Ret Call(const TVectorD& splitVal, std::function<Ret(SPtr<IModel>)> modelCallback, std::function<Ret(SPtr<IModel>)> callback) const {
+            if (Model) {
+                return modelCallback(Model);
+            }
+            if (splitVal(SplitPoint.DimId) <= SplitPoint.Value) {
+                return callback(LeftLeaf);
+            } else {
+                return callback(RightLeaf);
+            }
+        }
+        
+        TPair<TSplitMatrix, TSplitMatrix> SplitMatrix(const TMatrixD& m) const {
+            TMatrixD mLeft;
+            TMatrixD mRight;
+            TVector<ui32> leftIds;
+            TVector<ui32> rightIds;
+            for (ui32 rId=0; rId < m.n_rows; ++rId) {
+                if (m(rId, SplitPoint.DimId) <= SplitPoint.Value) {
+                    mLeft = NLa::RowBind(mLeft, m.row(rId));
+                    leftIds.push_back(rId);
+                } else {
+                    mRight = NLa::RowBind(mRight, m.row(rId));
+                    rightIds.push_back(rId);
+                }
+            }
+            ENSURE(mLeft.size() + mRight.size() == m.size(), "Split is not successfull");
+            return MakePair(TSplitMatrix(mLeft, leftIds), TSplitMatrix(mRight, rightIds));
+        }
+
+        template <typename Ret>
+        Ret Dispatch(
+            const TMatrixD& m, 
+            std::function<Ret(SPtr<IModel>, const TMatrixD& v)> callback, 
+            std::function<void(const Ret&, const Ret&, Ret&)> alloc,
+            std::function<void(const Ret&, ui32, Ret&, ui32)> fill
+        ) {
+            if (Model) {
+                return callback(Model, m);
+            }
+            auto res = SplitMatrix(m);
+            Ret leftRet;
+            if (res.first) {
+                leftRet = callback(LeftLeaf, res.first.M);
+            }
+            Ret rightRet;
+            if (res.second) {
+                rightRet = callback(RightLeaf, res.second.M);
+            }
+            
+            Ret dst;
+            alloc(leftRet, rightRet, dst);
+            for (ui32 rId = 0; rId < res.first.M.n_rows; ++rId) {
+                fill(leftRet, rId, dst, res.first.Ids[rId]);
+            }
+            for (ui32 rId = 0; rId < res.second.M.n_rows; ++rId) {
+                fill(rightRet, rId, dst, res.second.Ids[rId]);
+            }
+            return dst;
+        }
+
+        template <typename Ret>
+        Ret Combine(
+            std::function<Ret(SPtr<IModel>)> callback, 
+            std::function<Ret(const Ret&, const Ret&)> combine
+        ) const {
+            if (Model) {
+                return callback(Model);
+            }
+            Ret leftRet = callback(LeftLeaf);
+            Ret rightRet = callback(RightLeaf);
+            return combine(leftRet, rightRet);
+        }
+
     private:
         bool Root = true;
 
-        SPtr<IModel> LeftLeaf;
-        SPtr<IModel> RightLeaf;
+        SPtr<TTreeModel> LeftLeaf;
+        SPtr<TTreeModel> RightLeaf;
         
         TSplitPoint SplitPoint;
 
