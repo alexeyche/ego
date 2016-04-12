@@ -16,7 +16,6 @@ namespace NEgo {
         const double u = diff / d->GetSd();
         const double pdf_u = d->StandardPdf(u);
         const double cdf_u = d->StandardCdf(u);
-
         double parenVal = (u * cdf_u + pdf_u);
         double criteria = - d->GetSd() * parenVal;
 

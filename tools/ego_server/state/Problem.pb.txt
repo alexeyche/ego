@@ -8,7 +8,7 @@ SolverConfig {
   }
   AcqOpt {
     Method: "LBFGSB"
-    MinimizersNum: 100
+    MinimizersNum: 50
     MaxEval: 100
     Tolerance: 1e-10
     Verbose: false
@@ -28,9 +28,9 @@ SolverConfig {
     Acq: "aEI"
     AcqParameters {
       x: 5
-      x: 100
+      x: 300
     }
-    Seed: 1460401627
+    Seed: 1460473967
   }
   BatchPolicy: "bpPredictive"
 }
@@ -80,9 +80,9 @@ ModelState {
     Acq: "aEI"
     AcqParameters {
       x: 5
-      x: 100
+      x: 300
     }
-    Seed: 1460401627
+    Seed: 1460473967
   }
   X {
     n_rows: 0

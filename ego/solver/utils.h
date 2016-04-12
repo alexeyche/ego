@@ -7,4 +7,6 @@ namespace NEgo {
 
 	TPair<TVectorD, double> OptimizeAcquisition(SPtr<IModel> model, const TOptConfig& optConfig);
 
+	double Round(double dbVal, int nPlaces = 2);
+
 } // namespace NEgo

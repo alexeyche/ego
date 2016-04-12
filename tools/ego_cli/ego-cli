@@ -11,6 +11,8 @@ import logging
 from collections import OrderedDict
 import numpy as np
 import time
+import signal
+import threading
 
 def lhs_sample(n, rng):
     return (rng.permutation(range(1,n+1)) - rng.random_sample(n))/float(n)
@@ -39,12 +41,17 @@ def add_coloring_to_emit_ansi(fn):
 
 class TEgoClient(object):
     def __init__(self, server, problem):
+        self.stop = threading.Event()
         self.server = server
         self.problem = problem
         self.calculations = []
         self.spec = self.get_specification()
+        signal.signal(signal.SIGINT, self.interrupt)
 
     def __ask(self, fun):
+        if self.stopped():
+            logging.info("Interrupting asking")
+            return
         try:
             ans_str = urllib2.urlopen("{}/api/{}".format(self.server, fun)).read()
         except urllib2.HTTPError, err:
@@ -61,6 +68,10 @@ class TEgoClient(object):
         return self.__ask("problem/{}/{}".format(self.problem, fun))
 
     def __tell_problem(self, fun, telling):
+        if self.stopped():
+            logging.info("Interrupting telling")
+            return
+
         logging.debug("Going to tell {} this:\n{}".format(fun, json.dumps(telling)))
         req = urllib2.Request(
             "{server}/api/problem/{problem}/{fun}".format(
@@ -117,15 +128,27 @@ class TEgoClient(object):
         while len(self.calculations) > 0:
             self.sync_finished()
             time.sleep(1.0)
+    
+    def interrupt(self, signal, frame):
+        logging.info("Got interrupted")
+        logging.info("Need to synchornize running jobs")
+        self.sync()
+        sys.exit(0)
+
+    def stopped(self):
+        return self.stop.is_set()
 
 def run(server, problem, args, num_of_evaluations):
     ego = TEgoClient(server, problem)
 
     for ev_id in xrange(num_of_evaluations):
+        if ego.stopped():
+            return
+
         point = ego.get_next_point()
         input_line = " ".join([ str(i) for i in point["Point"].values() ]) + "\n"
         logging.info("Running: \n\t{}\nwith input: {}".format(" ".join(args), input_line))
-        p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE)
+        p = sub.Popen(args, stdin = sub.PIPE, stdout = sub.PIPE, stderr = sub.PIPE, preexec_fn = os.setsid)
         p.stdin.write(input_line)
 
         ego.add_calculation(point, p)

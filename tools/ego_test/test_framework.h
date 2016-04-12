@@ -406,8 +406,8 @@ void NegativeLogLikTester(std::string functorName, SPtr<Model> f, double epsilon
 
 #define MODEL_TEST(Typename, MeanTypename, CovTypename, LikTypename, InfTypename, AcqTypename, epsilon) \
 	TEST(Typename ## DerivativeSanityCheck) { \
-		TMatrixD X(5*SampleSize, DimSize, arma::fill::randn); \
-		TVectorD Y(5*SampleSize, arma::fill::randn); \
+		TMatrixD X(2*SampleSize, DimSize, arma::fill::randn); \
+		TVectorD Y(2*SampleSize, arma::fill::randn); \
 		\
 		SPtr<IMean> mean = MakeShared(new MeanTypename(DimSize)); \
 		SPtr<ICov> cov = MakeShared(new CovTypename(DimSize)); \

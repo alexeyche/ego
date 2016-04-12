@@ -2,6 +2,8 @@
 
 #include <ego/util/json.h>
 
+#include <ego/solver/utils.h>
+
 namespace NEgo {
 
 	template <>
@@ -36,14 +38,14 @@ namespace NEgo {
         TJsonDocument acqValues = TJsonDocument::Array();
         ui32 idx = 0;
         for (const auto& distr: vec) {
-            mean.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean()}));
-            leftSd.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean() - distr->GetSd()}));
-            rightSd.PushBack(TJsonDocument::Array({grid(idx), distr->GetMean() + distr->GetSd()}));
+            mean.PushBack(TJsonDocument::Array({Round(grid(idx), 10), Round(distr->GetMean(), 10)}));
+            leftSd.PushBack(TJsonDocument::Array({Round(grid(idx), 10), Round(distr->GetMean() - distr->GetSd(), 10)}));
+            rightSd.PushBack(TJsonDocument::Array({Round(grid(idx), 10), Round(distr->GetMean() + distr->GetSd(), 10)}));
             acqValues.PushBack(
                 TJsonDocument::Array(
                     {
-                        grid(idx), 
-                        Model->CalcCriterion(NLa::Trans(X.row(idx))).Value()
+                        Round(grid(idx), 10), 
+                        Round(Model->CalcCriterion(NLa::Trans(X.row(idx))).Value(), 20)
                     }
                 )
             );
@@ -55,11 +57,11 @@ namespace NEgo {
         const TVectorD& Yfull = Model->GetData().second;
 
         for (size_t pi=0; pi < Yfull.size(); ++pi) {
-            points.PushBack(TJsonDocument::Array({Xfull(pi, var.Id), Yfull(pi)}));
+            points.PushBack(TJsonDocument::Array({Xfull(Round(pi, 10), var.Id), Round(Yfull(pi), 10)}));
         }
 
         TJsonDocument minimum = TJsonDocument::Array();
-        minimum.PushBack(TJsonDocument::Array({Xbest(var.Id), Model->GetMinimumY()}));
+        minimum.PushBack(TJsonDocument::Array({Round(Xbest(var.Id), 10), Round(Model->GetMinimumY(), 10)}));
 
         TJsonDocument ret = TJsonDocument::Object();
         ret["left_band"] = leftSd;

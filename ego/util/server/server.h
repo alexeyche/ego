@@ -301,6 +301,7 @@ namespace NEgo {
 				    .FormResponse();
 			    if (DebugMode) throw;
 			} catch (const TErrElementNotFound& e) {
+				L_DEBUG << e.what();
 				resp = respBuilder
 					.StaticFile("not_found.html")
 					.NotFound()

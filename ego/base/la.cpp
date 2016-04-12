@@ -524,5 +524,21 @@ namespace NEgo {
             return arma::sort_index(v);
         }
 
+        double Det(const TMatrixD& m) {
+            double val = arma::det(m);
+            if ((std::fabs(val) < 1e-15)||(std::fabs(val) > 1e+100)) {
+                return 1e-15;
+            }
+            return val;
+        }
+
+        TVectorD SortDescend(const TVectorD& v) {
+            return arma::sort(v, "descend");
+        }
+
+        // double LogDet(const TMatrixD& m) {
+        //     return arma::log_det(m);   
+        // }
+
     } // namespace NLa
 } //namespace NEgo

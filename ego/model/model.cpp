@@ -69,6 +69,9 @@ namespace NEgo {
         return X.row(MinF.second);
     }
 
+    SPtr<ICov> TModel::GetCovariance() const {
+        return Cov;
+    }
 
     void TModel::SetModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
         Mean = mean;
@@ -91,6 +94,10 @@ namespace NEgo {
 
     void TModel::SetParameters(const TVector<double>& v) {
         Inf->SetParameters(v);
+    }
+
+    SPtr<IAcq> TModel::GetAcqusitionFunction() const {
+        return Acq;
     }
 
     TModel::Result TModel::UserCalc(const TMatrixD& Xnew) const {
@@ -228,7 +235,7 @@ namespace NEgo {
 
     
     void TModel::Update() {
-        L_DEBUG << "Updating posterior with X " << X.n_rows << ":" << X.n_cols << ", Y " << Y.size();
+        // L_DEBUG << "Updating posterior with X " << X.n_rows << ":" << X.n_cols << ", Y " << Y.size();
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
 
@@ -260,7 +267,7 @@ namespace NEgo {
         }
         X = NLa::RowBind(X, NLa::Trans(x));
         Y = NLa::RowBind(Y, NLa::VectorFromConstant(1, y));
-        L_DEBUG << "Updating criterion";
+        // L_DEBUG << "Updating criterion";
         Acq->Update();
     }
 
@@ -282,7 +289,6 @@ namespace NEgo {
     }
 
     void TModel::OptimizeHypers(const TOptConfig& config) {
-        
         TVector<TVector<double>> starts;
 
         TVectorD startParams = NLa::StdToVec(StartParams);

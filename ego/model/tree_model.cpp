@@ -3,7 +3,7 @@
 #include <ego/base/factory.h>
 
 #include <ego/util/maybe.h>
-#include <ego/util/pretty_print.h>
+#include <ego/base/la.h>
 
 #include <ego/model/model.h>
 
@@ -11,16 +11,19 @@ namespace NEgo {
 
     const ui32 TTreeModel::MinLeafSize = 10;
     const ui32 TTreeModel::SplitSizeCriteria = 30;
-
-
+    const double TTreeModel::UncertaintyThreshold = 0.0;
+    const ui32 TTreeModel::MaxDepth = 10;
 
     TTreeModel::TTreeModel(const TModelConfig& config, ui32 D) {
-        Model = MakeShared(new TModel(config, D));
+        Config = config;
+        Model = MakeShared(new TModel(Config, D));
     }
 
-    TTreeModel::TTreeModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) {
-        Model = MakeShared(new TModel(config, x, y));
-        Root = false;
+    TTreeModel::TTreeModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y, int id)
+        : Id(id) 
+    {
+        Config = config;
+        Model = MakeShared(new TModel(Config, x, y));
     }
 
     TTreeModel::TTreeModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq) {
@@ -32,11 +35,12 @@ namespace NEgo {
         if (model.Model) {
             Model = model.Model->Copy();
         } else {
-            LeftLeaf = std::dynamic_pointer_cast<TTreeModel, IModel>(model.LeftLeaf->Copy());
-            RightLeaf = std::dynamic_pointer_cast<TTreeModel, IModel>(model.RightLeaf->Copy());
+            LeftLeaf = std::static_pointer_cast<TTreeModel, IModel>(model.LeftLeaf->Copy());
+            RightLeaf = std::static_pointer_cast<TTreeModel, IModel>(model.RightLeaf->Copy());
             SplitPoint = model.SplitPoint;
         }
-        Root = model.Root;
+        Id = model.Id;
+        Config = model.Config;
     }
 
     SPtr<IModel> TTreeModel::Copy() const {
@@ -166,7 +170,7 @@ namespace NEgo {
 
     TTreeModel::Result TTreeModel::UserCalc(const TMatrixD& Xnew) const {
         if (Model) {
-            return Model->UserCalc(Xnew);    
+            return Model->UserCalc(Xnew);  
         }
         
         auto spl = SplitMatrix(Xnew);
@@ -293,83 +297,126 @@ namespace NEgo {
         );
     }
 
-    void TTreeModel::Split() {
+    SPtr<ICov> TTreeModel::GetCovariance() const {
+        if (Model) {
+            return Model->GetCovariance();    
+        }
+        return LeftLeaf->GetCovariance();
+    }
+
+
+    bool TTreeModel::Split() {
         ENSURE(Model->GetSize() > MinLeafSize*2, "Need more rows for split");
+        if (std::abs(Id) >= MaxDepth) {
+            L_DEBUG << "Max tree depth reached. No splitting";
+            return false;
+        }
 
         const TMatrixD& x = Model->GetX();
         const TVectorD& y = Model->GetY();
 
-        TDistrVec preds = GetPrediction(x);
+        // TDistrVec preds = GetPrediction(x);
 
         // TVectorD squaredError(preds.size());
-        TVectorD means(preds.size());
-        ui32 idx = 0;
-        double pmeanSum = 0.0;
-        for (const auto& p: preds) {
-            pmeanSum += p->GetMean();
-            means(idx) = p->GetMean();
+        // TVectorD means(preds.size());
+        // ui32 idx = 0;
+        // double pmeanSum = 0.0;
+        // for (const auto& p: preds) {
+        //     pmeanSum += p->GetMean();
+        //     means(idx) = p->GetMean();
             
-            // squaredError(idx) = (p->GetMean() - y(idx)) * (p->GetMean() - y(idx));
-            ++idx;
-        }
-        double wholeUnc = NLa::Sum(NLa::Pow(means - pmeanSum/means.size(), 2.0))/means.size();
+        //     // squaredError(idx) = (p->GetMean() - y(idx)) * (p->GetMean() - y(idx));
+        //     ++idx;
+        // }
+        // double wholeUnc = NLa::Sum(NLa::Pow(means - pmeanSum/means.size(), 2.0))/means.size();
         // double wholeUnc = NLa::Sum(squaredError) / squaredError.size();
 
-        double minUnc = std::numeric_limits<double>::max();
-        TMaybe<TPair<ui32, ui32>> splitPoint;
+        // double minUnc = std::numeric_limits<double>::max();
+        // TMaybe<TPair<ui32, ui32>> splitPoint;
         
         TVector<TVectorUW> sortIds(x.n_cols);
+
+        double entropyConstant = std::log(std::pow(2 * M_PI * exp(1.0), x.n_cols));
+        
+        TMatrixD K = Model->GetCovariance()->CrossCovariance(x).Value();
+        
+        double wholeEnt = 0.5 * (entropyConstant + std::log(NLa::Det(K)));
+        L_DEBUG << "Whole entropy is " << wholeEnt;
+        double minEnt = std::numeric_limits<double>::max();
+        TMaybe<TPair<ui32, ui32>> splitPoint;
 
         for (ui32 dimId = 0; dimId < x.n_cols; ++dimId) {
             sortIds[dimId] = NLa::SortIndex(x.col(dimId));
             for (auto id = MinLeafSize; id < (x.n_rows-MinLeafSize); ++id) {
                 const TVectorUW leftLeafIds(sortIds[dimId].subvec(0, id));
                 const TVectorUW rightLeafIds(sortIds[dimId].subvec(id+1, x.n_rows-1));
-                double currentNodeUnc = wholeUnc;
-                double yLeftMean = NLa::Sum(means(leftLeafIds))/leftLeafIds.size();
-                currentNodeUnc -= NLa::Sum(NLa::Pow(yLeftMean - means(leftLeafIds), 2.0))/leftLeafIds.size();
                 
-                double yRightMean = NLa::Sum(means(rightLeafIds))/rightLeafIds.size();
-                currentNodeUnc -= NLa::Sum(NLa::Pow(yRightMean - means(rightLeafIds), 2.0))/rightLeafIds.size();
+                TMatrixD leftK = Model->GetCovariance()->CrossCovariance(x.rows(leftLeafIds)).Value();
+                TMatrixD rightK = Model->GetCovariance()->CrossCovariance(x.rows(rightLeafIds)).Value();
+                double leftEntropy = 0.5 * (entropyConstant + std::log(NLa::Det(leftK)));
+                double rightEntropy = 0.5 * (entropyConstant + std::log(NLa::Det(rightK)));
+                double currentNodeEnt = wholeEnt - leftEntropy - rightEntropy;
+                L_DEBUG << "Entropy rule: " << currentNodeEnt;
+
+                // double currentNodeUnc = wholeUnc;
+                // double yLeftMean = NLa::Sum(means(leftLeafIds))/leftLeafIds.size();
+                // currentNodeUnc -= NLa::Sum(NLa::Pow(yLeftMean - means(leftLeafIds), 2.0))/leftLeafIds.size();
+                
+                // double yRightMean = NLa::Sum(means(rightLeafIds))/rightLeafIds.size();
+                // currentNodeUnc -= NLa::Sum(NLa::Pow(yRightMean - means(rightLeafIds), 2.0))/rightLeafIds.size();
                 
                 // currentNodeUnc -= NLa::Sum(squaredError(leftLeafIds))/leftLeafIds.size();
                 // currentNodeUnc -= NLa::Sum(squaredError(rightLeafIds))/rightLeafIds.size();
                 // L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << squaredError(id) << " " << currentNodeUnc;
-                L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << currentNodeUnc;
-                if (currentNodeUnc < minUnc) {
+                // L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << currentNodeUnc;
+                L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << currentNodeEnt;
+                // if (currentNodeUnc < minUnc) {
+                //     L_DEBUG << "best";
+                //     splitPoint = MakePair(dimId, id);
+                //     minUnc = currentNodeUnc;
+                // }
+                if (currentNodeEnt < minEnt) {
                     L_DEBUG << "best";
                     splitPoint = MakePair(dimId, id);
-                    minUnc = currentNodeUnc;
+                    minEnt = currentNodeEnt;   
                 }
             }
         }
-        L_DEBUG << "Uncertainity: " << minUnc << " " << wholeUnc << " " << minUnc/wholeUnc;
+        L_DEBUG << "Uncertainity: " << minEnt << " " << wholeEnt << " " << minEnt/wholeEnt;
+
         ENSURE(splitPoint, "Split point is not choosen");
         
+        if (minEnt > UncertaintyThreshold) {
+            L_DEBUG << minEnt << " is bigger than threshold " << UncertaintyThreshold << ", no split today";
+            return false;
+        }
+
         ui32 dimId = splitPoint.GetRef().first;
         ui32 splitId = splitPoint.GetRef().second;
         const TVectorUW& ids = sortIds[dimId];
 
-        L_DEBUG << "Split point is " << splitPoint.GetRef().first << ":" << splitPoint.GetRef().second << " at " << x(ids(splitId), dimId);
+        L_DEBUG << Id << ": split point is " << splitPoint.GetRef().first << ":" << splitPoint.GetRef().second << " at " << x(ids(splitId), dimId);
 
         TMatrixD xLeft = x.rows(ids.subvec(0, splitId));
         TVectorD yLeft = y(ids.subvec(0, splitId));
         TMatrixD xRight = x.rows(ids.subvec(splitId+1, ids.size()-1));
         TVectorD yRight = y(ids.subvec(splitId+1, ids.size()-1));
 
-        LeftLeaf = MakeShared(new TTreeModel(Model->GetConfig(), xLeft, yLeft));
-        RightLeaf = MakeShared(new TTreeModel(Model->GetConfig(), xRight, yRight));
+        LeftLeaf = MakeShared(new TTreeModel(Model->GetConfig(), xLeft, yLeft, Id-1));
+        RightLeaf = MakeShared(new TTreeModel(Model->GetConfig(), xRight, yRight, Id+1));
         SplitPoint = TSplitPoint(dimId, x(ids(splitId), dimId));
         Model.reset();
+        return true;
     }
     
     void TTreeModel::SplitRecursively() {
-        L_DEBUG << Model->GetSize() << " > " << SplitSizeCriteria << "?";
+        L_DEBUG << Id << ": " <<  Model->GetSize() << " > " << SplitSizeCriteria << "?";
         if (Model->GetSize() > SplitSizeCriteria) {
             Model->Update();
-            Split();
-            // LeftLeaf->SplitRecursively();
-            // RightLeaf->SplitRecursively();
+            if (Split()) {
+                LeftLeaf->SplitRecursively();
+                RightLeaf->SplitRecursively();
+            }
         }
     }
 
@@ -408,14 +455,55 @@ namespace NEgo {
         LeftLeaf->SerialProcess(serial);
         RightLeaf->SerialProcess(serial);
     }
+    
+    void TTreeModel::Reset() {
+        if (Model) {
+            Model.reset();
+        } else {
+            LeftLeaf->Reset();
+            RightLeaf->Reset();
+        }
+    }
+    
+    TMatrixD TTreeModel::GetAcqParameters() {
+        if (Model) {
+            return NLa::Trans(NLa::StdToVec(Model->GetAcqusitionFunction()->GetParameters()));
+        }
+        return NLa::RowBind(LeftLeaf->GetAcqParameters(), RightLeaf->GetAcqParameters());
+    }
+    
+    SPtr<IAcq> TTreeModel::GetAcqusitionFunction() const {
+        if (Model) {
+            return Model->GetAcqusitionFunction();
+        }
+        throw TErrLogicError() << "Can't get acqusition function for non leaf models";
+    }
 
     void TTreeModel::OptimizeHypers(const TOptConfig& config) {
         if (Model) {
             Model->OptimizeHypers(config);
             return;
         }
-        LeftLeaf->OptimizeHypers(config);
-        RightLeaf->OptimizeHypers(config);
+
+        const TMatrixD x = GetX();
+        const TVectorD y = GetY();
+        
+        TMatrixD acqParam = GetAcqParameters();
+
+        L_DEBUG << "Going to rebuild tree model with data " << x.n_rows << ":" << x.n_cols;
+
+        LeftLeaf->Reset();
+        RightLeaf->Reset();
+        L_DEBUG << "Creaing new tree model with parameters: " << Config.Serialize().DebugString();   
+        (*this) = TTreeModel(Config, x, y, 0);
+        Model->OptimizeHypers(config);
+
+        SplitRecursively();
+        
+        if (!Model) {
+            LeftLeaf->OptimizeHypers(config);
+            RightLeaf->OptimizeHypers(config);    
+        }
     }
 
 } // namespace NEgo

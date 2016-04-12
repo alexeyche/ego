@@ -226,6 +226,12 @@ namespace NEgo {
 
         TVectorUW SortIndex(const TVectorD& v);
 
+        TVectorD SortDescend(const TVectorD& v);
+
+        double Det(const TMatrixD& m);
+
+        // double LogDet(const TMatrixD& m);
+
     } // namespace NLa
 
     using NLa::TMatrixD;

@@ -103,14 +103,16 @@ namespace NEgo {
         L_DEBUG << "Closed " << EndIterationNum << " iteration ";
 
         if ((EndIterationNum > 0) && (EndIterationNum > InitSamples.n_rows)) {
-            if (EndIterationNum % Config.HyperOptFreq == 0) {
-                L_DEBUG << "Updating model hyperparameters";
-                ENSURE(Model, "Model is not set while optimizing hyperparameters");
-                Model->OptimizeHypers(Config.HyperOpt);
-            } else {
-                L_DEBUG << "Updating model";
-                Model->Update();    
-            }
+            // if (EndIterationNum % Config.HyperOptFreq == 0) {
+            // if ((EndIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {
+            //     L_DEBUG << "Updating model hyperparameters";
+            //     ENSURE(Model, "Model is not set while optimizing hyperparameters");
+                
+            // } else {
+            //     L_DEBUG << "Updating model";
+            //     Model->Update();    
+            // }
+            Model->Update();
         }
     }
 
@@ -132,16 +134,18 @@ namespace NEgo {
                 NStr::TStringBuilder() << StartIterationNum << "-init",
                 InitSamples.row(StartIterationNum++)
             ));
-        } else
-        if (StartIterationNum == InitSamples.n_rows) {
-            CheckAvailavility();
-            L_DEBUG << "Updating model hyperparameters with init samples";
-            Model->OptimizeHypers(Config.HyperOpt);
         }
+        // } else
+        // if (StartIterationNum == InitSamples.n_rows) {
+        //     // CheckAvailavility();
+        //     // L_DEBUG << "Updating model hyperparameters with init samples";
+        //     // Model->OptimizeHypers(Config.HyperOpt);
+        // }
 
         if ((StartIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {
             CheckAvailavility();
             ++BatchNumber;
+            Model->OptimizeHypers(Config.HyperOpt);
             BatchPolicy->InitNewBatch();
             L_DEBUG << "Creating a new batch (# " << BatchNumber << ")";
         }

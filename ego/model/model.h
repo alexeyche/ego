@@ -64,11 +64,13 @@ namespace NEgo {
         TDistrVec GetPrediction(const TMatrixD &Xnew) override;
 
         void OptimizeHypers(const TOptConfig& config) override;
-        // Helpers 
-
+        
         void SetMinimum(double v, ui32 idx);
 
+        SPtr<ICov> GetCovariance() const override;
         
+        SPtr<IAcq> GetAcqusitionFunction() const override;
+
     private:
         TMatrixD X;
         TVectorD Y;

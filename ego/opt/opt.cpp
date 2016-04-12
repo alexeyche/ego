@@ -37,7 +37,7 @@ namespace NEgo {
 
 
 		TPair<TVector<double>, double> OptimizeModelLogLik(IModel& model, const TVector<double>& start, const TOptConfig& config) {
-			L_DEBUG << "Going to minimize model log likelihood with " << config.Method;
+			// L_DEBUG << "Going to minimize model log likelihood with " << config.Method;
 			EMethod method = MethodFromString(config.Method);
 			switch(method) {
 				case CG:

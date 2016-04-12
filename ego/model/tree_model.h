@@ -38,12 +38,14 @@ namespace NEgo {
 
         static const ui32 MinLeafSize;
         static const ui32 SplitSizeCriteria;
+        static const double UncertaintyThreshold;
+        static const ui32 MaxDepth;
 
         using TBase = IModel;
 
         TTreeModel(const TModelConfig& config, ui32 D);
 
-        TTreeModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y);
+        TTreeModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y, int id = 0);
 
         TTreeModel(SPtr<IMean> mean, SPtr<ICov> cov, SPtr<ILik> lik, SPtr<IInf> inf, SPtr<IAcq> acq);
 
@@ -93,11 +95,17 @@ namespace NEgo {
 
         TDistrVec GetPrediction(const TMatrixD &Xnew) override;
 
-        void Split();
+        bool Split();
+
+        TMatrixD GetAcqParameters();
 
         void SplitRecursively();
 
         void OptimizeHypers(const TOptConfig& config) override;
+
+        SPtr<ICov> GetCovariance() const override;
+
+        SPtr<IAcq> GetAcqusitionFunction() const override;
 
         template <typename Ret>
         Ret Call(const TVectorD& splitVal, std::function<Ret(SPtr<IModel>)> callback) const {
@@ -184,9 +192,10 @@ namespace NEgo {
             Ret rightRet = callback(RightLeaf);
             return combine(leftRet, rightRet);
         }
-
+        void Reset();
+        
     private:
-        bool Root = true;
+        int Id = 0;
 
         SPtr<TTreeModel> LeftLeaf;
         SPtr<TTreeModel> RightLeaf;

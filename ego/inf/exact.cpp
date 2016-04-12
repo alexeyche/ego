@@ -32,7 +32,7 @@ namespace NEgo {
         TMatrixD pL;
         double sl;
         if(fabs(sn2) < 1e-06) { // very tiny sn2 can lead to numerical trouble
-            sn2 = std::max(sn2, 1e-10);
+            sn2 = 1e-07;
             L = NLa::Chol(K + sn2 * NLa::Eye(n));
             sl = 1.0;
             pL = - NLa::CholSolve(L, NLa::Eye(n));

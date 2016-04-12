@@ -63,6 +63,10 @@ namespace NEgo {
 
         virtual void OptimizeHypers(const TOptConfig& config) = 0;
 
+        virtual SPtr<ICov> GetCovariance() const = 0;
+
+        virtual SPtr<IAcq> GetAcqusitionFunction() const = 0;
+
         // Common getters setters
 
         void InitWithConfig(const TModelConfig& config, ui32 D);
