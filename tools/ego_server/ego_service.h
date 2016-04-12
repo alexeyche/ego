@@ -107,7 +107,7 @@ namespace NEgo {
 						TSolver& solver = GetProblemSolver(req);
 						TOptConfig optConfig = solver.GetConfig().HyperOpt;
 						optConfig.Method = FindUrlArg<TString>(req, "method", optConfig.Method);
-						solver.OptimizeHypers(optConfig);
+						solver.GetModel()->OptimizeHypers(optConfig);
 						resp.Accepted();
 					}
 				)

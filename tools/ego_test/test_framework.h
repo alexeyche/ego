@@ -368,6 +368,40 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 	} \
 
 
+template <typename Model>
+void NegativeLogLikTester(std::string functorName, SPtr<Model> f, double epsilon) {
+	if(f->GetParametersSize()>0) {
+		arma::arma_rng::set_seed_random();
+		TVectorD paramV(f->GetParametersSize(), arma::fill::randu);
+		f->SetParameters(NLa::VecToStd(paramV));
+	}
+	TVector<double> centerParams = f->GetParameters();
+	auto resCenter = f->GetNegativeLogLik();
+	try {
+		TVector<double> centerDerivs = resCenter.ParamDeriv();
+		for(size_t pi=0; pi<f->GetParametersSize(); ++pi) {
+			TVector<double> paramsLeft(centerParams);
+			paramsLeft[pi] -= Epsilon;
+			f->SetParameters(paramsLeft);
+			auto resParamLeftEps = f->GetNegativeLogLik().Value();
+
+			TVector<double> paramsRight(centerParams);
+			paramsRight[pi] += Epsilon;
+			f->SetParameters(paramsRight);
+			auto resParamRightEps = f->GetNegativeLogLik().Value();
+
+			CheckDerivativeSanity(
+				centerDerivs[pi]
+			  , resParamLeftEps
+			  , resParamRightEps
+			  , NStr::TStringBuilder() << functorName << ", " << pi << " param derivative"
+			  , epsilon
+			);
+		}
+	} catch(const TErrNotImplemented &e) {
+		L_INFO << "Some things are not implemented, keep calm and carry on: " << e.what();
+	}	
+}
 
 
 #define MODEL_TEST(Typename, MeanTypename, CovTypename, LikTypename, InfTypename, AcqTypename, epsilon) \
@@ -384,6 +418,7 @@ void TwoArgFunctorTester(std::string functorName, SPtr<Functor> f,
 		model->SetData(X, Y); \
 		\
 		OneArgFunctorTester<Typename>(#Typename, model, CreateTestData<typename Typename::TArg>(), epsilon);\
+		NegativeLogLikTester<Typename>(#Typename, model, epsilon);\
 	} \
 
 #define ACQ_TEST(AcqTypename, MeanTypename, CovTypename, LikTypename, InfTypename, ModelTypename) \

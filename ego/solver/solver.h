@@ -30,8 +30,6 @@ namespace NEgo {
 
         /////////////////////////////////////////////////
 
-        void OptimizeHypers(const TOptConfig& optConfig);
-
         template <typename T>
 		void AddPoint(const T& rawPoint);
 

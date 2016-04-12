@@ -14,6 +14,8 @@
 
 namespace NEgo {
     
+    class TOptConfig;
+
     class IModel
         : public TOneArgFunctor<TPair<TVectorD, TVectorD>, TMatrixD>
         , public IProtoSerial<NEgoProto::TModelState>
@@ -59,6 +61,7 @@ namespace NEgo {
 
         virtual TDistrVec GetPrediction(const TMatrixD &Xnew) = 0;
 
+        virtual void OptimizeHypers(const TOptConfig& config) = 0;
 
         // Common getters setters
 

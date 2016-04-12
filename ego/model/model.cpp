@@ -2,6 +2,9 @@
 
 #include <ego/base/factory.h>
 
+#include <ego/util/sobol.h>
+
+#include <future>
 
 namespace NEgo {
 
@@ -9,12 +12,14 @@ namespace NEgo {
         : MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
         InitWithConfig(config, D);
+        StartParams = GetParameters();
     }
 
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) 
         : MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
         InitWithConfig(config, x.n_cols);
+        StartParams = GetParameters();
         SetData(x, y);
     }
 
@@ -22,6 +27,7 @@ namespace NEgo {
         : MinF(MakePair(std::numeric_limits<double>::max(), 0))
     {
         SetModel(mean, cov, lik, inf, acq);
+        StartParams = GetParameters();
     }
 
     TModel::TModel(const TModel& model)
@@ -29,6 +35,7 @@ namespace NEgo {
     {
         InitWithConfig(model.Config, model.GetDimSize());
         SetParameters(model.GetParameters());
+        StartParams = GetParameters();
         SetData(model.X, model.Y);
     }
 
@@ -221,7 +228,7 @@ namespace NEgo {
 
     
     void TModel::Update() {
-        L_DEBUG << "Updating posterior";
+        L_DEBUG << "Updating posterior with X " << X.n_rows << ":" << X.n_cols << ", Y " << Y.size();
         Posterior.emplace(Inf->Calc(X, Y).Posterior());
     }
 
@@ -274,7 +281,58 @@ namespace NEgo {
         return X.n_cols;
     }
 
-    
+    void TModel::OptimizeHypers(const TOptConfig& config) {
+        
+        TVector<TVector<double>> starts;
+
+        TVectorD startParams = NLa::StdToVec(StartParams);
+        TVectorD lowBound = startParams - 0.5*startParams;
+        TVectorD upBound = startParams + 0.5*startParams;
+            
+        TMatrixD grid = GenerateSobolGrid(10, GetParametersSize());
+        for (ui32 samp=0; samp < 10; ++samp) {
+            starts.push_back(
+                NLa::VecToStd(
+                    lowBound + (upBound - lowBound) % NLa::Trans(grid.row(samp)) 
+                )
+            );
+        }
+        
+        double bestOpt = std::numeric_limits<double>::max();
+        TVector<double> bestParams;
+        
+        for (size_t iter=0; iter < 10; iter +=10) {
+            TVector<TPair<std::future<TPair<TVector<double>, double>>, TVector<double>>> results;
+            for (size_t minNum=0; minNum < 10; ++minNum) {
+                TVector<double> start = starts[iter+minNum];
+
+                results.push_back(std::make_pair(std::async(
+                    std::launch::async,
+                    [=]() {
+                        try {
+                            return NOpt::OptimizeModelLogLik(*this, start, config);
+                        } catch (const TErrAlgebraError& err) {
+                            L_DEBUG << "Got algebra error, ignoring";
+                            return MakePair(TVector<double>(), std::numeric_limits<double>::max());
+                        }
+                    }
+                ), start));
+            }
+            for (auto& f: results) {
+                auto r = f.first.get();
+                L_DEBUG << "Got result from starting at " << NLa::VecToStr(f.second) << " -> " << r.second << " at " << NLa::VecToStr(r.first);
+                if (r.second < bestOpt) {
+                    bestOpt = r.second;
+                    bestParams = r.first;
+                }
+            }
+        }
+        ENSURE(bestParams.size() > 0, "Best optimization result is not selected");
+        L_DEBUG << "Found best optimization result at " << NLa::VecToStr(bestParams) << " -> " << bestOpt;
+        
+        SetParameters(bestParams);
+        Update();
+    }
 
 
 } // namespace NEgo

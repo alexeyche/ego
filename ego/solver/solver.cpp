@@ -89,12 +89,6 @@ namespace NEgo {
         return Problem;
     }
 
-    void TSolver::OptimizeHypers(const TOptConfig& optConfig) {
-        ENSURE(Model, "Model is not set while optimizing hyperparameters");
-        NOpt::OptimizeModelLogLik(Model, Model->GetParameters(), optConfig);
-        Model->Update();
-    }
-
     template <>
     void TSolver::AddPoint(const TRawPoint& rawPoint) {
         TGuard lock(AddPointMut);
@@ -112,17 +106,17 @@ namespace NEgo {
             if (EndIterationNum % Config.HyperOptFreq == 0) {
                 L_DEBUG << "Updating model hyperparameters";
                 ENSURE(Model, "Model is not set while optimizing hyperparameters");
-                NOpt::OptimizeModelLogLik(Model, Model->GetParameters(), Config.HyperOpt);
-            } 
-
-            L_DEBUG << "Updating model";
-            Model->Update();
+                Model->OptimizeHypers(Config.HyperOpt);
+            } else {
+                L_DEBUG << "Updating model";
+                Model->Update();    
+            }
         }
     }
 
     void TSolver::CheckAvailavility() const {
         if (StartIterationNum != EndIterationNum) {
-            L_DEBUG << "There are some calculation still goind on (" << StartIterationNum - EndIterationNum  << " of calculations need to gather)";
+            L_DEBUG << "There are some calculation still going on (" << StartIterationNum - EndIterationNum  << " of calculations need to gather)";
             throw TErrNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
         }
     }
@@ -142,7 +136,7 @@ namespace NEgo {
         if (StartIterationNum == InitSamples.n_rows) {
             CheckAvailavility();
             L_DEBUG << "Updating model hyperparameters with init samples";
-            OptimizeHypers(Config.HyperOpt);
+            Model->OptimizeHypers(Config.HyperOpt);
         }
 
         if ((StartIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {

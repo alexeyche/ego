@@ -36,7 +36,7 @@ namespace NEgo {
     {
     public:
 
-        static const ui32 MeanLeafSize;
+        static const ui32 MinLeafSize;
         static const ui32 SplitSizeCriteria;
 
         using TBase = IModel;
@@ -96,6 +96,8 @@ namespace NEgo {
         void Split();
 
         void SplitRecursively();
+
+        void OptimizeHypers(const TOptConfig& config) override;
 
         template <typename Ret>
         Ret Call(const TVectorD& splitVal, std::function<Ret(SPtr<IModel>)> callback) const {

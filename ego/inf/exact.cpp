@@ -1,6 +1,7 @@
 #include "exact.h"
 
 #include <ego/util/log/log.h>
+#include <ego/util/pretty_print.h>
 #include <ego/lik/gauss.h>
 
 #include <math.h>

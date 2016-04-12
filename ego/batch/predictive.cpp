@@ -23,8 +23,8 @@ namespace NEgo {
             SPtr<IDistr> pointDistr = AccModel->GetPointPrediction(*LastPoint);
             L_DEBUG << "Predicted " << pointDistr->GetMean();
             AccModel->AddPoint(*LastPoint, pointDistr->GetMean());
-            NOpt::OptimizeModelLogLik(AccModel, AccModel->GetParameters(), Config.HyperOpt);
             AccModel->Update();
+            // AccModel->OptimizeHypers(Config.HyperOpt);
         }
     	TPair<TVectorD, double> opt = OptimizeAcquisition(AccModel, Config.AcqOpt);
         LastPoint = opt.first;

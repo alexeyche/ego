@@ -47,7 +47,7 @@ namespace NEgo {
 
 
         TSolverConfig(const NEgoProto::TSolverConfig& config = NEgoProto::TSolverConfig())
-            : HyperOpt("LBFGS")
+            : HyperOpt("CG")
             , AcqOpt("LBFGSB")
         {
         }

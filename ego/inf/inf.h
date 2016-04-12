@@ -23,7 +23,9 @@ namespace NEgo {
             , DiagW(diagW)
         {
             IsCholesky = NLa::Sum(NLa::TriangLow(L, true)) < std::numeric_limits<double>::epsilon();
-            Linv = NLa::Trans(NLa::Solve(L, NLa::Eye(L.n_rows)));
+            if (IsCholesky) {
+                Linv = NLa::Trans(NLa::Solve(L, NLa::Eye(L.n_rows)));    
+            }
         }
 
         TMatrixD L; // Given

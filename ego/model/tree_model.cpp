@@ -9,8 +9,8 @@
 
 namespace NEgo {
 
-    const ui32 TTreeModel::MeanLeafSize = 5;
-    const ui32 TTreeModel::SplitSizeCriteria = 50;
+    const ui32 TTreeModel::MinLeafSize = 10;
+    const ui32 TTreeModel::SplitSizeCriteria = 30;
 
 
 
@@ -34,6 +34,7 @@ namespace NEgo {
         } else {
             LeftLeaf = std::dynamic_pointer_cast<TTreeModel, IModel>(model.LeftLeaf->Copy());
             RightLeaf = std::dynamic_pointer_cast<TTreeModel, IModel>(model.RightLeaf->Copy());
+            SplitPoint = model.SplitPoint;
         }
         Root = model.Root;
     }
@@ -293,21 +294,26 @@ namespace NEgo {
     }
 
     void TTreeModel::Split() {
-        ENSURE(Model->GetSize() > MeanLeafSize*2, "Need more rows for split");
+        ENSURE(Model->GetSize() > MinLeafSize*2, "Need more rows for split");
 
         const TMatrixD& x = Model->GetX();
         const TVectorD& y = Model->GetY();
 
         TDistrVec preds = GetPrediction(x);
 
-        TVectorD squaredError(preds.size());
+        // TVectorD squaredError(preds.size());
+        TVectorD means(preds.size());
         ui32 idx = 0;
+        double pmeanSum = 0.0;
         for (const auto& p: preds) {
-            squaredError(idx) = (p->GetMean() - y(idx)) * (p->GetMean() - y(idx));
+            pmeanSum += p->GetMean();
+            means(idx) = p->GetMean();
+            
+            // squaredError(idx) = (p->GetMean() - y(idx)) * (p->GetMean() - y(idx));
             ++idx;
         }
-
-        double wholeUnc = NLa::Sum(squaredError) / squaredError.size();
+        double wholeUnc = NLa::Sum(NLa::Pow(means - pmeanSum/means.size(), 2.0))/means.size();
+        // double wholeUnc = NLa::Sum(squaredError) / squaredError.size();
 
         double minUnc = std::numeric_limits<double>::max();
         TMaybe<TPair<ui32, ui32>> splitPoint;
@@ -316,13 +322,20 @@ namespace NEgo {
 
         for (ui32 dimId = 0; dimId < x.n_cols; ++dimId) {
             sortIds[dimId] = NLa::SortIndex(x.col(dimId));
-            for (auto id = MeanLeafSize; id < (x.n_rows-MeanLeafSize); ++id) {
+            for (auto id = MinLeafSize; id < (x.n_rows-MinLeafSize); ++id) {
                 const TVectorUW leftLeafIds(sortIds[dimId].subvec(0, id));
                 const TVectorUW rightLeafIds(sortIds[dimId].subvec(id+1, x.n_rows-1));
                 double currentNodeUnc = wholeUnc;
-                currentNodeUnc -= NLa::Sum(squaredError(leftLeafIds))/leftLeafIds.size();
-                currentNodeUnc -= NLa::Sum(squaredError(rightLeafIds))/rightLeafIds.size();
-                L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << squaredError(id) << " " << currentNodeUnc;
+                double yLeftMean = NLa::Sum(means(leftLeafIds))/leftLeafIds.size();
+                currentNodeUnc -= NLa::Sum(NLa::Pow(yLeftMean - means(leftLeafIds), 2.0))/leftLeafIds.size();
+                
+                double yRightMean = NLa::Sum(means(rightLeafIds))/rightLeafIds.size();
+                currentNodeUnc -= NLa::Sum(NLa::Pow(yRightMean - means(rightLeafIds), 2.0))/rightLeafIds.size();
+                
+                // currentNodeUnc -= NLa::Sum(squaredError(leftLeafIds))/leftLeafIds.size();
+                // currentNodeUnc -= NLa::Sum(squaredError(rightLeafIds))/rightLeafIds.size();
+                // L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << squaredError(id) << " " << currentNodeUnc;
+                L_DEBUG << x(sortIds[dimId](id), dimId) << " " << id << " " << currentNodeUnc;
                 if (currentNodeUnc < minUnc) {
                     L_DEBUG << "best";
                     splitPoint = MakePair(dimId, id);
@@ -330,7 +343,7 @@ namespace NEgo {
                 }
             }
         }
-
+        L_DEBUG << "Uncertainity: " << minUnc << " " << wholeUnc << " " << minUnc/wholeUnc;
         ENSURE(splitPoint, "Split point is not choosen");
         
         ui32 dimId = splitPoint.GetRef().first;
@@ -368,6 +381,9 @@ namespace NEgo {
         }
         auto xspl = SplitMatrix(x);
         auto yspl = SplitMatrix(y);
+        ENSURE(xspl.first.M.size() + xspl.second.M.size() == x.n_rows, "Bad split of " << x);
+        ENSURE(yspl.first.M.size() + yspl.second.M.size() == y.size(), "Bad split of " << y);
+        L_DEBUG << "Setting to left leaf " << yspl.first.M << " right leaf " << yspl.second.M << " from " << y; 
         LeftLeaf->SetData(xspl.first.M, yspl.first.M);
         RightLeaf->SetData(xspl.second.M, yspl.second.M);
     }
@@ -391,6 +407,15 @@ namespace NEgo {
         }
         LeftLeaf->SerialProcess(serial);
         RightLeaf->SerialProcess(serial);
+    }
+
+    void TTreeModel::OptimizeHypers(const TOptConfig& config) {
+        if (Model) {
+            Model->OptimizeHypers(config);
+            return;
+        }
+        LeftLeaf->OptimizeHypers(config);
+        RightLeaf->OptimizeHypers(config);
     }
 
 } // namespace NEgo

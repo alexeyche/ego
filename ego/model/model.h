@@ -63,6 +63,7 @@ namespace NEgo {
 
         TDistrVec GetPrediction(const TMatrixD &Xnew) override;
 
+        void OptimizeHypers(const TOptConfig& config) override;
         // Helpers 
 
         void SetMinimum(double v, ui32 idx);
@@ -81,6 +82,7 @@ namespace NEgo {
         SPtr<IAcq> Acq;
 
         TOptional<TPosterior> Posterior;
+        TVector<double> StartParams;
     };
 
     REGISTER_MODEL(TModel);

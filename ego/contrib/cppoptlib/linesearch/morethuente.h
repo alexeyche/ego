@@ -5,6 +5,8 @@
 #include "../meta.h"
 #include <cmath>
 
+using namespace NEgo;
+
 namespace cppoptlib {
 
 template<typename Dtype, typename P, int Ord>
@@ -68,6 +70,7 @@ class MoreThuente {
     Dtype width      = stpmax - stpmin;
     Dtype width1     = 2 * width;
     Vector<Dtype> wa = x.eval();
+    size_t failCounter = 0;
 
     Dtype stx        = 0.0;
     Dtype fx         = finit;
@@ -104,8 +107,22 @@ class MoreThuente {
 
       // test new point
       x = wa + stp * s;
-      f = objFunc.value(x);
-      objFunc.gradient(x, g);
+      try {
+        f = objFunc.value(x);
+        objFunc.gradient(x, g);
+        if(std::isnan(f) || NLa::IsNan(g) || std::isinf(f)) {
+          L_DEBUG << "Found nan in result, bisect and try again";
+          throw TErrAlgebraError() << "Fail to calculate function";
+        }
+      } catch(...) {
+        if (failCounter == 10) {
+          throw;  
+        }
+        failCounter++;
+        stp = stp/2.0;
+        continue;
+      }
+
       nfev++;
       Dtype dg = arma::dot(g, s);
       Dtype ftest1 = finit + stp * dgtest;

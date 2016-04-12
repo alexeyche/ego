@@ -71,7 +71,7 @@ namespace NEgo {
 
 							lineSearchSuccess = true;
 							// L_DEBUG<< "Line search good with function value " << f3;
-						} catch(const TErrException &e) {
+						} catch(...) {
 							// L_DEBUG<< "Got error while evaluating function: " << e.what() << "; lets bisect and try again";
 							x3 = (x2+x3)/2.0;
 						}
