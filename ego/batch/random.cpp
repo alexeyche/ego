@@ -8,6 +8,7 @@ namespace NEgo {
 	TBatchPolicyRandom::TBatchPolicyRandom(SPtr<IModel> model, const TSolverConfig& config)
 		: IBatchPolicy(model, config)
 		, NewBatch(false)
+        , Sobol(model->GetDimSize())
 	{
 	}
 
@@ -18,7 +19,7 @@ namespace NEgo {
     TVectorD TBatchPolicyRandom::GetNextElementInBatch() {
     	if (NewBatch) {
     		NewBatch = false;
-    		return OptimizeAcquisition(Model, Config.AcqOpt).first;
+    		return OptimizeAcquisition(Model, Config.AcqOpt, Sobol).first;
     	}
     	return NLa::UnifVec(Model->GetDimSize());
     }

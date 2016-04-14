@@ -8,6 +8,7 @@ namespace NEgo {
 
 	TBatchPolicyPredictive::TBatchPolicyPredictive(SPtr<IModel> model, const TSolverConfig& config)
 		: IBatchPolicy(model, config)
+        , Sobol(model->GetDimSize())
 	{
 	}
 
@@ -26,7 +27,7 @@ namespace NEgo {
             AccModel->Update();
             // AccModel->OptimizeHypers(Config.HyperOpt);
         }
-    	TPair<TVectorD, double> opt = OptimizeAcquisition(AccModel, Config.AcqOpt);
+    	TPair<TVectorD, double> opt = OptimizeAcquisition(AccModel, Config.AcqOpt, Sobol);
         LastPoint = opt.first;
         return opt.first;
     }

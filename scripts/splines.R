@@ -11,7 +11,7 @@ get.env = function(p, def=NULL) {
 
 args = commandArgs(trailingOnly = FALSE)
 
-set.seed(get.env("SEED", 99))
+set.seed(get.env("SEED", 125))
 
 sleep = get.env("SLEEP", 0)
 Sys.sleep(sleep)

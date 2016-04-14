@@ -5,6 +5,7 @@
 #include <ego/model/model.h>
 #include <ego/base/factory.h>
 #include <ego/util/optional.h>
+#include <ego/util/sobol.h>
 
 
 namespace NEgo {
@@ -20,6 +21,8 @@ namespace NEgo {
     private:
     	SPtr<IModel> AccModel;
     	TOptional<TVectorD> LastPoint;
+
+    	TSobolGen Sobol;
 	};
 
 	REGISTER_BATCH_POLICY(TBatchPolicyPredictive);

@@ -9,8 +9,8 @@
 
 namespace NEgo {
 
-    const ui32 TTreeModel::MinLeafSize = 10;
-    const ui32 TTreeModel::SplitSizeCriteria = 30;
+    const ui32 TTreeModel::MinLeafSize = 20;
+    const ui32 TTreeModel::SplitSizeCriteria = 60;
     const double TTreeModel::UncertaintyThreshold = 0.0;
     const ui32 TTreeModel::MaxDepth = 10;
 
@@ -494,7 +494,9 @@ namespace NEgo {
 
         LeftLeaf->Reset();
         RightLeaf->Reset();
-        L_DEBUG << "Creaing new tree model with parameters: " << Config.Serialize().DebugString();   
+        
+        Config.AcqParameters = NLa::VecToStd(NLa::Trans(NLa::ColMean(acqParam)));
+        
         (*this) = TTreeModel(Config, x, y, 0);
         Model->OptimizeHypers(config);
 

@@ -3,30 +3,6 @@
 #include <chrono>
 
 namespace NEgo {
-
-    using namespace NSobolImpl;
-
-    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize, double min, double max) {
-        TMatrixD grid(samplesNum, dimSize);
-
-        NSobolImpl::soboldata_s* s;
-        s = NSobolImpl::sobol_create(dimSize);
-
-        double *x = new double[dimSize];
-        NSobolImpl::sobol_skip(s, samplesNum, x);
-        for (ui32 i = 0; i < samplesNum; ++i) {
-            NSobolImpl::sobol_next01(s, x);
-            for (ui32 j = 0; j < dimSize; ++j) {
-                grid(i, j) = min + x[j] * (max - min);
-            }
-        }
-        NSobolImpl::sobol_destroy(s);
-        delete []x;
-
-        return grid;
-    }
-
-
     namespace NSobolImpl {
 
         /* Return position (0, 1, ...) of rightmost (least-significant) zero bit in n.
@@ -251,8 +227,12 @@ namespace NEgo {
             return std::abs(testint_sobol / n - 1) < std::abs(testint_rand / n - 1);
         }
 
-
-
     } // namespace NSobolImpl
+
+    using namespace NSobolImpl;
+
+    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize, double min, double max) {
+        return TSobolGen(dimSize).Sample(samplesNum, min, max);
+    }
 
 } // namespace NEgo

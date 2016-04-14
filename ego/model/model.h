@@ -3,6 +3,7 @@
 #include "base_model.h"
 
 #include <ego/acq/acq.h>
+#include <ego/util/sobol.h>
 
 namespace NEgo {
 
@@ -85,6 +86,8 @@ namespace NEgo {
 
         TOptional<TPosterior> Posterior;
         TVector<double> StartParams;
+
+        TSobolGen Sobol;
     };
 
     REGISTER_MODEL(TModel);

@@ -11,8 +11,6 @@
 
 namespace NEgo {
 
-    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize, double min = 0.0, double max = 1.0);
-
     namespace NSobolImpl {
 
         typedef struct soboldata_s {
@@ -70,5 +68,68 @@ namespace NEgo {
         bool run_test(unsigned sdim, unsigned n, bool verbose);
 
     } // namespace NSobolImpl
+
+    TMatrixD GenerateSobolGrid(ui32 samplesNum, ui32 dimSize, double min = 0.0, double max = 1.0);
+
+    class TSobolGen {
+    public:
+        TSobolGen()
+            : SobolData(nullptr)
+        {}
+
+        void Init(ui32 dimSize) {
+            DimSize = dimSize;
+            SobolData = NSobolImpl::sobol_create(DimSize);
+        }
+
+        TSobolGen(ui32 dimSize)
+        {
+            Init(dimSize);
+        }
+
+        TMatrixD Sample(ui32 samplesNum, double min=0.0, double max=1.0) {
+            ENSURE(SobolData, "Sobol generator was not initialized");
+
+            TMatrixD grid(samplesNum, DimSize);
+
+            double *x = new double[DimSize];
+            NSobolImpl::sobol_skip(SobolData, samplesNum, x);
+            for (ui32 i = 0; i < samplesNum; ++i) {
+                NSobolImpl::sobol_next01(SobolData, x);
+                for (ui32 j = 0; j < DimSize; ++j) {
+                    grid(i, j) = min + x[j] * (max - min);
+                }
+            }
+            return grid;
+        }
+
+        TSobolGen(const TSobolGen& another) {
+            (*this) = another;
+        }
+
+        TSobolGen& operator = (const TSobolGen& another) {
+            if (this != &another) {
+                if (SobolData) {
+                    NSobolImpl::sobol_destroy(SobolData);
+                }
+                    
+                if (another.SobolData) {
+                    Init(another.DimSize);
+                    Sample(another.SobolData->n);    
+                }
+            }
+            return *this;
+        }
+
+        ~TSobolGen() {
+            NSobolImpl::sobol_destroy(SobolData);
+        }
+
+    private:
+        ui32 DimSize;
+        NSobolImpl::soboldata_s* SobolData;   
+    };
+
+
 
 } // namespace NEgo

@@ -13,6 +13,7 @@ import numpy as np
 import time
 import signal
 import threading
+import shlex
 
 def lhs_sample(n, rng):
     return (rng.permutation(range(1,n+1)) - rng.random_sample(n))/float(n)
@@ -40,13 +41,15 @@ def add_coloring_to_emit_ansi(fn):
 
 
 class TEgoClient(object):
-    def __init__(self, server, problem):
+    def __init__(self, server, problem, max_running):
         self.stop = threading.Event()
         self.server = server
         self.problem = problem
         self.calculations = []
         self.spec = self.get_specification()
+        self.max_running = max_running
         signal.signal(signal.SIGINT, self.interrupt)
+
 
     def __ask(self, fun):
         if self.stopped():
@@ -56,7 +59,6 @@ class TEgoClient(object):
             ans_str = urllib2.urlopen("{}/api/{}".format(self.server, fun)).read()
         except urllib2.HTTPError, err:
             if err.code == 503:
-                logging.info("Server is busy")
                 return None
             raise
 
@@ -98,6 +100,9 @@ class TEgoClient(object):
         return self.__ask_problem("specification")
 
     def get_next_point(self):
+        while len(self.calculations) >= self.max_running:
+            self.sync_finished()
+            time.sleep(1.0)
         while True:
             point = self.__ask_problem("next_point")
             if point:
@@ -138,8 +143,8 @@ class TEgoClient(object):
     def stopped(self):
         return self.stop.is_set()
 
-def run(server, problem, args, num_of_evaluations):
-    ego = TEgoClient(server, problem)
+def run(server, problem, args, num_of_evaluations, max_running):
+    ego = TEgoClient(server, problem, max_running)
 
     for ev_id in xrange(num_of_evaluations):
         if ego.stopped():
@@ -170,9 +175,15 @@ def main(argv):
         help='Problem to run'
     )
     parser.add_argument(
+        '-m',
+        '--max-running',
+        required=False, type=int,
+        help='Maximum of evaluations synchroniously', default=100
+    )
+    parser.add_argument(
         'args',
         type=str,
-        help='Args to run', nargs="+"
+        help='Args to run', nargs=1
     )
     parser.add_argument(
         '-n',
@@ -195,8 +206,15 @@ def main(argv):
     consoleHandler.emit = add_coloring_to_emit_ansi(consoleHandler.emit)
     consoleHandler.setFormatter(logFormatter)
     rootLogger.addHandler(consoleHandler)
+    args.args = [ os.path.expanduser(a) for a in shlex.split(args.args[0]) ]
+    proc_args = []
+    for a in args.args:
+        if os.path.isfile(a):
+            a = os.path.realpath(a)
+        proc_args.append(a)
+    args.args = proc_args
 
-    run(args.server, args.problem, args.args, args.num_of_evaluations)
+    run(args.server, args.problem, args.args, args.num_of_evaluations, args.max_running)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

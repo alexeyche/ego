@@ -1,13 +1,11 @@
 #include "utils.h"
 
-#include <ego/util/sobol.h>
-
 #include <future>
 
 namespace NEgo {
 
-	TPair<TVectorD, double> OptimizeAcquisition(SPtr<IModel> model, const TOptConfig& optConfig) {
-		TMatrixD starts = GenerateSobolGrid(100, model->GetDimSize());
+	TPair<TVectorD, double> OptimizeAcquisition(SPtr<IModel> model, const TOptConfig& optConfig, TSobolGen& sobol) {
+		TMatrixD starts = sobol.Sample(100);
 
         double bestAcqFun = std::numeric_limits<double>::max();
         TVectorD bestParams;

@@ -13,6 +13,7 @@ namespace NEgo {
     {
         InitWithConfig(config, D);
         StartParams = GetParameters();
+        Sobol.Init(StartParams.size());
     }
 
     TModel::TModel(const TModelConfig& config, const TMatrixD& x, const TVectorD& y) 
@@ -20,6 +21,7 @@ namespace NEgo {
     {
         InitWithConfig(config, x.n_cols);
         StartParams = GetParameters();
+        Sobol.Init(StartParams.size());
         SetData(x, y);
     }
 
@@ -28,6 +30,7 @@ namespace NEgo {
     {
         SetModel(mean, cov, lik, inf, acq);
         StartParams = GetParameters();
+        Sobol.Init(StartParams.size());
     }
 
     TModel::TModel(const TModel& model)
@@ -36,7 +39,9 @@ namespace NEgo {
         InitWithConfig(model.Config, model.GetDimSize());
         SetParameters(model.GetParameters());
         StartParams = GetParameters();
+        Sobol.Init(StartParams.size());
         SetData(model.X, model.Y);
+        Sobol = model.Sobol;
     }
 
     SPtr<IModel> TModel::Copy() const {
@@ -295,7 +300,8 @@ namespace NEgo {
         TVectorD lowBound = startParams - 0.5*startParams;
         TVectorD upBound = startParams + 0.5*startParams;
             
-        TMatrixD grid = GenerateSobolGrid(10, GetParametersSize());
+        // TMatrixD grid = GenerateSobolGrid(10, GetParametersSize());
+        TMatrixD grid = Sobol.Sample(10);
         for (ui32 samp=0; samp < 10; ++samp) {
             starts.push_back(
                 NLa::VecToStd(

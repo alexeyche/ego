@@ -12,13 +12,17 @@ namespace NEgo {
         SPtr<IDistr> d = Model->GetPointPredictionWithDerivative(x);
 
         const double& tradeoff = Parameters[0];
-        const double diff = Model->GetMinimumY() - d->GetMean() - tradeoff;
+        const double diff = Model->GetMinimumY() - d->GetMean() + tradeoff;
         const double u = diff / d->GetSd();
         const double pdf_u = d->StandardPdf(u);
         const double cdf_u = d->StandardCdf(u);
+        
         double parenVal = (u * cdf_u + pdf_u);
         double criteria = - d->GetSd() * parenVal;
-
+        
+        // L_DEBUG << x(0) << " -> " << criteria << "; " << d->GetSd() << " " << parenVal << " ( " << u << " * " << cdf_u << " + " << pdf_u << " )";
+        // L_DEBUG << "( " << Model->GetMinimumY() << " - " << d->GetMean() << " - " << tradeoff << " ) / " << d->GetSd();
+        
         return TAcqEI::Result()
             .SetValue(
                 [=]() -> double {

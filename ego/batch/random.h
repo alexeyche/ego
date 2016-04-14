@@ -2,6 +2,8 @@
 
 #include <ego/base/factory.h>
 
+#include <ego/util/sobol.h>
+
 #include "batch.h"
 
 namespace NEgo {
@@ -16,7 +18,7 @@ namespace NEgo {
 
     private:
     	bool NewBatch;
-
+    	TSobolGen Sobol;
 	};
 
 	REGISTER_BATCH_POLICY(TBatchPolicyRandom);
