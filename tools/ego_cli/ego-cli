@@ -91,9 +91,11 @@ class TEgoClient(object):
     def __communicate(self, p):
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            raise Exception("Found failed command: \n{}\n{}".format(stdout, stderr))
+            return 10.0
+            #raise Exception("Found failed command: \n{}\n{}".format(stdout, stderr))
         if stderr:
-            raise Exception("Found failed command: \nstdout:\n{}\nstderr:\n{}".format(stdout, stderr))
+            return 10.0
+            #raise Exception("Found failed command: \nstdout:\n{}\nstderr:\n{}".format(stdout, stderr))
         return float(stdout.strip())
 
     def get_specification(self):

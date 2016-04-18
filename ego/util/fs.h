@@ -5,6 +5,10 @@
 namespace NEgo {
 
 	bool FileExists(const TString& name);
+    
+    bool DirExists(const TString& name);
+
+    void CreateDir(const TString& name);
 
     TVector<TString> ListDir(TString path);
 

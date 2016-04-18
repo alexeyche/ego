@@ -14,6 +14,8 @@ namespace NEgo {
 	public:
         TSolver(const TSolverSpec& spec);
 
+        TSolver(SPtr<IModel> model, const TSolverSpec& spec);
+
         TSolver(const TFsPath srcFile);
 
         TSolver(const TSolver& solver);

@@ -232,6 +232,8 @@ namespace NEgo {
 
         // double LogDet(const TMatrixD& m);
 
+        TString SepValuesFormat(const TMatrixD& m, const TString& delim);
+
     } // namespace NLa
 
     using NLa::TMatrixD;

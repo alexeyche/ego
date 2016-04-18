@@ -4,9 +4,10 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from egopy_configs cimport strategyConfigFromDict
 from egopy_configs cimport modelConfigFromDict
 from egopy_configs cimport optParamsFromDict
+from egopy_configs cimport makeSolverSpec
+
 
 cdef TMatWrap fromNumpyToMatWrap(np.ndarray[np.double_t, ndim=2] mat):
     nrow = mat.shape[0]
@@ -147,8 +148,30 @@ cdef class Model:
         d = self.obj.GetData()
         return fromMatWrapToNumpy(d.first), fromMatWrapToNumpy(d.second)
 
-#    def optimizeHyp(self):
-#        self.obj.OptimizeHyp()
+    def optimizeHypers(self, opt_config):
+        self.obj.OptimizeHypers(optParamsFromDict(opt_config))
+
+    def update(self):
+        self.obj.Update()
+
+cdef class Solver:
+    cdef TSolverWrap* obj
+
+    def __init__(self, Model model, dict solverConfig, dict problemConfig):
+        self.obj = new TSolverWrap(model.obj, makeSolverSpec(solverConfig, problemConfig))
+
+    def __init__(self, str solverFile):
+        cdef string s
+        s = solverFile
+        self.obj = new TSolverWrap(s);
+
+    def getNextPoint(self):
+        return self.obj.GetNextPoint()
+
+    def __del__(self):
+        del self.obj
+
+
 
 def setDebugLogLevel():
     SetDebugLogLevel()

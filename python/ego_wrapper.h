@@ -2,6 +2,7 @@
 
 #include <ego/base/factory.h>
 #include <ego/model/model.h>
+#include <ego/solver/solver.h>
 #include <ego/opt/opt.h>
 
 #include <vector>
@@ -130,7 +131,10 @@ private:
 
 typedef double (*FOptimCallback)(const std::vector<double> &, void *);
 
+class TSolverWrap;
+
 class TModelWrap {
+	friend TSolverWrap;
 public:
 	TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* wrap, TAcqWrap* acq);
 
@@ -138,7 +142,7 @@ public:
 
 	void SetConfig(TModelConfig config);
 
-	TModel& GetModel();
+	SPtr<IModel> GetModel();
 
 	TVector<double> GetParameters() const;
 
@@ -148,7 +152,23 @@ public:
 
 	void Optimize(FOptimCallback cb, void *userData);
 
-	void OptimizeHyp();
+	void Update();
+
+	void OptimizeHypers(const TOptConfig& config);
 private:
-	TModel Model;
+	SPtr<IModel> Model;
+};
+
+TVariable FillVariableWithType(const TVariable& var, TString type);
+
+class TSolverWrap {
+public:
+	TSolverWrap(TModelWrap* model, const TSolverSpec& solverSpec);
+
+	TSolverWrap(const TString& solverFile);
+
+	TVector<double> GetNextPoint();
+
+private:
+	TSolver Solver;
 };

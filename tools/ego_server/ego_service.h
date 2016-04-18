@@ -19,6 +19,9 @@ namespace NEgo {
 			: Server(port, 10, debugMode)
 			, StateDir(stateDir)
 		{
+			if (!DirExists(StateDir)) {
+				CreateDir(StateDir);
+			}
 			for (const auto& f: ListDir(StateDir)) {
 				TFsPath fullPath = TFsPath(StateDir) / TFsPath(f);
 				if (!fullPath.IsFile()) {
@@ -57,6 +60,17 @@ namespace NEgo {
 					[&](const THttpRequest& req, TResponseBuilder& resp) {
 						const TVectorD& Y = GetProblemSolver(req).GetModel()->GetData().second;
 						resp.Body() += TJsonDocument::Array(Y).GetPrettyString();
+						resp.Good();
+					}
+				)
+				.AddCallback(
+					"GET", "api/problem/{problem_name}/data.ssv",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						const auto& data = GetProblemSolver(req).GetModel()->GetData();
+						TMatrixD X = data.first;
+						X.resize(X.n_rows, X.n_cols+1);
+						X.col(X.n_cols-1) = data.second;
+						resp.Body() += NLa::SepValuesFormat(X, " ");
 						resp.Good();
 					}
 				)

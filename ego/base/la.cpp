@@ -4,6 +4,7 @@
 
 #include <ego/base/errors.h>
 #include <ego/util/log/log.h>
+#include <ego/util/string.h>
 
 #include <ego/util/fs.h>
 
@@ -536,9 +537,19 @@ namespace NEgo {
             return arma::sort(v, "descend");
         }
 
-        // double LogDet(const TMatrixD& m) {
-        //     return arma::log_det(m);   
-        // }
+        TString SepValuesFormat(const TMatrixD& m, const TString& delim) {
+            TString out;
+            for (ui32 ri=0; ri < m.n_rows; ++ri) {
+                for (ui32 ci=0; ci < m.n_cols; ++ci) {
+                    out += NStr::TStringBuilder() << m(ri, ci);
+                    if (ci < m.n_cols-1) {
+                        out += delim;
+                    }
+                }
+                out += "\n";
+            }
+            return out;
+        }
 
     } // namespace NLa
 } //namespace NEgo

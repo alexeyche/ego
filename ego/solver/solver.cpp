@@ -37,6 +37,18 @@ namespace NEgo {
         BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
     }
 
+    TSolver::TSolver(SPtr<IModel> model, const TSolverSpec& spec)
+        : Model(model)
+        , Config(spec.SolverConfig)
+        , Problem(spec.ProblemConfig)
+        , StartIterationNum(0)
+        , EndIterationNum(0)
+        , BatchNumber(0)
+    {
+        InitSamples = GenerateSobolGrid(Config.InitSampleSize, Model->GetDimSize());
+        BatchPolicy = Factory.CreateBatchPolicy(Config.BatchPolicy, Model, Config);
+    }
+
     void TSolver::SerialProcess(TProtoSerial& serial) {
         serial(Config, NEgoProto::TSolverState::kSolverConfigFieldNumber);
         serial(Problem, NEgoProto::TSolverState::kProblemStateFieldNumber);

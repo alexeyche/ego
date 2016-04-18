@@ -2,7 +2,7 @@
 
 import egopy as ego
 
-from egopy import Cov, Mean, Lik, Inf, Model
+from egopy import Cov, Mean, Lik, Inf, Model, Acq
 
 ego.setDebugLogLevel()
 
@@ -32,7 +32,7 @@ def plot_validation(Ytest, means, se, mse):
     plt.title("MSE: {}".format(mse))
 
 
-data = readMat('~/mc.csv', " ")
+data = readMat('~/ego/stdp.ssv', " ")
 data = data[:,:]
 
 
@@ -46,36 +46,33 @@ for vi in range(len(val_ids)):
     test_idx = val_ids[vi]
     train_idx = [ id for id_set in val_ids[:vi] + val_ids[vi+1:] for id in id_set ]
     
-    train_idx = range(800)
-    test_idx = range(800, 1000)    
+    #train_idx = range(800)
+    #test_idx = range(800, 1000)    
     
-    X = data[train_idx,:-1]
-    Y = data[train_idx, -1]
+    X = data[:,:-1]
+    Y = data[:, -1]
 
-    Xtest = data[test_idx, :-1]
-    Ytest = data[test_idx, -1]
+
+    Xtest = data[:, :-1]
+    Ytest = data[:, -1]
     
     D = X.shape[1]
     
-    cov = Cov("cMaternARD1", D)
+    cov = Cov("cExpISO", D)
     
-    mean = Mean("mSum(mLinear, mConst)", D)
-    #mean = Mean("mConst", D)
-    #mean = Mean("mLinear", D)
+    mean = Mean("mConst", D)
     
     lik = Lik("lGauss", D, [np.log(1.0)])
-    #lik = Lik("lStudentT", D)
-    
     inf = Inf("iExact")
-    #inf = Inf("iLaplace")
+    acq = Acq("aEI", D)
     
-    model = Model(mean, cov, lik, inf)
+    model = Model(mean, cov, lik, inf, acq)
     model.setData(X, Y)
     model.setConfig({"Seed": 1})
     
-    ego.optimize(model, "CG", {"MaxEval": 100})
+    model.update()
+    model.optimizeHypers({"Method": "CG"})
     
-    hyps = model.getHyperParameters()
     preds = model.getPrediction(Xtest)
     ym = np.asarray([ p.getMean() for p in preds ])
     ysd = np.asarray([ p.getSd() for p in preds ])

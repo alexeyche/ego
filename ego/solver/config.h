@@ -11,6 +11,7 @@
 namespace NEgo {
 
     struct TOptConfig: public IProtoSerial<NEgoProto::TOptConfig> {
+        TOptConfig() {}
         TOptConfig(const TString& method)
             : Method(method)
         {}
@@ -38,8 +39,6 @@ namespace NEgo {
             serial(BatchSize);
             serial(IterationsNum);
             serial(HyperOptFreq);
-            serial(HyperLowerBound);
-            serial(HyperUpperBound);
             serial(ModelType);
             serial(ModelConfig);
             serial(BatchPolicy);
@@ -59,9 +58,7 @@ namespace NEgo {
         ui32 BatchSize = 1;
         ui32 IterationsNum = 100;
         ui32 HyperOptFreq = 1;
-        double HyperLowerBound = -100;
-        double HyperUpperBound = 100;
-
+        
         TString BatchPolicy = "bpPredictive";
         TString ModelType = "Model";
 
@@ -78,6 +75,7 @@ namespace NEgo {
         TSolverSpec(const NEgoProto::TSolverSpec& solverSpec) {
             Deserialize(solverSpec);
         }
+        TSolverSpec() {}
 
         TSolverConfig SolverConfig;
         TProblemConfig ProblemConfig;

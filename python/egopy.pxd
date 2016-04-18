@@ -1,10 +1,12 @@
 
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
+from libcpp.string cimport string
+
 
 from egopy_configs cimport TOptConfig
 from egopy_configs cimport TModelConfig
-from egopy_configs cimport TStrategyConfig
+from egopy_configs cimport TSolverSpec
 
 cdef extern from "ego_wrapper.h":
     cdef cppclass TMatWrap:
@@ -57,7 +59,16 @@ cdef extern from "ego_wrapper.h":
         vector[double] GetParameters() # except +
         # void Optimize(FOptimCallback, void*) # except +
         pair[TMatWrap, TMatWrap] GetData() # except +
-        # void OptimizeHyp() # except +
+        void OptimizeHypers(TOptConfig) # except +
+        void Update() # except +
+
+
+cdef extern from "ego_wrapper.h":
+    cdef cppclass TSolverWrap:
+        TSolverWrap(TModelWrap*, TSolverSpec) # except +
+        TSolverWrap(string) # except +
+        vector[double] GetNextPoint() # except +
+
 
 cdef extern from "ego_wrapper.h":
     void SetDebugLogLevel()

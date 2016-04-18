@@ -21,12 +21,10 @@ message TSolverConfig {
     optional uint32 BatchSize = 4 [default = 1];
     optional uint32 IterationsNum = 5 [default = 100];
     optional uint32 HyperOptFreq = 6 [default = 1];
-    optional double HyperLowerBound = 7 [default = -100];
-    optional double HyperUpperBound = 8 [default = 100];
 
-    optional string ModelType = 9 [default = "Model"];
-    optional TModelConfig ModelConfig = 10;
-    optional string BatchPolicy = 11 [default = "bpPredictive"];
+    optional string ModelType = 7 [default = "Model"];
+    optional TModelConfig ModelConfig = 8;
+    optional string BatchPolicy = 9 [default = "bpPredictive"];
 };
 
 message TSolverState {

@@ -110,7 +110,7 @@ class MoreThuente {
       try {
         f = objFunc.value(x);
         objFunc.gradient(x, g);
-        if(std::isnan(f) || NLa::IsNan(g) || std::isinf(f)) {
+        if (std::isnan(f) || NLa::IsNan(g) || std::isinf(f)) {
           L_DEBUG << "Found nan in result, bisect and try again";
           throw TErrAlgebraError() << "Fail to calculate function";
         }

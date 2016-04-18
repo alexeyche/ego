@@ -294,6 +294,7 @@ namespace NEgo {
     }
 
     void TModel::OptimizeHypers(const TOptConfig& config) {
+        L_DEBUG << "Going to optimize model parameters with " << config.Method;
         TVector<TVector<double>> starts;
 
         TVectorD startParams = NLa::StdToVec(StartParams);
@@ -301,8 +302,8 @@ namespace NEgo {
         TVectorD upBound = startParams + 0.5*startParams;
             
         // TMatrixD grid = GenerateSobolGrid(10, GetParametersSize());
-        TMatrixD grid = Sobol.Sample(10);
-        for (ui32 samp=0; samp < 10; ++samp) {
+        TMatrixD grid = Sobol.Sample(100);
+        for (ui32 samp=0; samp < 100; ++samp) {
             starts.push_back(
                 NLa::VecToStd(
                     lowBound + (upBound - lowBound) % NLa::Trans(grid.row(samp)) 
@@ -313,7 +314,7 @@ namespace NEgo {
         double bestOpt = std::numeric_limits<double>::max();
         TVector<double> bestParams;
         
-        for (size_t iter=0; iter < 10; iter +=10) {
+        for (size_t iter=0; iter < 100; iter +=10) {
             TVector<TPair<std::future<TPair<TVector<double>, double>>, TVector<double>>> results;
             for (size_t minNum=0; minNum < 10; ++minNum) {
                 TVector<double> start = starts[iter+minNum];

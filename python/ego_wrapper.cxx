@@ -218,36 +218,35 @@ double TDistrWrap::GetSd() const {
 }
 
 
-TModelWrap::TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* infWrap, TAcqWrap* acq)
-	: Model(
-		mean->Mean,
-		cov->Cov,
-		lik->Lik,
-		Factory.CreateInf(infWrap->InfName, mean->Mean, cov->Cov, lik->Lik),
-		acq->Acq
-	)
-{
+TModelWrap::TModelWrap(TMeanWrap* mean, TCovWrap* cov, TLikWrap* lik, TInfWrap* infWrap, TAcqWrap* acq) {
 	L_DEBUG << "Creating model";
+	Model = MakeShared(new TModel(
+		mean->Mean, 
+		cov->Cov, 
+		lik->Lik, 
+		Factory.CreateInf(infWrap->InfName, mean->Mean, cov->Cov, lik->Lik), 
+		acq->Acq
+	));
 }
 
-TModel& TModelWrap::GetModel() {
+SPtr<IModel> TModelWrap::GetModel() {
 	return Model;
 }
 
 void TModelWrap::SetData(const TMatWrap &x, const TMatWrap &y) {
-	Model.SetData(x.ToMatrix(), y.ToMatrix());
+	Model->SetData(x.ToMatrix(), y.ToMatrix());
 }
 
 void TModelWrap::SetConfig(TModelConfig config) {
-	Model.SetConfig(config);
+	Model->SetConfig(config);
 }
 
 TVector<double> TModelWrap::GetParameters() const {
-	return Model.GetParameters();
+	return Model->GetParameters();
 }
 
 TVector<TDistrWrap> TModelWrap::GetPrediction(const TMatWrap &x) {
-	TDistrVec d = Model.GetPrediction(x.ToMatrix());
+	TDistrVec d = Model->GetPrediction(x.ToMatrix());
 	TVector<TDistrWrap> dw(d.size());
 	for(size_t di=0; di<d.size(); ++di) {
 		dw[di] = TDistrWrap(d[di]);
@@ -263,11 +262,54 @@ void TModelWrap::Optimize(FOptimCallback cb, void* userData) {
 }
 
 TPair<TMatWrap, TMatWrap> TModelWrap::GetData() const {
-	auto data = Model.GetData();
+	auto data = Model->GetData();
 	return MakePair(TMatWrap::FromMatrix(data.first), TMatWrap::FromMatrix(data.second));
 }
 
-void TModelWrap::OptimizeHyp() {
-	throw TErrNotImplemented() << "Implement this";
-	// Model.OptimizeHyp();
+void TModelWrap::OptimizeHypers(const TOptConfig& optConfig) {
+	Model->OptimizeHypers(optConfig);
+}
+
+void TModelWrap::Update() {
+	Model->Update();
+}
+
+
+TVariable FillVariableWithType(const TVariable& var, TString type) {
+	TVariable v = var;
+	if (type == "float") {
+		v.Type = EVariableType::FLOAT;
+	} else
+	if (type == "int") {
+		v.Type = EVariableType::INT;
+	} else {
+		throw TErrException() << "Not implemented for variable type " << type;
+	}
+	return v;
+}
+
+TSolverWrap::TSolverWrap(TModelWrap* model, const TSolverSpec& solverSpec)	
+	: Solver(model->Model, solverSpec) 
+{
+}
+
+TSolverWrap::TSolverWrap(const TString& solverFile) 
+	: Solver(solverFile) 
+{
+}
+
+TVector<double> TSolverWrap::GetNextPoint() {
+	TRawPoint p = Solver.GetNextPoint<TRawPoint>();
+
+	TVector<double> v;
+	v.reserve(Solver.GetProblem().GetDimSize());
+	
+	std::map<ui32, TVariable> varSorted;
+	for (const auto& var: Solver.GetProblem().GetVariables()) {
+		varSorted.emplace(var.second.Id, var.second);
+	}
+	for (const auto& var: varSorted) {
+		v.push_back(p.GetValue<double>(var.second.Name));
+	}
+	return v;
 }

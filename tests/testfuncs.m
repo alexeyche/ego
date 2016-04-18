@@ -3,7 +3,7 @@
 %X =  dlmread('~/rosen.csv', ',');
 %Y =  dlmread('~/rosenY.csv', ',');
 
-data = dlmread('/var/tmp/testfuncs.csv');
+data = dlmread('/home/alexeyche/ego/stdp2.csv');
 
 X = data(:,1:end-1);
 Y = data(:,end);

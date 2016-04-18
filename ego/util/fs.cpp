@@ -19,6 +19,24 @@ namespace NEgo {
             return false;
         }
     }
+    
+    bool DirExists(const TString& name) {
+        struct stat info;
+
+        if (stat(name.c_str(), &info ) != 0) {
+            return false;
+        } else 
+        if(info.st_mode & S_IFDIR) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    void CreateDir(const TString& name) {
+        const int dir_err = mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        ENSURE(dir_err != -1, "Failed to create directory " << name);
+    }
 
     TVector<TString> ListDir(TString path) {
         DIR *dpdf;
