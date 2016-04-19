@@ -3,7 +3,7 @@
 %X =  dlmread('~/rosen.csv', ',');
 %Y =  dlmread('~/rosenY.csv', ',');
 
-data = dlmread('/home/alexeyche/ego/stdp2.csv');
+data = dlmread('/home/alexeyche/ego/stdp2.ssv');
 
 X = data(:,1:end-1);
 Y = data(:,end);
@@ -18,7 +18,7 @@ Ytr = Y;
 
 %meanF = {@meanSum, {@meanLinear, @meanConst}}; hyp.mean = ones(D+1, 1);
 %meanF = {@meanLinear}; hyp.mean = ones(D, 1);
-meanF = {@meanConst}; hyp.mean = 0.0;
+meanF = {@meanConst}; hyp.mean = 2.0;
 %covF = {@covMaternard, 5}; 
 %covF = {@covGaborard}; hyp.cov = log(ones(2*D,1));
 %covF = {@covMaterniso, 5}; hyp.cov = [1.0 1.0];
@@ -32,7 +32,7 @@ covF = {@covSEiso}; hyp.cov = log([1.0 1.0]);
 %covF = {@covRQiso}; hyp.cov = log(ones(3, 1))
 %covF = {@covPPard}; hyp.cov = log(ones(D+1,1));
 
-lik = {@likGauss}; hyp.lik = log(0.01);
+lik = {@likGauss}; hyp.lik = log(1.0);
 %lik = {@likT}; hyp.lik = log([0.1 0.1]);
 %lik = {@likGamma, 'logistic'}; Ytr = abs(Ytr); Yte = abs(Yte); hyp.lik = log(0.1);
 %lik = {@likExp, 'logistic'}; Ytr = abs(Ytr); Yte = abs(Yte); hyp.lik = [];

@@ -156,6 +156,7 @@ namespace NEgo {
             .SetArgDeriv(
                 [=]() -> TPair<TVectorD, TVectorD> {
                     TMatrixD KsDeriv = covRes.SecondArgDeriv();
+
                     TVectorD FmuDeriv = meanRes.ArgDeriv() + NLa::Trans(KsDeriv) * Posterior->Alpha;
                     TVectorD Fs2Deriv;
                     if(Posterior->IsCholesky) {
@@ -183,6 +184,11 @@ namespace NEgo {
                         TMatrixD Vderiv = Posterior->L * KsDeriv;
                         Fs2Deriv = NLa::Diag(crossCovRes.SecondArgPartialDeriv(indexRow, indexCol)) + NLa::Trans(NLa::ColSum(V % KsDeriv + Vderiv % Ks));
                     }
+                    // NLa::DebugSave(KsDeriv, "KsDeriv");
+                    // NLa::DebugSave(FmuDeriv, "FmuDeriv");
+                    // NLa::DebugSave(FmuDeriv, "FsDeriv");
+                    // NLa::DebugSave(likRes.FirstArgPartialDeriv(indexRow).first, "LikArgDerivMu");
+                    // NLa::DebugSave(likRes.SecondArgPartialDeriv(indexRow).second, "LikArgDerivFs");
                     return MakePair(
                         FmuDeriv % likRes.FirstArgPartialDeriv(indexRow).first
                       , Fs2Deriv % likRes.SecondArgPartialDeriv(indexRow).second

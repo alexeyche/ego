@@ -69,7 +69,7 @@ namespace NEgo {
 	        	)
 	        	.SetSecondArgPartialDeriv(
         			[=](ui32 indexRow, ui32 indexCol) -> TMatrixD {
-	        			return var * dKdArg % sqDistRes.SecondArgPartialDeriv(indexRow, indexCol) / l;
+                        return var * dKdArg % sqDistRes.SecondArgPartialDeriv(indexRow, indexCol) / l;
 	        		}
 	        	);
         }

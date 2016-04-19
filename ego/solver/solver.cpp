@@ -102,11 +102,9 @@ namespace NEgo {
     }
 
     template <>
-    void TSolver::AddPoint(const TRawPoint& rawPoint) {
+    void TSolver::AddPoint(const TPoint& point) {
         TGuard lock(AddPointMut);
         
-        TPoint point = Problem.Remap(rawPoint);
-
         L_DEBUG << "Got point with id " << point.Id;
         
         Model->AddPoint(point.X, point.Y);
@@ -128,11 +126,26 @@ namespace NEgo {
         }
     }
 
+    template <>
+    void TSolver::AddPoint(const TRawPoint& rawPoint) {
+        TPoint point = Problem.Remap(rawPoint);
+        AddPoint(point);
+    }
+
+
     void TSolver::CheckAvailavility() const {
         if (StartIterationNum != EndIterationNum) {
             L_DEBUG << "There are some calculation still going on (" << StartIterationNum - EndIterationNum  << " of calculations need to gather)";
             throw TErrNotAvailable() << "Ego is not available, waiting for " << StartIterationNum - EndIterationNum << " iterations to finish";
         }
+    }
+    template <>
+    void TSolver::ForceAddPoint(const TPoint& point) {
+        if ((StartIterationNum - InitSamples.n_rows) % Config.BatchSize == 0) {
+            ++BatchNumber;
+        }
+        StartIterationNum++;
+        AddPoint(point);
     }
 
     template <>

@@ -10,6 +10,8 @@
 #include <ego/util/fs.h>
 #include <ego/contrib/pbjson/pbjson.h>
 
+#include <ego/base/la.h>
+
 namespace NEgo {
 
 
@@ -71,6 +73,28 @@ namespace NEgo {
 						X.resize(X.n_rows, X.n_cols+1);
 						X.col(X.n_cols-1) = data.second;
 						resp.Body() += NLa::SepValuesFormat(X, " ");
+						resp.Good();
+					}
+				)
+				.AddCallback(
+					"POST", "api/problem/{problem_name}/data.ssv",
+					[&](const THttpRequest& req, TResponseBuilder& resp) {
+						TSolver& solver = GetProblemSolver(req);
+						ui32 D = solver.GetModel()->GetDimSize();
+						std::stringstream ss(req.Body);
+						TString line;
+						ui32 id = 0;
+						while (std::getline(ss, line)) {
+							TVector<TString> spl = NStr::Split(line, ' ');
+							ENSURE(spl.size() == D + 1, "Space separated values do not satisify to model dimensions");
+							TVectorD xx(D);
+							for (ui32 xi=0; xi<D; ++xi) {
+								xx(xi) = std::stof(spl[xi]);
+							}
+							double yy = std::stof(spl[D]);
+							TPoint p(xx, yy,  NStr::TStringBuilder() << id++);
+							solver.ForceAddPoint(p);
+						}
 						resp.Good();
 					}
 				)

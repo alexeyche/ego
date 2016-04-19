@@ -288,7 +288,12 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
         MM.submat(0, D.n_cols, Lt.n_rows-1, MM.n_cols-1) = Lt;
         MM.submat(D.n_rows, 0, MM.n_rows-1, L.n_cols-1) = L;
         MM.submat(D.n_rows, D.n_cols, MM.n_rows-1, MM.n_cols-1) = ((sHistory.t() * sHistory) * theta);
-        M = MM.i();
+        
+        Matrix<Dtype> U;
+        Vector<Dtype> s;
+        Matrix<Dtype> V;
+        arma::svd(U, s, V, MM);
+        M = V * arma::diagmat(1/s) * U.t();
       }
       Vector<Dtype> ttt = Zero<Dtype>(1, 1);
       ttt(0) = f_old - f;

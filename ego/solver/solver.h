@@ -38,6 +38,9 @@ namespace NEgo {
         template <typename T>
         T GetNextPoint();
 
+        template <typename T>
+        void ForceAddPoint(const T& point);
+
         void CheckAvailavility() const;
 
         SPtr<IModel> GetModel() const;

@@ -235,7 +235,6 @@ namespace NEgo {
 				bytesReceived += chunkReceived;
 				
 				bytes.insert(bytes.end(), chunk.begin(), chunk.begin() + chunkReceived);
-				
 				if (chunkReceived < ReceiveChunkSize) {
 					break;
 				}
