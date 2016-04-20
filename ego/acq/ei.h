@@ -11,7 +11,7 @@ namespace NEgo {
 		TAcqEI(size_t dimSize)
             : IAcq(dimSize)
         {
-        	Parameters = {0.0, 100.0};
+        	Parameters = {0.0, 100.0, 0.0, 5.0};
         }
 
         TAcqEI::Result UserCalc(const TVectorD& x) const override final;
@@ -21,6 +21,8 @@ namespace NEgo {
         void SetParameters(const TVector<double>& parameters) override final;
 
         void Update() override final;
+        
+        void EnhanceGlobalSearch() override final;
 	};
 
 

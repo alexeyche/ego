@@ -27,7 +27,9 @@ namespace NEgo {
             AccModel->Update();
             // AccModel->OptimizeHypers(Config.HyperOpt);
         }
+    
     	TPair<TVectorD, double> opt = OptimizeAcquisition(AccModel, Config.AcqOpt, Sobol);
+        
         LastPoint = opt.first;
         return opt.first;
     }

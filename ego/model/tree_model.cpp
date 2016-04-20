@@ -508,4 +508,13 @@ namespace NEgo {
         }
     }
 
+    void TTreeModel::EnhanceGlobalSearch() {
+        if (Model) {
+            Model->EnhanceGlobalSearch();
+            return;
+        }
+        LeftLeaf->EnhanceGlobalSearch();
+        RightLeaf->EnhanceGlobalSearch();
+    }
+    
 } // namespace NEgo

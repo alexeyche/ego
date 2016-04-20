@@ -21,6 +21,8 @@ namespace NEgo {
         virtual ~IAcq() {
         }
         virtual void Update() {}
+
+        virtual void EnhanceGlobalSearch() {}
         
         void SetModel(IModel& model);
 

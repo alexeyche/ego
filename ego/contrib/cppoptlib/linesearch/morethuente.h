@@ -4,6 +4,7 @@
 
 #include "../meta.h"
 #include <cmath>
+#include <ego/base/la.h>
 
 using namespace NEgo;
 
@@ -108,6 +109,7 @@ class MoreThuente {
       // test new point
       x = wa + stp * s;
       try {
+        ENSURE_ERR(!NLa::IsNan(x), TErrAlgebraError() << "Got nan in optimization: " << x << ", " << stp << ", " << s << ", failCounter: " << failCounter);
         f = objFunc.value(x);
         objFunc.gradient(x, g);
         if (std::isnan(f) || NLa::IsNan(g) || std::isinf(f)) {

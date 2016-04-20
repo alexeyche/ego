@@ -353,5 +353,8 @@ namespace NEgo {
         Update();
     }
 
+    void TModel::EnhanceGlobalSearch() {
+        Acq->EnhanceGlobalSearch();
+    }
 
 } // namespace NEgo

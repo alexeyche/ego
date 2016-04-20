@@ -72,6 +72,7 @@ namespace NEgo {
         
         SPtr<IAcq> GetAcqusitionFunction() const override;
 
+        void EnhanceGlobalSearch() override;
     private:
         TMatrixD X;
         TVectorD Y;

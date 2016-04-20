@@ -106,6 +106,8 @@ namespace NEgo {
         SPtr<ICov> GetCovariance() const override;
 
         SPtr<IAcq> GetAcqusitionFunction() const override;
+        
+        void EnhanceGlobalSearch() override;
 
         template <typename Ret>
         Ret Call(const TVectorD& splitVal, std::function<Ret(SPtr<IModel>)> callback) const {

@@ -3,6 +3,7 @@
 #include <list>
 
 #include <ego/base/errors.h>
+#include <ego/base/la.h>
 
 using namespace NEgo;
 
@@ -81,7 +82,14 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
     // f'' :=   \theta*d^Dtype*d-d^Dtype*W*M*W^Dtype*d = -\theta*f' - p^Dtype*M*p
     Dtype f_doubleprime = (Dtype)(-1.0 * theta) * f_prime - arma::dot(p, M * p); // (O(m^2) operations)
     // \delta t_min :=  -f'/f''
-    Dtype dt_min = -f_prime / f_doubleprime;
+    Dtype dt_min;
+    if (std::fabs(f_doubleprime) < std::numeric_limits<double>::epsilon()) {
+      dt_min = 0.0;
+    } else {
+      dt_min = -f_prime / f_doubleprime;
+    }
+     
+    
     // t_old :=     0
     Dtype t_old = 0;
     // b :=     argmin {t_i , t_i >0}
@@ -114,10 +122,15 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
       f_doubleprime += (Dtype) - 1.0 * theta * g(b) * g(b)
                        - (Dtype) 2.0 * (g(b) * (arma::dot(wbt, M * p)))
                        - AsScalar<Dtype>(g(b) * g(b) * wbt.t() * (M * wbt));
-    
+      
       p += g(b) * wbt;
       d(b) = 0;
-      dt_min = -f_prime / f_doubleprime;
+      if (std::fabs(f_doubleprime) < std::numeric_limits<double>::epsilon()) {
+        dt_min = 0.0; 
+      } else {
+        dt_min = -f_prime / f_doubleprime;  
+      }
+      
       t_old = t;
       ++i;
       if (i < DIM) {

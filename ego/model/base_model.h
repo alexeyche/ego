@@ -67,6 +67,8 @@ namespace NEgo {
 
         virtual SPtr<IAcq> GetAcqusitionFunction() const = 0;
 
+        virtual void EnhanceGlobalSearch() = 0;
+
         // Common getters setters
 
         void InitWithConfig(const TModelConfig& config, ui32 D);

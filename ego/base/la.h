@@ -143,6 +143,11 @@ namespace NEgo {
         bool Any(T &&cond) {
             return arma::any(cond);
         }
+        
+        template <typename T>
+        bool All(T &&cond) {
+            return arma::all(cond);
+        }
 
         TMatrixD Abs(const TMatrixD &m);
 
