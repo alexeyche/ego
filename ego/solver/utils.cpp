@@ -12,6 +12,7 @@ namespace NEgo {
 
         for (size_t iter=0; iter < 100; iter +=10) {
             TVector<TPair<std::future<TPair<TVectorD, double>>, TVectorD>> results;
+            
             for (size_t minNum=0; minNum < 10; ++minNum) {
                 TVectorD start = NLa::Trans(starts.row(iter + minNum));
 
@@ -26,8 +27,9 @@ namespace NEgo {
                         }
                     }
                 ), start));
+                
             }
-        
+
             for (auto& f: results) {
                 auto r = f.first.get();
                 L_DEBUG << "Got result from starting at " << NLa::VecToStr(f.second) << " -> " << r.second << " at " << NLa::VecToStr(r.first);

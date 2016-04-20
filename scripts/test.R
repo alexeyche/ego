@@ -19,5 +19,5 @@ FmuDeriv = rr("FmuDeriv")
 
 
 
-rr("K",225)
+
 

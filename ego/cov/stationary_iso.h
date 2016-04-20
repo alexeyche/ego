@@ -69,6 +69,12 @@ namespace NEgo {
 	        	)
 	        	.SetSecondArgPartialDeriv(
         			[=](ui32 indexRow, ui32 indexCol) -> TMatrixD {
+                        // if (left.n_rows > 1) {
+                        //     NLa::DebugSave(left, "left");
+                        //     NLa::DebugSave(r, "r");
+                        //     NLa::DebugSave(sqDistRes.SecondArgPartialDeriv(indexRow, indexCol), "sqDistRes");
+                        //     NLa::DebugSave(dKdArg, "dKdArg");
+                        // }
                         return var * dKdArg % sqDistRes.SecondArgPartialDeriv(indexRow, indexCol) / l;
 	        		}
 	        	);

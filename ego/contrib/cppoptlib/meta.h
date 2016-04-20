@@ -88,7 +88,7 @@ typedef struct Options {
 
     Options() {
         rate = 0.00005;
-        maxIter = 100000;
+        maxIter = 1000;
         gradTol = 1e-4;
         m = 10;
 

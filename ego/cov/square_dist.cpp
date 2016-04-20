@@ -32,7 +32,7 @@ namespace NEgo {
                     for(size_t ri=0; ri < left.n_rows; ++ri) {
                         for(size_t rj=0; rj < right.n_rows; ++rj) {
                         	double sum = NLa::Sum(left.row(ri) - right.row(rj));
-                        	if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
+                        	if(r(ri, rj) < std::numeric_limits<double>::epsilon()) {
                         		dR(ri, rj) = 0.0;
                         	} else {
                         		dR(ri, rj) = sum/r(ri, rj);
@@ -49,7 +49,7 @@ namespace NEgo {
                     for(size_t ri=0; ri < left.n_rows; ++ri) {
                         for(size_t rj=0; rj < right.n_rows; ++rj) {
                         	double sum = - NLa::Sum(left.row(ri) - right.row(rj));
-                            if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
+                            if(r(ri, rj) < std::numeric_limits<double>::epsilon()) {
                         		dR(ri, rj) = 0.0;
                         	} else {
                         		dR(ri, rj) = sum/r(ri, rj);
@@ -69,7 +69,7 @@ namespace NEgo {
                     TMatrixD dR = NLa::Zeros(left.n_rows, right.n_rows);
                     for(size_t ri=0; ri < left.n_rows; ++ri) {
                         double sum = - (left(ri, indexCol) - right(indexRow, indexCol));
-                        if(std::abs(sum) < std::numeric_limits<double>::epsilon()) {
+                        if(r(ri, indexRow) < std::numeric_limits<double>::epsilon()) {
                             dR(ri, indexRow) = 0.0;
                         } else {
                             dR(ri, indexRow) = sum/r(ri, indexRow);

@@ -201,7 +201,8 @@ class LbfgsbSolver : public ISolver<Dtype, 1> {
   }
  public:
   
-  void CheckX(const Vector<Dtype>& v) {
+  void 
+  X(const Vector<Dtype>& v) {
     for (size_t vi=0; vi < v.size(); ++vi) {
       ENSURE(v(vi) <= uboundTemplate(vi), v << " is out of upper bound (" << v(vi) << " > " << uboundTemplate(vi));
       ENSURE(v(vi) >= lboundTemplate(vi), v << " is out of lower bound (" << v(vi) << " < " << lboundTemplate(vi));
