@@ -304,12 +304,8 @@ TVector<double> TSolverWrap::GetNextPoint() {
 	TVector<double> v;
 	v.reserve(Solver.GetProblem().GetDimSize());
 	
-	std::map<ui32, TVariable> varSorted;
 	for (const auto& var: Solver.GetProblem().GetVariables()) {
-		varSorted.emplace(var.second.Id, var.second);
-	}
-	for (const auto& var: varSorted) {
-		v.push_back(p.GetValue<double>(var.second.Name));
+		v.push_back(p.GetValue<double>(var.Name));
 	}
 	return v;
 }

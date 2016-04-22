@@ -45,7 +45,7 @@ namespace NEgo {
                     var.Min = v.min();
                     var.Max = v.max();
                     var.Id = variableId++;
-                    auto res = Variables.insert(MakePair(var.Name, var));
+                    auto res = Variables.insert(MakePair(var.Id, var));
                     ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                 } else
                 if (v.type() == NEgoProto::INT) {
@@ -55,7 +55,7 @@ namespace NEgo {
                     var.Min = v.min();
                     var.Max = v.max();
                     var.Id = variableId++;
-                    auto res = Variables.insert(MakePair(var.Name, var));
+                    auto res = Variables.insert(MakePair(var.Id, var));
                     ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                 } else {
                     for (const auto& vopt: v.option()) {
@@ -65,7 +65,7 @@ namespace NEgo {
                         var.Max = 1.0;
                         var.Type = EVariableType::ENUM;
                         var.Id = variableId++;
-                        auto res = Variables.insert(MakePair(var.Name, var));
+                        auto res = Variables.insert(MakePair(var.Id, var));
                         ENSURE(res.second, "Found duplicates of variable name: " << var.Name);
                     }
                 }
@@ -73,13 +73,9 @@ namespace NEgo {
             }
         }
         void SerialVariables(NEgoProto::TProblemConfig& config) const {
-            std::map<ui32, TVariable> variablesSorted;
-            for (const auto& v: Variables) {
-                variablesSorted.emplace(v.second.Id, v.second);
-            }
             NEgoProto::TVariable* var(nullptr);
             TString enumName;
-            for (const auto& vPair: variablesSorted) {
+            for (const auto& vPair: Variables) {
                 const TVariable& v = vPair.second;
                 if (v.Type == EVariableType::FLOAT) {
                     var = config.add_variable();
@@ -114,7 +110,7 @@ namespace NEgo {
         TString Name;
 
         ui32 DimSize;
-        std::map<TString, TVariable> Variables;
+        std::map<ui32, TVariable> Variables;
     };
 
 } // namespace NEgo

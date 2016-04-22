@@ -11,7 +11,7 @@ namespace NEgo {
 		if (Model->Empty()) {
             return TJsonDocument::Array();
         }
-        const auto& vars = Problem.GetVariables();
+        const auto& vars = Problem.GetVariablesMap();
         auto res = vars.find(varName);
         if (res == vars.end()) {
             throw TErrElementNotFound() << "Variable " << varName << " is not found in problem " << GetProblemName();
@@ -80,10 +80,13 @@ namespace NEgo {
         TJsonDocument nextPjson;
         
         nextPjson["Id"] = nextP.GetId();
-
+        TJsonDocument vars = TJsonDocument::Array();
         for (auto v: nextP.GetVariables()) {
-            nextPjson["Point"][v.first] = TJsonDocument::FromAny(v.second);
+            TJsonDocument doc;
+            doc[v.first] = TJsonDocument::FromAny(v.second);
+            vars.PushBack(doc);
         }
+        nextPjson["Variable"] = vars;
         return nextPjson;
     }
 

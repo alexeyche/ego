@@ -157,7 +157,7 @@ namespace NEgo {
 
             return Problem.RemapBack(TPoint(
                 NStr::TStringBuilder() << StartIterationNum << "-init",
-                InitSamples.row(StartIterationNum++)
+                NLa::Trans(InitSamples.row(StartIterationNum++))
             ));
         }
         // } else

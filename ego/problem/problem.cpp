@@ -88,8 +88,22 @@ namespace NEgo {
         return Config;
     }
 
-    const std::map<TString, TVariable>& TProblem::GetVariables() const {
-        return Config.Variables;
+    const std::map<TString, TVariable>& TProblem::GetVariablesMap() const {
+        std::map<TString, TVariable> varMap;
+        for (const auto& var: Config.Variables) {
+            varMap.emplace(var.second.Name, var.second);
+        }
+        return varMap;
+    }
+
+
+    TVector<TVariable> TProblem::GetVariables() const {
+        TVector<TVariable> vars;
+        vars.reserve(varsSorted.size());
+        for (const auto& var: Config.Variables) {
+            vars.emplace_back(var.second);
+        }
+        return vars;
     }
 
 } // namespace NEgo

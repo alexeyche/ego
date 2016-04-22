@@ -65,12 +65,7 @@ namespace NEgo {
     }
 
     void TAcqEI::SetParameters(const TVector<double>& parameters) {
-        if (parameters.size() == 1) {
-            Parameters[0] = parameters[0];
-            return;
-        }
-        
-        Parameters = parameters;
+        std::copy(parameters.begin(), parameters.end(), Parameters.begin());
     }
 
     void TAcqEI::Update() {

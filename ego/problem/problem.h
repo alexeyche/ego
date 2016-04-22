@@ -42,9 +42,17 @@ namespace NEgo {
             ENSURE(res.second, "Found duplicates of variable " << varName);
         }
         
-        std::map<TString, TAny>& GetVariables() {
-            return Variables;
-        }
+        // std::map<ui32, TAny> GetVariables() {
+        //     std::map<ui32, TAny> varSorted;
+        //     for (const auto& var: Variables) {
+        //         varSorted.emplace(var.second.Id, var.second);
+        //     }
+        //     return varSorted;
+        // }
+
+        // std::map<TString, TAny> GetVariablesMap() {
+        //     return Variables;
+        // }
         
         const TString& GetId() const {
             return Id;
@@ -55,8 +63,8 @@ namespace NEgo {
 
     private:
         TString Id;
-
-        std::map<TString, TAny> Variables;
+        
+        std::map<ui32, TAny> Variables;
     };
 
 
@@ -97,7 +105,9 @@ namespace NEgo {
 
         const TProblemConfig& GetConfig() const;
 
-        const std::map<TString, TVariable>& GetVariables() const;
+        const std::map<TString, TVariable>& GetVariablesMap() const;
+
+        TVector<TVariable> GetVariables() const;
 
     private:
         TProblemConfig Config;
